@@ -9,6 +9,6 @@ blp = Blueprint("Material", __name__, description="Material API")
 
 @blp.route("/materials")
 class MaterialList(MethodView):
-    @blp.response(200, MaterialSchema(many=True))
+    @blp.response(200, MaterialSchema(many=FutureWarning))
     def get(self):
         return material_service.get_all_materials()

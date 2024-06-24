@@ -59,6 +59,13 @@ class DefaultConfig:
     DATE_FMT = "%Y-%m-%d %H:%M:%S"
     LOG_FILE_API = f"{basedir}/logs/api.log"
 
+    UPLOAD_FOLDER = f"{basedir}/uploads"
+    ALLOWED_EXTENSIONS = {'obj'}
+
+    # Ensure the upload folder exists
+    if not os.path.exists(UPLOAD_FOLDER):
+        os.makedirs(UPLOAD_FOLDER)
+
 
 class DevelopConfig(DefaultConfig):
     # App environment

@@ -4,7 +4,7 @@ from app.db import db
 
 
 class Material(db.Model):
-    __tablename__ = "material"
+    __tablename__ = "materials"
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(), nullable=False)
