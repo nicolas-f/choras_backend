@@ -1,17 +1,11 @@
 from flask_smorest import Api
 
-from app.routers.permission_router import blp as PermissionBlueprint
-from app.routers.role_permission_router import blp as RolePermissionBlueprint
-from app.routers.role_router import blp as RoleBlueprint
-from app.routers.user_role_router import blp as UserRoleBlueprint
-from app.routers.user_router import blp as UserBlueprint
+from app.routes.user_router import blp as user_blueprint
+from app.routes.material import blp as material_blueprint
 
 
 # Register Blueprint
 def register_routing(app):
     api = Api(app)
-    api.register_blueprint(UserBlueprint)
-    api.register_blueprint(RoleBlueprint)
-    api.register_blueprint(PermissionBlueprint)
-    api.register_blueprint(UserRoleBlueprint)
-    api.register_blueprint(RolePermissionBlueprint)
+    api.register_blueprint(user_blueprint)
+    api.register_blueprint(material_blueprint)

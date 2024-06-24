@@ -1,8 +1,5 @@
 from marshmallow import Schema, fields
 
-from app.schemas.permission_schema import PlainPermissionSchema
-from app.schemas.role_schema import PlainRoleSchema
-
 
 class PlainUserSchema(Schema):
     # Dump only: only read
@@ -20,7 +17,6 @@ class UserUpdateSchema(Schema):
 
 class UserSchema(PlainUserSchema):
     block = fields.Bool(dump_only=True)
-    roles = fields.List(fields.Nested(PlainRoleSchema()), dump_only=True)
 
 
 class UserExportSchema(Schema):
@@ -41,14 +37,10 @@ class UserPageSchema(Schema):
 
 class UserAndRoleSchema(Schema):
     message = fields.Str()
-    user = fields.Nested(PlainUserSchema)
-    role = fields.Nested(PlainRoleSchema)
 
 
 class RoleAndPermissionSchema(Schema):
     message = fields.Str()
-    role = fields.Nested(PlainRoleSchema)
-    permission = fields.Nested(PlainPermissionSchema)
 
 
 class UpdateUserRoleSchema(Schema):

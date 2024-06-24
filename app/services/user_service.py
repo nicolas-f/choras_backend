@@ -11,10 +11,7 @@ from passlib.hash import pbkdf2_sha256
 from sqlalchemy import asc
 
 from app.db import db
-from app.models.blocklist_model import BlocklistModel
-from app.models.role_model import RoleModel
 from app.models.user_model import UserModel
-from app.services import user_role_service
 
 # Create logger for this module
 logger = logging.getLogger(__name__)

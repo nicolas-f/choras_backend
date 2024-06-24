@@ -2,6 +2,9 @@ import datetime
 import os
 
 basedir = os.path.abspath(os.path.dirname(__file__))
+app_dir = os.path.join(
+    os.path.abspath(os.path.dirname(__file__)), 'app'
+)
 
 
 class DefaultConfig:

@@ -1,6 +1,5 @@
 import logging
 import time
-from functools import wraps
 
 from flask_jwt_extended import get_jwt
 from flask_smorest import abort

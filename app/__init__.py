@@ -30,5 +30,6 @@ def create_app(settings_module):
     return app
 
 
-settings_module = os.getenv("APP_SETTINGS_MODULE")
-app = create_app(settings_module)
+app = create_app(
+    os.getenv("APP_SETTINGS_MODULE")
+)

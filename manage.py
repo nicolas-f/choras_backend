@@ -6,11 +6,11 @@ from passlib.hash import pbkdf2_sha256
 
 from app.db import db
 from app.models import (
-    PermissionModel,
-    RoleModel,
-    RolePermissionModel,
     UserModel,
-    UserRoleModel,
+)
+
+from app.services import (
+    material_service
 )
 
 
@@ -78,6 +78,7 @@ def create_db():
     Create Database.
     """
     db.create_all()
+    material_service.insert_initial_materials()
     db.session.commit()
 
 
@@ -87,6 +88,7 @@ def reset_db():
     """
     db.drop_all()
     db.create_all()
+    material_service.insert_initial_materials()
     db.session.commit()
 
 
@@ -99,52 +101,12 @@ def drop_db():
 
 
 def init_db_user():
-    # Insert Permission
-    read_perrmission = PermissionModel(name="read", description="Read data")
-    write_perrmission = PermissionModel(name="write", description="Write data")
-    delete_perrmission = PermissionModel(name="delete", description="Delete data")
-    db.session.add_all([read_perrmission, write_perrmission, delete_perrmission])
-    db.session.commit()
-
-    # Insert Role
-    admin_role = RoleModel(name="Admin", description="Full Permission")
-    user_role = RoleModel(name="User", description="Can read, write data")
-    guest_role = RoleModel(name="Guest", description="Just read data")
-    db.session.add_all([admin_role, user_role, guest_role])
-    db.session.commit()
-
-    # Insert Role_Permission
-    role_permission_admin1 = RolePermissionModel(role_id=1, permission_id=1)
-    role_permission_admin2 = RolePermissionModel(role_id=1, permission_id=2)
-    role_permission_admin3 = RolePermissionModel(role_id=1, permission_id=3)
-    role_permission_user1 = RolePermissionModel(role_id=2, permission_id=1)
-    role_permission_user2 = RolePermissionModel(role_id=2, permission_id=2)
-    role_permission_guest = RolePermissionModel(role_id=3, permission_id=1)
-    db.session.add_all(
-        [
-            role_permission_admin1,
-            role_permission_admin2,
-            role_permission_admin3,
-            role_permission_user1,
-            role_permission_user2,
-            role_permission_guest,
-        ]
-    )
-    db.session.commit()
-
     # Insert User
     password = pbkdf2_sha256.hash("123456")
     admin_user = UserModel(username="admin", password=password)
     normal_user = UserModel(username="user", password=password)
     guest_user = UserModel(username="guest", password=password)
     db.session.add_all([admin_user, normal_user, guest_user])
-    db.session.commit()
-
-    # Insert UserRole
-    user_role1 = UserRoleModel(user_id=1, role_id=1)
-    user_role2 = UserRoleModel(user_id=2, role_id=2)
-    user_role3 = UserRoleModel(user_id=3, role_id=3)
-    db.session.add_all([user_role1, user_role2, user_role3])
     db.session.commit()
 
 

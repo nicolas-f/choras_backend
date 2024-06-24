@@ -11,4 +11,4 @@ class UserModel(db.Model):
     password = db.Column(db.String(), nullable=False)
     block = db.Column(db.Boolean, default=False, nullable=False)
     time_created = db.Column(db.String(), default=datetime.now())
-    roles = db.relationship("RoleModel", back_populates="users", secondary="user_role")
+    # roles = db.relationship("RoleModel", back_populates="users", secondary="user_role")

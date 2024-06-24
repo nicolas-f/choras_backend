@@ -1,7 +1,7 @@
 from flask import jsonify
 
 from app.extention import jwt
-from app.models import BlocklistModel, UserModel
+from app.models import  UserModel
 
 
 @jwt.token_verification_loader
@@ -16,9 +16,9 @@ def custom_token_verification_callback(jwt_header, jwt_data):
     return True
 
 
-@jwt.token_in_blocklist_loader
-def check_if_token_in_blocklist(jwt_header, jwt_payload):
-    return BlocklistModel.query.filter_by(jti_blocklist=jwt_payload["jti"]).first()
+# @jwt.token_in_blocklist_loader
+# def check_if_token_in_blocklist(jwt_header, jwt_payload):
+#     return BlocklistModel.query.filter_by(jti_blocklist=jwt_payload["jti"]).first()
 
 
 @jwt.revoked_token_loader
