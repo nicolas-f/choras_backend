@@ -4,21 +4,24 @@
 <img src="./assets/logo.png" alt="Logo" />
 </p>
 
-Rest API template developed in Python with the Flask framework. The template covers user management, jwt tokens for authentication, and assign permissions for each user with Flask Principal. In the local environment, it uses docker to create an environment made up of several services such as api (flask), database (postgresql), reverse-proxy (nginx).
+This repository contains the backend application for the project room
+acoustics user interface, implemented in Python using the Flask framework.
+Currently, it has been tested only in the development environment.
+Future plans include support for Docker and deployment in production
+environments. The application supports SQLite3 as the default database,
+with provisions for PostgreSQL as an alternative.
 
 ## Index
 
 - [Technology](#technology)
 - [Requirements](#requirements)
 - [Environments](#environments)
-  - [Develop](#develop)
-  - [Testing](#testing)
-  - [Local](#local)
-  - [Production](#production)
+    - [Develop](#develop)
+    - [Production](#production)
 - [Flask Commands](#flask-commands)
-  - [Flask-cli](#flask-cli)
+    - [Flask-cli](#flask-cli)
 - [Database commands](#bbdd-commands)
-  - [Flask-migrate](#flask-migrate)
+    - [Flask-migrate](#flask-migrate)
 - [Swagger](#swagger)
 - [Reference](#reference)
 - [Contribution](#contribution)
@@ -29,18 +32,18 @@ Rest API template developed in Python with the Flask framework. The template cov
 - **Web Framework:** Flask
 - **ORM:** Flask-sqlalchemy
 - **Swagger:** Swagger-UI
-- **Authentication:** Flask Json Web Token
-- **Permission:** JWT Decorator
-- **Serialization, Deserialization and Validation:** Marshmallow
+- **Serialization:** Marshmallow
+- **Deserialization:** Marshmallow
+- **Validation:** Marshmallow
 - **Migration Database:** Flask-migrate
 - **Environment manager:** Anaconda/Miniconda
 - **Containerization:** Docker, docker-compose
-- **Database:** PostgreSQL
-- **Python WSGI HTTP Server:** Gunicorn
+- **Database:** PostgreSQL, SQLite3
+- **Python WSGI HTTP Server:** Gunicorn (env specification)
 - **Proxy:** Nginx
-- **Tests:** Unittest
-- **Deployment platform:** AWS
-- **CI/CD:** Github Actions
+- **Tests:** Under Planning
+- **Deployment platform:** Under planning for AWS
+- **CI/CD:** Under planning for Github Actions
 
 ## Requirements
 
@@ -48,25 +51,29 @@ Rest API template developed in Python with the Flask framework. The template cov
 - [Anaconda/Miniconda](instructions/anaconda-miniconda.md)
 - [Docker](instructions/docker-dockercompose.md)
 - [Docker-Compose](instructions/docker-dockercompose.md)
-- [Github](https://github.com)
+- Other requirements such as python libraries etc.
 
 ## Environments
 
 ### Develop
 
-Development environment that uses PostgreSQL in local and uses the server flask in debug mode.
+Development environment uses SQLite3/Postgresql locally and runs the Flask server in debug mode.
+You can customize the environment variables in the corresponding .env file.
 
 1. **Create environment and install packages**
 
-```shell
-conda create -n backend python=3.10
+In general, I am using conda to handle virtual env and packages installations, however you can
+use other alternatives to install the python dependencies as well.
 
-conda activate backend
+```shell
+conda create -n NAME_OF_VENV python=3.10
+
+conda activate NAME_OF_VENV
 
 pip install -r requirements.txt
 ```
 
-2. **Create PosgresSQL on Ubuntu**
+2. **Create PosgresSQL on Linux[Ubuntu] (optional)**
 
 ```shell
 # Install PosgresSQL
@@ -85,6 +92,11 @@ CREATE DATABASE db_dev;
 GRANT ALL PRIVILEGES ON DATABASE db_dev TO db_user;
 ```
 
+Note: remember to change the default env configuration to switch from sqllite to postgresql.
+
+Note: if you are using Windows machine, you can simply download and install the postgresql from its website.
+However, upon installing the software try to remember what is the password for the superuser.
+
 3. **Create or update `.env` file**
 
 ```shell
@@ -96,25 +108,22 @@ APP_ENV=develop
 FLASK_APP=app:app
 FLASK_DEBUG=true
 APP_SETTINGS_MODULE=config.DevelopConfig
-FLASK_RUN_HOST=0.0.0.0
-FLASK_RUN_PORT=5000
+APP_TEST_SETTINGS_MODULE=config.TestingConfig
 
-# Secret key
-SECRET_KEY=<your-secret-key>
-JWT_SECRET_KEY=<your-jwt-secret-key>
+FLASK_RUN_HOST=192.168.0.104
+FLASK_RUN_PORT=5000
 
 # Database service configuration
 DATABASE_URL=postgresql://db_user:db_password@localhost/db_dev
+DATABASE_TEST_URL=postgresql://db_user:db_password@localhost/db_test
 ```
 
 4. **Run application**
+   Once you are done with the above steps, you are ready to run the application.
 
 ```shell
 # Create database
 flask create-db
-
-# Create user admin
-flask create-user-admin
 
 # Run a development server
 flask run
@@ -122,125 +131,90 @@ flask run
 
 ### Testing
 
-Testing environment that uses PostgreSQL as database (db_test) and performs unit tests, integration tests and API tests.
+Some of the planned commands:
 
-1. **Create test environment**
-
-2. **Create Test Database**
-
-3. **Create or update `.env` file**
-
-```shell
-# APP configuration
-APP_NAME=Flask API Rest Template
-APP_ENV=testing
-
-# Flask Configuration
-FLASK_APP=app:app
-FLASK_DEBUG=true
-APP_SETTINGS_MODULE=config.TestingConfig
-FLASK_RUN_HOST=0.0.0.0
-FLASK_RUN_PORT=3000
-
-# Secret key
-SECRET_KEY=<your-secret-key>
-JWT_SECRET_KEY=<your-jwt-secret-key>
-
-# Database service configuration
-DATABASE_TEST_URL=postgresql://db_user:db_password@localhost/db_test
-```
-
-4. **Init database**
-
-```shell
-# Create database
-flask create-db
-
-# Create user admin
-flask create-user-admin
-```
-
-5. **Run all the tests**
+1. **Run all tests**
 
 ```shell
 flask tests
 ```
 
-6. **Run unit tests**
+2. **Run unit tests**
 
 ```shell
 flask tests_unit
 ```
 
-7. **Run integration tests**
+3. **Run integration tests**
 
 ```shell
 flask tests_integration
 ```
 
-8. **Run API tests**
+4. **Run API tests**
 
 ```shell
 flask tests_api
 ```
 
-9. **Run coverage**
+5. **Run coverage**
 
 ```shell
 flask coverage
 ```
 
-10. **Run coverage report**
+6. **Run coverage report**
 
 ```shell
 flask coverage_report
 ```
 
-### Local
+### Local (Dockerize)
 
-Containerized services separately with PostgreSQL databases (db), API (api) and Nginx reverse proxy (nginx) with Docker and docker-compose.
+Containerized services separately with PostgreSQL databases (db), API (api) and Nginx reverse proxy (nginx) with Docker
+and docker-compose.
 
 1. **Create `.env.api.local`, `.env.db.local` files**
 
-   1. **.env.api.local**
+    1. **.env.api.local**
 
-      ```shell
-      # APP configuration
-      APP_NAME=[Name APP] # For example Flask API Rest Template
-      APP_ENV=local
+       ```shell
+       # APP configuration
+       APP_NAME=[Name APP] # For example Flask API Rest Template
+       APP_ENV=local
+ 
+       # Flask configuration
+       API_ENTRYPOINT=app:app
+       APP_SETTINGS_MODULE=config.LocalConfig
+       APP_TEST_SETTINGS_MODULE=config.TestingConfig
+ 
+       # API service configuration
+       API_HOST=<api_host> # For example 0.0.0.0
+       API_PORT=<port_api> # For example 5000
+ 
+       # Database service configuration
+       DATABASE=postgres
+       DB_HOST=<name_container_bbdd> # For example db_service (name service in docker-compose)
+       DB_PORT=<port_container_bbdd> # For example 5432 (port service in docker-compose)
+       POSTGRES_DB=<name_database> # For example db_dev
+       POSTGRES_USER=<name_user> # For example db_user
+       PGPASSWORD=<password_user> # For example db_password
+ 
+       # Secret key
+       SECRET_KEY=<your-secret-key>
+       JWT_SECRET_KEY=<your-jwt-secret-key>
+ 
+       DATABASE_TEST_URL=<url database test> # For example postgresql+psycopg2://db_user:db_password@db_service:5432/db_test
+       DATABASE_URL=<url database> # For example postgresql+psycopg2://db_user:db_password@db_service:5432/db_dev
+       ```
 
-      # Flask configuration
-      API_ENTRYPOINT=app:app
-      APP_SETTINGS_MODULE=config.LocalConfig
-      APP_TEST_SETTINGS_MODULE=config.TestingConfig
+    2. **.env.db.local**:
 
-      # API service configuration
-      API_HOST=<api_host> # For example 0.0.0.0
-      API_PORT=<port_api> # For example 5000
-
-      # Database service configuration
-      DATABASE=postgres
-      DB_HOST=<name_container_bbdd> # For example db_service (name service in docker-compose)
-      DB_PORT=<port_container_bbdd> # For example 5432 (port service in docker-compose)
-      POSTGRES_DB=<name_database> # For example db_dev
-      POSTGRES_USER=<name_user> # For example db_user
-      PGPASSWORD=<password_user> # For example db_password
-
-      # Secret key
-      SECRET_KEY=<your-secret-key>
-      JWT_SECRET_KEY=<your-jwt-secret-key>
-
-      DATABASE_TEST_URL=<url database test> # For example postgresql+psycopg2://db_user:db_password@db_service:5432/db_test
-      DATABASE_URL=<url database> # For example postgresql+psycopg2://db_user:db_password@db_service:5432/db_dev
-      ```
-
-   2. **.env.db.local**:
-
-      ```shell
-      POSTGRES_USER=<name_user> # For example db_user
-      POSTGRES_PASSWORD=<password> # For example db_password
-      POSTGRES_DB=<name_DB> # For example db_dev
-      ```
+       ```shell
+       POSTGRES_USER=<name_user> # For example db_user
+       POSTGRES_PASSWORD=<password> # For example db_password
+       POSTGRES_DB=<name_DB> # For example db_dev
+       ```
 
 2. **Build and run services**
    `shell docker-compose up --build ` 2. Stop services:
@@ -296,19 +270,7 @@ Apply CI/CD with Github Actions to automatically deployed to AWS platform use EC
   flask drop_db
   ```
 
-- Create admin user for the Rest API:
-
-  ```sh
-  flask create-user-admin
-  ```
-
 - Database reset:
-
-  ```sh
-  flask reset-db
-  ```
-
-- Run tests without coverage:
 
   ```sh
   flask reset-db
@@ -352,14 +314,12 @@ Apply CI/CD with Github Actions to automatically deployed to AWS platform use EC
 http://localhost:<port>/swagger-ui
 ```
 
-<p align="center">
-<img src="./assets/swagger.png" alt="Swagger" />
+<p align="center"> 
+<img src="./assets/swagger.png" alt="Swagger" /> 
 </p>
 
 ## Reference
 
-- [Udemy - REST APIs with Flask and Python in 2023](https://www.udemy.com/course/rest-api-flask-and-python/)
-- [Github - Flask API REST Template](https://github.com/igp7/flask-rest-api-template)
 - [Github - Uvicorn Gunicorn Fastapi Docker](https://github.com/tiangolo/uvicorn-gunicorn-fastapi-docker)
 
 ## Contribution

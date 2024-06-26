@@ -1,29 +1,6 @@
 from marshmallow import Schema, fields, post_load
 from app.types import TaskType, Status, Setting
 
-class SimulationSchema(Schema):
-    id = fields.Integer()
-    name = fields.String(required=True)
-    description = fields.String(required=False)
-    hasBeenEdited = fields.Boolean()
-
-    sources = fields.List(fields.Dict())
-    receivers = fields.List(fields.Dict())
-    taskType = fields.Enum(TaskType, required=True)
-    modelSettings = fields.Dict()
-    settingsPreset = fields.Enum(Setting, required=True)
-    solverSettings = fields.Dict()
-    status = fields.Enum(Status, required=True)
-
-    modelId = fields.Integer()
-    simulationRunId = fields.Integer()
-
-    meshId = fields.Integer()
-
-    createdAt = fields.String()
-    updatedAt = fields.String()
-    completedAt = fields.String()
-
 
 class ModelSettingsSchema(Schema):
     materialIdByObjectId = fields.Dict()
@@ -44,6 +21,21 @@ class SimulationCreateBodySchema(Schema):
 
     modelSettings = fields.Nested(ModelSettingsSchema)
     solverSettings = fields.Nested(SolverSettingsSchema)
+
+
+class SimulationSchema(SimulationCreateBodySchema):
+    id = fields.Integer()
+    hasBeenEdited = fields.Boolean()
+    sources = fields.List(fields.Dict())
+    receivers = fields.List(fields.Dict())
+    taskType = fields.Enum(TaskType, required=True)
+    settingsPreset = fields.Enum(Setting, required=True)
+    status = fields.Enum(Status, required=True)
+    simulationRunId = fields.Integer()
+    meshId = fields.Integer()
+    createdAt = fields.String()
+    updatedAt = fields.String()
+    completedAt = fields.String()
 
 
 class SimulationRunSchema(Schema):
