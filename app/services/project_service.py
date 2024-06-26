@@ -15,7 +15,7 @@ def get_all_projects():
 def create_new_project(project_data):
     new_project = Project(
         name=project_data["name"],
-        group=project_data["group"],
+        group=project_data["group"].strip(),
         description=project_data["description"]
     )
 
@@ -36,7 +36,7 @@ def get_project(project_id):
     return results
 
 
-def update_project(project_data, project_id):
+def update_project(project_id, project_data):
     project = Project.query.filter_by(id=project_id).first()
     if not project:
         logger.error("Project doesn't exist, cannot update!")
@@ -55,31 +55,33 @@ def update_project(project_data, project_id):
 
 
 def delete_project(project_id):
-    result = Project.query.filter_by(id=project_id).delete()
+    result = Project.query.filter_by(id=project_id)
     if not result:
         logger.error("Project doesn't exist, cannot delete!")
         abort(400, message="Project doesn't exist, cannot delete!")
-
+    result.delete()
     db.session.commit()
     return result
 
 
 def delete_project_by_group(group):
     result = Project.query.filter_by(group=group).delete()
-    if not len(result):
-        logger.error("Project doesn't exist, cannot delete!")
-        abort(400, message="Project doesn't exist, cannot delete!")
+    if not result:
+        logger.error("Group doesn't exist, cannot delete!")
+        abort(400, message="Group doesn't exist, cannot delete!")
 
     db.session.commit()
     return result
 
 
-def update_project_by_group(group, newGroup):
+def update_project_by_group(group, new_group):
     result = Project.query.filter_by(group=group).all()
+
+    print(result)
 
     try:
         for project in result:
-            project.group = newGroup
+            project.group = new_group.strip()
 
         db.session.commit()
     except Exception as ex:

@@ -59,7 +59,8 @@ class DefaultConfig:
     DATE_FMT = "%Y-%m-%d %H:%M:%S"
     LOG_FILE_API = f"{basedir}/logs/api.log"
 
-    UPLOAD_FOLDER = f"{basedir}/uploads"
+    UPLOAD_FOLDER_NAME = "uploads"
+    UPLOAD_FOLDER = f"{basedir}/{UPLOAD_FOLDER_NAME}"
     ALLOWED_EXTENSIONS = {'obj'}
 
     # Ensure the upload folder exists

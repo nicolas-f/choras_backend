@@ -45,11 +45,9 @@ class Simulation(db.Model):
     solverSettings = db.Column(JSON, nullable=False)
     status = db.Column(db.Enum(Status), default=Status.Created)
 
-    modelId = db.Column(db.Integer, db.ForeignKey('models.id'), nullable=False)
-    model = db.relationship("Model", back_populates="simulations", foreign_keys=[modelId])
+    modelId = db.Column(db.Integer, db.ForeignKey('models.id', ondelete='CASCADE'), nullable=False)
 
-    simulationRunId = db.Column(db.Integer, db.ForeignKey('simulationRuns.id'), nullable=True)
-    simulationRun = db.relationship("SimulationRun", cascade="all, delete", foreign_keys=[simulationRunId])
+    simulationRunId = db.Column(db.Integer, db.ForeignKey('simulationRuns.id', ondelete='CASCADE'), nullable=True)
 
     meshId = db.Column(db.Integer, db.ForeignKey('meshes.id'), nullable=True)
     mesh = db.relationship("Mesh", back_populates="simulation", foreign_keys=[meshId])

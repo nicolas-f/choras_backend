@@ -23,4 +23,12 @@ class ProjectCreateSchema(Schema):
 
 class ProjectUpdateSchema(Schema):
     name = fields.Str(required=True)
-    description = fields.Str(required=False)
+    description = fields.Str()
+
+
+class ProjectUpdateByGroupQuerySchema(Schema):
+    group = fields.Str(required=True)
+
+
+class ProjectUpdateByGroupBodySchema(Schema):
+    newGroup = fields.Str(required=True)

@@ -88,4 +88,4 @@ def get_file_url(file_id):
         logger.error('File with id ' + str(file_id) + 'does not exists!')
         abort(400, message="File doesn't exists!")
 
-    return f"http://{os.getenv('API_HOST')}:{os.getenv('API_PORT')}/uploads/{file.filename.replace('.3dm', '.zip')}"
+    return f"http://{os.getenv('FLASK_RUN_HOST')}:{os.getenv('FLASK_RUN_PORT')}/uploads/{file.fileName.replace('.3dm', '.zip')}"

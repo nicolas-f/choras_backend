@@ -1,7 +1,8 @@
 from flask.views import MethodView
-from flask import request
+from flask import send_from_directory
 from flask_smorest import Blueprint
 from flask_smorest import abort
+import config
 
 from app.schemas.file_schema import FileSchema, FileCreateQuerySchema, GetSlotSchema, FileCreateBodySchema
 from app.services import file_service
@@ -35,7 +36,14 @@ class FileList(MethodView):
 
 @blp.route("/files/<int:file_id>")
 class FileOnly(MethodView):
-    @blp.response(200, FileSchema(many=True))
+    @blp.response(200)
     def get(self, file_id):
         result = file_service.get_file_url(file_id)
         return result
+
+
+@blp.route(f"/{config.DefaultConfig.UPLOAD_FOLDER_NAME}/<filename>")
+class ServerUploads(MethodView):
+    @blp.response(200)
+    def get(self, filename):
+        return send_from_directory(config.DefaultConfig.UPLOAD_FOLDER, filename)

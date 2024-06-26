@@ -32,12 +32,10 @@ class Model(db.Model):
     sourceFileId = db.Column(db.Integer, nullable=False)
     outputFileId = db.Column(db.Integer, nullable=False)
 
-    projectId = db.Column(db.Integer, db.ForeignKey('projects.id'), nullable=False)
-    project = db.relationship("Project", back_populates="models", foreign_keys=[projectId])
+    projectId = db.Column(db.Integer, db.ForeignKey('projects.id', ondelete='CASCADE'), nullable=False)
 
     mesh = db.relationship("Mesh", back_populates="model", cascade="all, delete")
-    simulations = db.relationship("Simulation", back_populates="model", cascade="all, delete")
-    simulationRuns = db.relationship("SimulationRun", back_populates="model", cascade="all, delete")
+    simulations = db.relationship("Simulation", backref="model", cascade="all, delete")
 
     createdAt = db.Column(db.String(), default=datetime.now())
     updatedAt = db.Column(db.String(), default=datetime.now())

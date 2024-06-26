@@ -2,7 +2,9 @@ from flask.views import MethodView
 from flask_smorest import Blueprint
 
 from app.schemas.project_schema import (
-    ProjectCreateSchema, ProjectSchema, ProjectUpdateSchema, ProjectWithModelsSchema
+    ProjectCreateSchema, ProjectSchema, ProjectUpdateSchema, ProjectWithModelsSchema,
+    ProjectUpdateByGroupBodySchema,
+    ProjectUpdateByGroupQuerySchema
 )
 from app.services import project_service
 
@@ -24,6 +26,29 @@ class ProjectList(MethodView):
         return result
 
 
+@blp.route("/projects/updateByGroup")
+class ProjectGroupUpdate(MethodView):
+    @blp.arguments(ProjectUpdateByGroupQuerySchema, location='query')
+    @blp.arguments(ProjectUpdateByGroupBodySchema)
+    @blp.response(200)
+    def patch(self, query_data, body_data):
+        result = project_service.update_project_by_group(query_data['group'], body_data['newGroup'])
+        return {
+            'message': 'group name updated successfully'
+        }
+
+
+@blp.route("/projects/deleteByGroup")
+class ProjectGroupDelete(MethodView):
+    @blp.arguments(ProjectUpdateByGroupQuerySchema, location='query')
+    @blp.response(200)
+    def delete(self, query_data):
+        result = project_service.delete_project_by_group(query_data['group'])
+        return {
+            'message': 'group deleted successfully'
+        }
+
+
 @blp.route("/projects/<int:project_id>")
 class Project(MethodView):
     @blp.response(200, ProjectWithModelsSchema)
@@ -32,13 +57,12 @@ class Project(MethodView):
         return result
 
     @blp.arguments(ProjectUpdateSchema)
-    def patch(self, project_body, project_id):
-        result = project_service.update_project(project_body, project_id)
+    @blp.response(200, ProjectSchema)
+    def patch(self, query_data, project_id):
+        result = project_service.update_project(project_id, query_data)
         return result
 
-    @blp.response(200, ProjectSchema(many=True))
+    @blp.response(200, ProjectSchema)
     def delete(self, project_id):
         result = project_service.delete_project(project_id)
         return result
-
-# TODO: delete and update by group implementation comes here
