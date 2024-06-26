@@ -23,10 +23,13 @@ class ModelSchema(Schema):
 class ModelInfoSchema(Schema):
     id = fields.Integer(data_key="id")
     name = fields.String(data_key="modelName")
+    sourceFileId = fields.Integer(data_key="modelUploadId")
+    modelUrl = fields.Method("get_model_url", dump_only=True)
+
     projectTag = fields.String(data_key="projectTag", attribute="project.group")
     projectId = fields.Integer(data_key="projectId", attribute="project.id")
     projectName = fields.String(data_key="projectName", attribute="project.name")
-    sourceFileId = fields.Method("get_model_url", dump_only=True)
+
     simulationCount = fields.Function(lambda obj: obj.simulation_count)
 
     def get_model_url(self, obj):
