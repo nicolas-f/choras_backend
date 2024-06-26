@@ -1,8 +1,4 @@
-# Flask API REST Template
-
-[![Development](https://github.com/vectornguyen76/flask-rest-api-template/actions/workflows/development_pipeline.yml/badge.svg)](https://github.com/vectornguyen76/flask-rest-api-template/actions/workflows/development_pipeline.yml)
-[![Staging](https://github.com/vectornguyen76/flask-rest-api-template/actions/workflows/staging_pipeline.yml/badge.svg)](https://github.com/vectornguyen76/flask-rest-api-template/actions/workflows/staging_pipeline.yml)
-[![Production](https://github.com/vectornguyen76/flask-rest-api-template/actions/workflows/production_pipeline.yml/badge.svg)](https://github.com/vectornguyen76/flask-rest-api-template/actions/workflows/production_pipeline.yml)
+# Backend application [Room acoustics UI]
 
 <p align="center">
 <img src="./assets/logo.png" alt="Logo" />
@@ -29,7 +25,7 @@ Rest API template developed in Python with the Flask framework. The template cov
 
 ## Technology
 
-- **Operating System:** Ubuntu
+- **Operating System:** Windows, Ubuntu
 - **Web Framework:** Flask
 - **ORM:** Flask-sqlalchemy
 - **Swagger:** Swagger-UI
