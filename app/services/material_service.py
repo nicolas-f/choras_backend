@@ -22,7 +22,7 @@ def insert_initial_materials():
     if len(materials):
         return
     logger.info("Inserting initial materials")
-    with open(os.path.join(app_dir, 'models', 'materials.json')) as json_materials:
+    with open(os.path.join(app_dir, 'models', 'data', 'materials.json')) as json_materials:
         initial_materials = json.load(json_materials)
         try:
             new_materials = []

@@ -1,4 +1,9 @@
 from datetime import datetime
+from enum import Enum
+
+from sqlalchemy import JSON
+
+from app.types import TaskType, Setting, Status
 
 from app.db import db
 
@@ -23,21 +28,19 @@ from app.db import db
 # system: bool = False,
 # comment: Optional[str] = None,
 
-class Model(db.Model):
-    __tablename__ = "models"
+class Mesh(db.Model):
+    __tablename__ = "meshes"
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    name = db.Column(db.String, nullable=False)
 
-    sourceFileId = db.Column(db.Integer, nullable=False)
-    outputFileId = db.Column(db.Integer, nullable=False)
+    modelId = db.Column(db.Integer, db.ForeignKey('models.id'), nullable=False)
+    model = db.relationship("Model", back_populates="mesh", foreign_keys=[modelId])
 
-    projectId = db.Column(db.Integer, db.ForeignKey('projects.id'), nullable=False)
-    project = db.relationship("Project", back_populates="models", foreign_keys=[projectId])
+    taskId = db.Column(db.Integer, db.ForeignKey('tasks.id'), nullable=False)
+    task = db.relationship("Task", cascade="all, delete", foreign_keys=[taskId])
 
-    mesh = db.relationship("Mesh", back_populates="model", cascade="all, delete")
-    simulations = db.relationship("Simulation", back_populates="model", cascade="all, delete")
-    simulationRuns = db.relationship("SimulationRun", back_populates="model", cascade="all, delete")
+    simulation = db.relationship("Simulation", back_populates="mesh")
 
     createdAt = db.Column(db.String(), default=datetime.now())
     updatedAt = db.Column(db.String(), default=datetime.now())
+    completedAt = db.Column(db.String(), nullable=True)

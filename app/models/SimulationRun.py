@@ -1,6 +1,9 @@
 from datetime import datetime
 
+from app.types import Task, Setting, Status
+
 from app.db import db
+from sqlalchemy import JSON
 
 
 # name: Optional[str] = None,
@@ -23,21 +26,21 @@ from app.db import db
 # system: bool = False,
 # comment: Optional[str] = None,
 
-class Model(db.Model):
-    __tablename__ = "models"
+class SimulationRun(db.Model):
+    __tablename__ = "simulationRuns"
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    name = db.Column(db.String, nullable=False)
 
-    sourceFileId = db.Column(db.Integer, nullable=False)
-    outputFileId = db.Column(db.Integer, nullable=False)
+    modelId = db.Column(db.Integer, db.ForeignKey('models.id'), nullable=False)
+    model = db.relationship("Model", back_populates="simulationRuns", foreign_keys=[modelId])
 
-    projectId = db.Column(db.Integer, db.ForeignKey('projects.id'), nullable=False)
-    project = db.relationship("Project", back_populates="models", foreign_keys=[projectId])
+    simulationId = db.Column(db.Integer, db.ForeignKey('simulations.id'), nullable=True)
+    simulation = db.relationship("Simulation", foreign_keys=[simulationId])
 
-    mesh = db.relationship("Mesh", back_populates="model", cascade="all, delete")
-    simulations = db.relationship("Simulation", back_populates="model", cascade="all, delete")
-    simulationRuns = db.relationship("SimulationRun", back_populates="model", cascade="all, delete")
+    sources = db.Column(JSON, default=[])
+    percentage = db.Column(db.Integer, default=0)
+    status = db.Column(db.Enum(Status), default=Status.Created)
 
     createdAt = db.Column(db.String(), default=datetime.now())
     updatedAt = db.Column(db.String(), default=datetime.now())
+    completedAt = db.Column(db.String(), nullable=True)

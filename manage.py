@@ -5,9 +5,6 @@ import coverage
 from passlib.hash import pbkdf2_sha256
 
 from app.db import db
-from app.models import (
-    UserModel,
-)
 
 from app.services import (
     material_service
@@ -100,38 +97,14 @@ def drop_db():
     db.session.commit()
 
 
-def init_db_user():
-    # Insert User
-    password = pbkdf2_sha256.hash("123456")
-    admin_user = UserModel(username="admin", password=password)
-    normal_user = UserModel(username="user", password=password)
-    guest_user = UserModel(username="guest", password=password)
-    db.session.add_all([admin_user, normal_user, guest_user])
-    db.session.commit()
-
-
-def create_user_admin(username="admin"):
-    """
-    Create User Admin.
-    """
-    admin = UserModel.query.filter_by(username=username).first()
-
-    if admin is None:
-        print("user-admin is not created before!")
-        init_db_user()
-    else:
-        print("user-admin is created!")
-
-
 def init_app(app):
     if app.config["APP_ENV"] == "production":
-        commands = [create_db, reset_db, drop_db, create_user_admin]
+        commands = [create_db, reset_db, drop_db]
     else:
         commands = [
             create_db,
             reset_db,
             drop_db,
-            create_user_admin,
             tests,
             cov_html,
             cov,

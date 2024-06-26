@@ -67,6 +67,8 @@ class DefaultConfig:
         os.makedirs(UPLOAD_FOLDER)
 
 
+
+
 class DevelopConfig(DefaultConfig):
     # App environment
     APP_ENV = DefaultConfig.APP_ENV_DEVELOP

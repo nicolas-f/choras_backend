@@ -23,21 +23,16 @@ from app.db import db
 # system: bool = False,
 # comment: Optional[str] = None,
 
-class Model(db.Model):
-    __tablename__ = "models"
+class Geometry(db.Model):
+    __tablename__ = "geometries"
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    name = db.Column(db.String, nullable=False)
 
-    sourceFileId = db.Column(db.Integer, nullable=False)
-    outputFileId = db.Column(db.Integer, nullable=False)
+    inputModelUploadId = db.Column(db.Integer, nullable=False)
+    outputModelId = db.Column(db.Integer, nullable=True)
 
-    projectId = db.Column(db.Integer, db.ForeignKey('projects.id'), nullable=False)
-    project = db.relationship("Project", back_populates="models", foreign_keys=[projectId])
-
-    mesh = db.relationship("Mesh", back_populates="model", cascade="all, delete")
-    simulations = db.relationship("Simulation", back_populates="model", cascade="all, delete")
-    simulationRuns = db.relationship("SimulationRun", back_populates="model", cascade="all, delete")
+    taskId = db.Column(db.Integer, db.ForeignKey('tasks.id'), nullable=False)
+    task = db.relationship("Task", cascade="all, delete", foreign_keys=[taskId])
 
     createdAt = db.Column(db.String(), default=datetime.now())
     updatedAt = db.Column(db.String(), default=datetime.now())
