@@ -32,7 +32,7 @@ class Project(MethodView):
         return result
 
     @blp.arguments(ProjectUpdateSchema)
-    def put(self, project_body, project_id):
+    def patch(self, project_body, project_id):
         result = project_service.update_project(project_body, project_id)
         return result
 

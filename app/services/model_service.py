@@ -33,7 +33,7 @@ def get_model(model_id):
     return results
 
 
-def update_model(model_data, model_id):
+def update_model(model_id, model_data):
     model = Model.query.filter_by(id=model_id).first()
     if not model:
         logger.error("Model doesn't exist, cannot update!")

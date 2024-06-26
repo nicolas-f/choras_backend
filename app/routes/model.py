@@ -26,11 +26,12 @@ class Model(MethodView):
         return result
 
     @blp.arguments(ModelUpdateSchema)
-    def put(self, model_body, model_id):
-        result = model_service.update_model(model_body, model_id)
+    @blp.response(200, ModelSchema)
+    def patch(self, body_data, model_id):
+        result = model_service.update_model(model_id, body_data)
         return result
 
-    @blp.response(200, ModelSchema(many=True))
+    @blp.response(200, ModelSchema)
     def delete(self, model_id):
         result = model_service.delete_model(model_id)
         return result
