@@ -2,7 +2,7 @@ from flask.views import MethodView
 from flask_smorest import Blueprint
 from flask_smorest import abort
 
-from app.schemas.model import ModelCreateSchema, ModelSchema, ModelUpdateSchema
+from app.schemas.model_schema import ModelCreateSchema, ModelSchema, ModelUpdateSchema
 from app.services import model_service
 
 blp = Blueprint("Model", __name__, description="Model API")
@@ -11,9 +11,10 @@ blp = Blueprint("Model", __name__, description="Model API")
 @blp.route("/models")
 class ModelList(MethodView):
 
-    @blp.arguments(ModelCreateSchema)
-    def post(self, model_data):
-        result = model_service.create_new_model(model_data)
+    @blp.arguments(ModelCreateSchema, location='query')
+    @blp.response(200, ModelSchema)
+    def post(self, query_data):
+        result = model_service.create_new_model(query_data)
         return result
 
 

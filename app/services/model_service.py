@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 def create_new_model(model_data):
     new_model = Model(
         name=model_data["name"],
-        projectId=model_data["project"],
+        projectId=model_data["projectId"],
         sourceFileId=model_data["sourceFileId"],
         outputFileId=model_data["sourceFileId"]
     )

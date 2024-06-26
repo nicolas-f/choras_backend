@@ -92,13 +92,14 @@ def map_to_3dm(geometry_id):
         file3dm = File(
             fileName=f"{file_name}.3dm"
         )
+        db.session.add(file3dm)
+        db.session.commit()
         geometry.outputModelId = file3dm.id
 
         # Create a zip file from 3dm
         with zipfile.ZipFile(zip_file_path, 'w') as zipf:
             zipf.write(directory, arcname=f"{file_name}.3dm")
 
-        db.session.add(file3dm)
         db.session.commit()
     except Exception as ex:
         db.session.rollback()

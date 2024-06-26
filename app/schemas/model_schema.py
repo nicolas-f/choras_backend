@@ -8,7 +8,6 @@ class ModelSchema(Schema):
     outputFileId = fields.Integer()
 
     projectId = fields.Integer()
-    project = fields.Dict()
 
     createdAt = fields.Str()
     updatedAt = fields.Str()
