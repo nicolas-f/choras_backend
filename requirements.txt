@@ -79,3 +79,5 @@ zipp==3.15.0
 trimesh
 numpy
 rhino3dm
+pillow
+pyglet==1.5.29

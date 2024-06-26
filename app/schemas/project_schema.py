@@ -1,5 +1,6 @@
 from marshmallow import Schema, fields
 from app.schemas.model_schema import ModelSchema
+from app.models import Project
 
 
 class ProjectSchema(Schema):

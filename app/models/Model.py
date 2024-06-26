@@ -39,3 +39,7 @@ class Model(db.Model):
 
     createdAt = db.Column(db.String(), default=datetime.now())
     updatedAt = db.Column(db.String(), default=datetime.now())
+
+    @property
+    def simulation_count(self):
+        return len(self.simulations) # Assuming 'simulations' is the backref in Simulation model

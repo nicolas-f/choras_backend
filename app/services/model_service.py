@@ -3,6 +3,7 @@ from flask_smorest import abort
 
 from app.db import db
 from app.models import Model
+from app.services import file_service
 
 # Create logger for this module
 logger = logging.getLogger(__name__)
@@ -29,8 +30,10 @@ def create_new_model(model_data):
 
 
 def get_model(model_id):
-    results = Model.query.filter_by(id=model_id).first()
-    return results
+    model = Model.query.filter_by(id=model_id).first()
+    if not model:
+        abort(404, message="Model does not exist")
+    return model
 
 
 def update_model(model_id, model_data):

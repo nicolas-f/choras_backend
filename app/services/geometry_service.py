@@ -73,6 +73,7 @@ def map_to_3dm(geometry_id):
     obj_path = os.path.join(directory, file.fileName)
     obj_clean_path = os.path.join(directory, f"{file_name}_clean{file_extension}")
     rhino3dm_path = os.path.join(directory, f"{file_name}.3dm")
+    png_path = os.path.join(directory, f"{file_name}.png")
     zip_file_path = os.path.join(directory, f"{file_name}.zip")
     try:
         task.status = Status.InProgress
@@ -83,7 +84,7 @@ def map_to_3dm(geometry_id):
 
     clean_obj_file(obj_path, obj_clean_path)
 
-    convert_obj_to_3dm(obj_clean_path, rhino3dm_path)
+    convert_obj_to_3dm(obj_clean_path, rhino3dm_path, png_path)
 
     if not os.path.exists(rhino3dm_path):
         return False
@@ -98,7 +99,7 @@ def map_to_3dm(geometry_id):
 
         # Create a zip file from 3dm
         with zipfile.ZipFile(zip_file_path, 'w') as zipf:
-            zipf.write(directory, arcname=f"{file_name}.3dm")
+            zipf.write(rhino3dm_path, arcname=f"{file_name}.3dm")
 
         db.session.commit()
     except Exception as ex:
@@ -130,10 +131,11 @@ def clean_obj_file(obj_file_path, obj_clean_path):
                 outfile.write(line)
 
 
-def convert_obj_to_3dm(obj_clean_path, rhino_path):
+def convert_obj_to_3dm(obj_clean_path, rhino_path, png_path):
     print(rhino_path)
     # Load the OBJ file using trimesh
     scene = trimesh.load(obj_clean_path, group_material=False, skip_materials=False, maintain_order=True)
+
 
     # Create a new 3dm file
     model = rhino3dm.File3dm()

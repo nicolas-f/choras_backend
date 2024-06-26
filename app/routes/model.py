@@ -2,7 +2,12 @@ from flask.views import MethodView
 from flask_smorest import Blueprint
 from flask_smorest import abort
 
-from app.schemas.model_schema import ModelCreateSchema, ModelSchema, ModelUpdateSchema
+from app.schemas.model_schema import (
+    ModelCreateSchema,
+    ModelSchema,
+    ModelUpdateSchema,
+    ModelInfoSchema
+)
 from app.services import model_service
 
 blp = Blueprint("Model", __name__, description="Model API")
@@ -20,7 +25,7 @@ class ModelList(MethodView):
 
 @blp.route("/models/<int:model_id>")
 class Model(MethodView):
-    @blp.response(200, ModelSchema(many=True))
+    @blp.response(200, ModelInfoSchema)
     def get(self, model_id):
         result = model_service.get_model(model_id)
         return result
