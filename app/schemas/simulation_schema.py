@@ -1,4 +1,4 @@
-from marshmallow import Schema, fields, post_load
+from marshmallow import Schema, fields, post_load, EXCLUDE
 from app.types import TaskType, Status, Setting
 
 
@@ -31,11 +31,22 @@ class SimulationSchema(SimulationCreateBodySchema):
     taskType = fields.Enum(TaskType, required=True)
     settingsPreset = fields.Enum(Setting, required=True)
     status = fields.Enum(Status, required=True)
-    simulationRunId = fields.Integer()
-    meshId = fields.Integer()
+    simulationRunId = fields.Integer(allow_none=True)
+    meshId = fields.Integer(allow_none=True)
     createdAt = fields.String()
     updatedAt = fields.String()
-    completedAt = fields.String()
+    completedAt = fields.String(allow_none=True)
+
+
+class SimulationUpdateBodySchema(SimulationSchema):
+    class Meta:
+        id = EXCLUDE  # To ignore the field
+        status = EXCLUDE
+        simulationRunId = EXCLUDE
+        createdAt = EXCLUDE
+        updatedAt = EXCLUDE
+        completedAt = EXCLUDE
+        modelId = EXCLUDE
 
 
 class SimulationRunSchema(Schema):

@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 from flask_smorest import abort
 
 from app.db import db
@@ -25,31 +26,39 @@ def create_new_simulation(simulation_data):
     return new_simulation
 
 
+def update_simulation_by_id(simulation_data, simulation_id):
+    print('I came inside')
+    simulation = get_simulation_by_id(simulation_id)
+    if simulation is None:
+        abort(400, 'Simulation not found')
+
+    try:
+        for key, value in simulation_data.items():
+            setattr(simulation, key, value)
+
+        simulation.updatedAt = datetime.now()
+        db.session.commit()
+
+    except Exception as ex:
+        db.session.rollback()
+        logger.error(f"Can not update the simulation: {ex}")
+        abort(400, message=f"Can not update the simulation: {ex}")
+
+    return simulation
+
+
 def get_simulation_by_model_id(model_id):
     return Simulation.query.filter_by(
         modelId=model_id
     ).all()
 
 
+def get_simulation_by_id(simulation_id):
+    return Simulation.query.get(simulation_id)
+
+
 def get_simulation_run():
     return SimulationRun.query.all()
-
-
-def update_model(model_id, model_data):
-    model = Simulation.query.filter_by(id=model_id).first()
-    if not model:
-        logger.error("Simulation doesn't exist, cannot update!")
-        abort(400, message="Simulation doesn't exist, cannot update!")
-
-    try:
-        model.name = model_data["name"]
-        db.session.commit()
-    except Exception as ex:
-        db.session.rollback()
-        logger.error(f"Can not update! Error: {ex}")
-        abort(400, message=f"Can not update! Error: {ex}")
-
-    return model
 
 
 def delete_model(model_id):

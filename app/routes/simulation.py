@@ -5,7 +5,8 @@ from app.schemas.simulation_schema import (
     SimulationByModelQuerySchema,
     SimulationSchema,
     SimulationRunSchema,
-    SimulationCreateBodySchema
+    SimulationCreateBodySchema,
+    SimulationUpdateBodySchema
 )
 from app.services import simulation_service
 
@@ -30,7 +31,21 @@ class SimulationList(MethodView):
         result = simulation_service.create_new_simulation(validated_data)
         return result
 
-# TODO implement :simulationId routes
+
+@blp.route("/simulations/<int:simulation_id>")
+class SimulationList(MethodView):
+    @blp.response(200, SimulationSchema)
+    def get(self, simulation_id):
+        result = simulation_service.get_simulation_by_id(simulation_id)
+        return result
+
+    @blp.arguments(SimulationUpdateBodySchema)
+    @blp.response(200, SimulationSchema)
+    def put(self, body_data, simulation_id):
+        print('nsald')
+        result = simulation_service.update_simulation_by_id(body_data, simulation_id)
+        return result
+
 
 @blp.route("/simulations/run")
 class SimulationRunList(MethodView):
