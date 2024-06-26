@@ -55,23 +55,23 @@ def update_project(project_id, project_data):
 
 
 def delete_project(project_id):
-    result = Project.query.filter_by(id=project_id)
-    if not result:
-        logger.error("Project doesn't exist, cannot delete!")
-        abort(400, message="Project doesn't exist, cannot delete!")
-    result.delete()
-    db.session.commit()
-    return result
+    try:
+        Project.query.filter_by(id=project_id).delete()
+        db.session.commit()
+    except Exception as ex:
+        db.session.rollback()
+        logger.error(f"Error deleting project!: {ex}")
+        abort(500, message=f"Error deleting project!: {ex}")
 
 
 def delete_project_by_group(group):
-    result = Project.query.filter_by(group=group).delete()
-    if not result:
-        logger.error("Group doesn't exist, cannot delete!")
-        abort(400, message="Group doesn't exist, cannot delete!")
-
-    db.session.commit()
-    return result
+    try:
+        Project.query.filter_by(group=group).delete()
+        db.session.commit()
+    except Exception as ex:
+        db.session.rollback()
+        logger.error(f"Error deleting project groups!: {ex}")
+        abort(500, message=f"Error deleting project groups!: {ex}")
 
 
 def update_project_by_group(group, new_group):

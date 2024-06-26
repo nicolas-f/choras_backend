@@ -21,7 +21,7 @@ class GeometryList(MethodView):
         return result
 
     @blp.arguments(GeometryStartQuerySchema, location='query')
-    @blp.response(200, GeometrySchema)
+    @blp.response(201, GeometrySchema)
     def post(self, geometry_data):
         result = geometry_service.start_geometry_check_task(geometry_data['fileUploadId'])
         return result

@@ -20,7 +20,7 @@ class ProjectList(MethodView):
         return projects
 
     @blp.arguments(ProjectCreateSchema)
-    @blp.response(200, ProjectSchema)
+    @blp.response(201, ProjectSchema)
     def post(self, body_data):
         result = project_service.create_new_project(body_data)
         return result
@@ -43,7 +43,7 @@ class ProjectGroupDelete(MethodView):
     @blp.arguments(ProjectUpdateByGroupQuerySchema, location='query')
     @blp.response(200)
     def delete(self, query_data):
-        result = project_service.delete_project_by_group(query_data['group'])
+        project_service.delete_project_by_group(query_data['group'])
         return {
             'message': 'group deleted successfully'
         }
@@ -62,7 +62,9 @@ class Project(MethodView):
         result = project_service.update_project(project_id, query_data)
         return result
 
-    @blp.response(200, ProjectSchema)
+    @blp.response(200)
     def delete(self, project_id):
-        result = project_service.delete_project(project_id)
-        return result
+        project_service.delete_project(project_id)
+        return {
+            "message": "Project deleted successfully!"
+        }

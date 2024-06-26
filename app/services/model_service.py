@@ -54,10 +54,10 @@ def update_model(model_id, model_data):
 
 
 def delete_model(model_id):
-    result = Model.query.filter_by(id=model_id).delete()
-    if not result:
-        logger.error("Model doesn't exist, cannot delete!")
-        abort(400, message="Model doesn't exist, cannot delete!")
-
-    db.session.commit()
-    return result
+    try:
+        Model.query.filter_by(id=model_id).delete()
+        db.session.commit()
+    except Exception as ex:
+        db.session.rollback()
+        logger.error(f"Error deleting the model!: {ex}")
+        abort(500, message=f"Error deleting the model!: {ex}")

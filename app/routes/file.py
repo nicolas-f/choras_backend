@@ -19,7 +19,7 @@ class FileList(MethodView):
 
     @blp.arguments(FileCreateQuerySchema, location='query')
     @blp.arguments(FileCreateBodySchema, location='files')
-    @blp.response(200, FileSchema)
+    @blp.response(201, FileSchema)
     def post(self, query_data, body_data):
         if 'file' not in body_data:
             abort(404, "No file provided!")

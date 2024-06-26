@@ -6,7 +6,7 @@ from app.schemas.simulation_schema import (
     SimulationSchema,
     SimulationRunSchema,
     SimulationCreateBodySchema,
-    SimulationUpdateBodySchema
+    SimulationUpdateBodySchema,
 )
 from app.services import simulation_service
 
@@ -24,7 +24,7 @@ class SimulationList(MethodView):
         return result
 
     @blp.arguments(SimulationCreateBodySchema)
-    @blp.response(200, SimulationSchema)
+    @blp.response(201, SimulationSchema)
     def post(self, body_data):
         schema = SimulationCreateBodySchema()
         validated_data = schema.load(body_data)
@@ -42,9 +42,15 @@ class SimulationList(MethodView):
     @blp.arguments(SimulationUpdateBodySchema)
     @blp.response(200, SimulationSchema)
     def put(self, body_data, simulation_id):
-        print('nsald')
         result = simulation_service.update_simulation_by_id(body_data, simulation_id)
         return result
+
+    @blp.response(200)
+    def delete(self, simulation_id):
+        simulation_service.delete_simulation(simulation_id)
+        return {
+            "message": "Simulation deleted successfully!"
+        }
 
 
 @blp.route("/simulations/run")

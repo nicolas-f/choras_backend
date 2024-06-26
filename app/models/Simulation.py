@@ -28,6 +28,7 @@ class Simulation(db.Model):
     modelId = db.Column(db.Integer, db.ForeignKey('models.id', ondelete='CASCADE'), nullable=False)
 
     simulationRunId = db.Column(db.Integer, db.ForeignKey('simulationRuns.id', ondelete='CASCADE'), nullable=True)
+    # TODO: handle simulationRun backdref and cascade here
 
     meshId = db.Column(db.Integer, db.ForeignKey('meshes.id'), nullable=True)
     mesh = db.relationship("Mesh", back_populates="simulation", foreign_keys=[meshId])

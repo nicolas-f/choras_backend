@@ -27,7 +27,6 @@ def create_new_simulation(simulation_data):
 
 
 def update_simulation_by_id(simulation_data, simulation_id):
-    print('I came inside')
     simulation = get_simulation_by_id(simulation_id)
     if simulation is None:
         abort(400, 'Simulation not found')
@@ -61,11 +60,14 @@ def get_simulation_run():
     return SimulationRun.query.all()
 
 
-def delete_model(model_id):
-    result = Simulation.query.filter_by(id=model_id).delete()
-    if not result:
-        logger.error("Simulation doesn't exist, cannot delete!")
-        abort(400, message="Simulation doesn't exist, cannot delete!")
+def delete_simulation(simulation_id):
+    try:
+        Simulation.query.filter_by(
+            id=simulation_id
+        ).delete()
+        db.session.commit()
 
-    db.session.commit()
-    return result
+    except Exception as ex:
+        db.session.rollback()
+        logger.error(f"Error deleting the simulation: {ex}")
+        abort(500, message=f"Error deleting the simulation: {ex}")

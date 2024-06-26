@@ -17,7 +17,7 @@ blp = Blueprint("Model", __name__, description="Model API")
 class ModelList(MethodView):
 
     @blp.arguments(ModelCreateSchema, location='query')
-    @blp.response(200, ModelSchema)
+    @blp.response(201, ModelSchema)
     def post(self, query_data):
         result = model_service.create_new_model(query_data)
         return result
@@ -36,7 +36,9 @@ class Model(MethodView):
         result = model_service.update_model(model_id, body_data)
         return result
 
-    @blp.response(200, ModelSchema)
+    @blp.response(200)
     def delete(self, model_id):
-        result = model_service.delete_model(model_id)
-        return result
+        model_service.delete_model(model_id)
+        return {
+            "message": "Model deleted successfully!"
+        }
