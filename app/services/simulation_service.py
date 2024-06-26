@@ -2,22 +2,19 @@ import logging
 from flask_smorest import abort
 
 from app.db import db
-from app.models import Simulation
+from app.models import Simulation, SimulationRun
 
 # Create logger for this module
 logger = logging.getLogger(__name__)
 
 
-def create_new_model(model_data):
-    new_model = Simulation(
-        name=model_data["name"],
-        projectId=model_data["projectId"],
-        sourceFileId=model_data["sourceFileId"],
-        outputFileId=model_data["sourceFileId"]
+def create_new_simulation(simulation_data):
+    new_simulation = Simulation(
+        **simulation_data
     )
 
     try:
-        db.session.add(new_model)
+        db.session.add(new_simulation)
         db.session.commit()
 
     except Exception as ex:
@@ -25,7 +22,7 @@ def create_new_model(model_data):
         logger.error(f"Can not create a new model: {ex}")
         abort(400, message=f"Can not create a new model: {ex}")
 
-    return new_model
+    return new_simulation
 
 
 def get_simulation_by_model_id(model_id):
@@ -35,7 +32,7 @@ def get_simulation_by_model_id(model_id):
 
 
 def get_simulation_run():
-    return Simulation.query.all()
+    return SimulationRun.query.all()
 
 
 def update_model(model_id, model_data):

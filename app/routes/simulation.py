@@ -4,7 +4,8 @@ from flask_smorest import Blueprint
 from app.schemas.simulation_schema import (
     SimulationByModelQuerySchema,
     SimulationSchema,
-    SimulationRunSchema
+    SimulationRunSchema,
+    SimulationCreateBodySchema
 )
 from app.services import simulation_service
 
@@ -21,11 +22,13 @@ class SimulationList(MethodView):
         )
         return result
 
-    # @blp.arguments(SimulationCreateSchema, location='query')
-    # @blp.response(200, SimulationSchema)
-    # def post(self, query_data):
-    #     result = model_service.create_new_model(query_data)
-    #     return result
+    @blp.arguments(SimulationCreateBodySchema)
+    @blp.response(200, SimulationSchema)
+    def post(self, body_data):
+        schema = SimulationCreateBodySchema()
+        validated_data = schema.load(body_data)
+        result = simulation_service.create_new_simulation(validated_data)
+        return result
 
 
 @blp.route("/simulations/run")

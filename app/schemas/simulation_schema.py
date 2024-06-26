@@ -1,6 +1,5 @@
 from marshmallow import Schema, fields, post_load
-from app.services import file_service
-
+from app.types import TaskType, Status, Setting
 
 class SimulationSchema(Schema):
     id = fields.Integer()
@@ -10,20 +9,41 @@ class SimulationSchema(Schema):
 
     sources = fields.List(fields.Dict())
     receivers = fields.List(fields.Dict())
-    taskType = fields.String()
+    taskType = fields.Enum(TaskType, required=True)
     modelSettings = fields.Dict()
-    settingsPreset = fields.String()
+    settingsPreset = fields.Enum(Setting, required=True)
     solverSettings = fields.Dict()
-    status = fields.String()
+    status = fields.Enum(Status, required=True)
 
     modelId = fields.Integer()
     simulationRunId = fields.Integer()
 
     meshId = fields.Integer()
 
-    createdAt = fields.DateTime(format="%Y-%m-%d %H:%M:%S")
-    updatedAt = fields.DateTime(format="%Y-%m-%d %H:%M:%S")
-    completedAt = fields.DateTime(format="%Y-%m-%d %H:%M:%S")
+    createdAt = fields.String()
+    updatedAt = fields.String()
+    completedAt = fields.String()
+
+
+class ModelSettingsSchema(Schema):
+    materialIdByObjectId = fields.Dict()
+    scatteringByObjectId = fields.Dict()
+
+
+class SolverSettingsSchema(Schema):
+    dgSettings = fields.Dict()
+    gaSettings = fields.Dict()
+
+
+class SimulationCreateBodySchema(Schema):
+    modelId = fields.Integer(required=True)
+    name = fields.String(required=True)
+
+    description = fields.String(required=False)
+    simulationRun = fields.Integer(required=False)
+
+    modelSettings = fields.Nested(ModelSettingsSchema)
+    solverSettings = fields.Nested(SolverSettingsSchema)
 
 
 class SimulationRunSchema(Schema):
@@ -45,9 +65,9 @@ class SimulationRunSchema(Schema):
 
     meshId = fields.Integer()
 
-    createdAt = fields.DateTime(format="%Y-%m-%d %H:%M:%S")
-    updatedAt = fields.DateTime(format="%Y-%m-%d %H:%M:%S")
-    completedAt = fields.DateTime(format="%Y-%m-%d %H:%M:%S")
+    createdAt = fields.String()
+    updatedAt = fields.String()
+    completedAt = fields.String()
 
 
 class SimulationByModelQuerySchema(Schema):
