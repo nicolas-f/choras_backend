@@ -82,10 +82,15 @@ def consume(slot):
     return file
 
 
-def get_file_url(file_id):
-    file = File.query.filter_by(id=file_id).first()
+def get_file_by_id(file_id):
+    file = File.query.get(file_id)
     if not file:
         logger.error('File with id ' + str(file_id) + 'does not exists!')
         abort(400, message="File doesn't exists!")
+    return file
+
+
+def get_file_url(file_id):
+    file = get_file_by_id(file_id)
 
     return f"http://{os.getenv('FLASK_RUN_HOST')}:{os.getenv('FLASK_RUN_PORT')}/uploads/{file.fileName.replace('.3dm', '.zip')}"

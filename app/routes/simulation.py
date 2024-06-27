@@ -59,3 +59,7 @@ class SimulationRunList(MethodView):
     def get(self):
         result = simulation_service.get_simulation_run()
         return result
+
+
+# TODO: implement route for /simulations/run/:simulationrunId
+# TODO: implement route for /simulations/run/status/:simulationsrunId

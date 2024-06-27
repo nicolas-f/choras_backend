@@ -81,3 +81,4 @@ numpy
 rhino3dm
 pillow
 pyglet==1.5.29
+Sphinx

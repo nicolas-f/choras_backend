@@ -31,7 +31,6 @@ class Simulation(db.Model):
     # TODO: handle simulationRun backdref and cascade here
 
     meshId = db.Column(db.Integer, db.ForeignKey('meshes.id'), nullable=True)
-    mesh = db.relationship("Mesh", back_populates="simulation", foreign_keys=[meshId])
 
     createdAt = db.Column(db.String(), default=datetime.now())
     updatedAt = db.Column(db.String(), default=datetime.now())

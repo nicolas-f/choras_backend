@@ -68,3 +68,5 @@ class Project(MethodView):
         return {
             "message": "Project deleted successfully!"
         }
+
+# TODO: projects with simulations routes /projects/simulations
