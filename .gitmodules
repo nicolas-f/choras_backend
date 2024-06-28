@@ -1,0 +1,3 @@
+[submodule "Diffusion"]
+	path = Diffusion
+	url = https://github.com/Building-acoustics-TU-Eindhoven/Diffusion.git
