@@ -5,6 +5,7 @@ import rhino3dm
 import os
 import config
 import gmsh
+from Diffusion.FiniteVolumeMethod.CreateMeshFVM import generate_mesh
 
 from app.models import Mesh
 
@@ -35,7 +36,9 @@ def start_mesh_task(model_id):
     )
     rhino3dm_path = os.path.join(directory, f"{file_name}.3dm")
     geo_path = os.path.join(directory, f"{file_name}.geo")
+    msh_path = os.path.join(directory, f"{file_name}.msh")
     generate_geo_file(rhino3dm_path, geo_path)
+    generate_mesh(geo_path, msh_path, 1)
 
     # create a new task with type mesh
     # create a mesh
@@ -61,14 +64,6 @@ def generate_geo_file(rhino_file_path, geo_file_path):
     # Iterate over the objects in the 3dm model
     for obj in model.Objects:
         if isinstance(obj.Geometry, rhino3dm.Mesh):
-
-            # TODO: try to continue with the mesh generation and later you will come back and think about this problem
-            # for next week u shoul try to generate .msh file from Ilaria's code
-            # then try to run her codes as well
-
-            # problem: vertices are not unique. they cause problem
-            # print out the vertices along with a separation for each face
-            # then you could quantify which vertice was there already
 
             faces = obj.Geometry.Faces
             faces.ConvertTrianglesToQuads(0.5, 0)
