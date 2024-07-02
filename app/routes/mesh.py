@@ -5,6 +5,7 @@ from app.schemas.mesh_schema import (
     MeshQuerySchema,
     MeshSchema,
     MeshWithTaskSchema,
+    GeoQuerySchema
 )
 from app.services import mesh_service
 
@@ -26,11 +27,20 @@ class MeshList(MethodView):
         return result
 
 
+@blp.route("/meshes/geo")
+class MeshGeo(MethodView):
+    @blp.arguments(GeoQuerySchema, location='query')
+    @blp.response(200)
+    def post(self, query_data):
+        return mesh_service.attach_geo_file(query_data['modelId'], query_data['fileUploadId'])
+
+
 @blp.route("/meshes/active")
 class Mesh(MethodView):
     @blp.response(200)
     def get(self):
         return []
+
 
 # TODO:: implement route for /meshes/result
 

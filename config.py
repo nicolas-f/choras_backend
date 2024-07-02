@@ -61,7 +61,7 @@ class DefaultConfig:
 
     UPLOAD_FOLDER_NAME = "uploads"
     UPLOAD_FOLDER = f"{basedir}/{UPLOAD_FOLDER_NAME}"
-    ALLOWED_EXTENSIONS = {'obj'}
+    ALLOWED_EXTENSIONS = {'obj', 'geo'}
 
     # Ensure the upload folder exists
     if not os.path.exists(UPLOAD_FOLDER):

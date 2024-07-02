@@ -131,21 +131,43 @@ def clean_obj_file(obj_file_path, obj_clean_path):
                 outfile.write(line)
 
 
-def convert_obj_to_3dm(obj_clean_path, rhino_path, png_path):
-    print(rhino_path)
-    # Load the OBJ file using trimesh
-    scene = trimesh.load(obj_clean_path, group_material=False, skip_materials=False, maintain_order=True)
+def parse_obj_materials(obj_path):
+    material_map = {}
+    face_index = 0
 
+    with open(obj_path, 'r') as f:
+        for line in f:
+            line = line.strip()
+            if line.startswith('usemtl'):
+                material_map[face_index] = line.split()[1]
+                face_index += 1
+    return material_map
+
+
+def convert_obj_to_3dm(obj_clean_path, rhino_path, png_path):
+    # Load the OBJ file using trimesh
+    scene = trimesh.load(
+        obj_clean_path,
+        group_material=False,
+        skip_materials=False,
+        maintain_order=True,
+        Process=False
+    )
 
     # Create a new 3dm file
     model = rhino3dm.File3dm()
 
+    # Parse OBJ materials
+    material_map = parse_obj_materials(obj_clean_path)
+
     # Check if the loaded object is a scene with multiple geometries
     if isinstance(scene, trimesh.Scene):
-        meshes = scene.dump()
+        meshes = scene.dump(False)
+        meshes.reverse()
     else:
         meshes = [scene]
-
+    print('_____________________')
+    print(meshes)
     # Define a 90-degree rotation matrix around the X-axis
     rotation_matrix = np.array([
         [1, 0, 0],
@@ -153,7 +175,7 @@ def convert_obj_to_3dm(obj_clean_path, rhino_path, png_path):
         [0, 1, 0]
     ])
 
-    for mesh in meshes:
+    for mesh_index, mesh in enumerate(meshes):
         vertices = mesh.vertices
         faces = mesh.faces
 
@@ -162,16 +184,16 @@ def convert_obj_to_3dm(obj_clean_path, rhino_path, png_path):
         for vertex in vertices:
             rotated_vertex = np.dot(rotation_matrix, vertex)
             rhino_mesh.Vertices.Add(rotated_vertex[0], rotated_vertex[1], rotated_vertex[2])
-            # rhino_mesh.Vertices.Add(vertex[0], vertex[2], vertex[1])  # Swap Y and Z axes
-            # rhino_mesh.Vertices.Add(vertex[0], vertex[1], vertex[2]) # X, Y, Z
 
-        for face in faces:
+        for face_index, face in enumerate(faces):
             if len(face) == 3:  # Triangular face
                 rhino_mesh.Faces.AddFace(face[0], face[1], face[2])
             elif len(face) == 4:  # Quad face
                 rhino_mesh.Faces.AddFace(face[0], face[1], face[2], face[3])
 
+        rhino_mesh.SetUserString('material_name', str(material_map[mesh_index]))
         model.Objects.AddMesh(rhino_mesh)
+        # rhino_mesh.Attributes
 
     # Save the 3dm file
     model.Write(rhino_path)

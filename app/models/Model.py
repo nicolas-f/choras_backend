@@ -36,9 +36,11 @@ class Model(db.Model):
 
     mesh = db.relationship("Mesh", backref="model", cascade="all, delete")
     simulations = db.relationship("Simulation", backref="model", cascade="all, delete")
+    hasGeo = db.Column(db.Boolean, nullable=False, default=False)
 
     createdAt = db.Column(db.String(), default=datetime.now())
     updatedAt = db.Column(db.String(), default=datetime.now())
+
 
     @property
     def simulation_count(self):
