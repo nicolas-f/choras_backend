@@ -51,7 +51,7 @@ with provisions for PostgreSQL as an alternative.
 - [Anaconda/Miniconda](instructions/anaconda-miniconda.md)
 - [Docker](instructions/docker-dockercompose.md)
 - [Docker-Compose](instructions/docker-dockercompose.md)
-- Other requirements such as python libraries etc.
+- Other requirements such as python libraries and so on.
 
 ## Environments
 
