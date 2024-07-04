@@ -1,5 +1,4 @@
 from marshmallow import Schema, fields, post_load
-from app.services import file_service
 from app.schemas.task_schema import TaskSchema
 
 
@@ -11,7 +10,6 @@ from app.schemas.task_schema import TaskSchema
 
 class MeshSchema(Schema):
     id = fields.Number()
-    modelId = fields.Integer()
     taskId = fields.Integer()
 
     createdAt = fields.Str()

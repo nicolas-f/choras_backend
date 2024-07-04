@@ -17,7 +17,6 @@ class SimulationCreateBodySchema(Schema):
     name = fields.String(required=True)
 
     description = fields.String(required=False)
-    simulationRun = fields.Integer(required=False)
 
     modelSettings = fields.Nested(ModelSettingsSchema)
     solverSettings = fields.Nested(SolverSettingsSchema)

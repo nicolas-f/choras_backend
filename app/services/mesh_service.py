@@ -18,9 +18,8 @@ logger = logging.getLogger(__name__)
 
 
 def get_meshes_by_model_id(model_id):
-    return Mesh.query.filter_by(
-        modelId=model_id
-    ).all()
+    model = model_service.get_model(model_id)
+    return [model.mesh] if model.mesh else []
 
 
 def get_mesh_by_id(mesh_id):
@@ -28,10 +27,6 @@ def get_mesh_by_id(mesh_id):
     if not mesh:
         abort(404, message="Mesh does not exist")
     return mesh
-
-
-def get_mesh_result_by_id(mesh_id):
-    pass
 
 
 def attach_geo_file(model_id, file_input_id):
@@ -127,19 +122,20 @@ def start_mesh_task(model_id):
     geo_path = os.path.join(directory, f"{file_name}.geo")
     msh_path = os.path.join(directory, f"{file_name}.msh")
     try:
-        Mesh.query.filter_by(modelId=model_id).delete()
-        db.session.commit()
+        if model_db.meshId:
+            Mesh.query.filter_by(id=model_db.meshId).delete()
         task = Task(
             taskType=TaskType.Mesh,
         )
         db.session.add(task)
         db.session.commit()
         mesh = Mesh(
-            modelId=model_id,
             taskId=task.id
         )
 
         db.session.add(mesh)
+        db.session.commit()
+        model_db.meshId = mesh.id
         db.session.commit()
     except Exception as ex:
         db.session.rollback()
@@ -260,86 +256,3 @@ def generate_geo_file(rhino_file_path, geo_file_path):
 
     print(f"Converted {rhino_file_path} to {geo_file_path}")
     return geo_file_path
-
-
-gmsh.initialize()
-
-
-def generate_geo_file_using_gmsh(rhino_file_path, geo_file_path):
-    try:
-        file3dm = rhino3dm.File3dm()
-        model = file3dm.Read(rhino_file_path)
-
-        # Start defining the geometry
-        model_geo = gmsh.model.geo
-
-        points = {}
-        lines = {}
-        line_loops = {}
-        plane_surfaces = {}
-        physical_surfaces = {}
-
-        point_index = 1
-        line_index = 1
-        surface_index = 1
-        physical_surface_counter = 1
-
-        # Iterate over the objects in the 3dm model
-        for obj in model.Objects:
-            if isinstance(obj.Geometry, rhino3dm.Mesh):
-                faces = obj.Geometry.Faces
-                faces.ConvertTrianglesToQuads(0.5, 0)
-                vertices = obj.Geometry.Vertices
-                vertices.CombineIdentical(True, True)
-
-                # Define vertices as Gmsh points
-                gmsh_points = []
-                for vertex in vertices:
-                    gmsh_point = model_geo.addPoint(vertex.X, vertex.Y, vertex.Z)
-                    gmsh_points.append(gmsh_point)
-                    points[point_index] = gmsh_point
-                    point_index += 1
-
-                # Define lines and line loops for each face
-                for i in range(faces.Count):
-                    face = faces[i]
-
-                    if len(face) == 4:  # Quad face
-                        face_indices = [face[0], face[1], face[2], face[3]]
-                    elif len(face) == 3:  # Triangle face
-                        face_indices = [face[0], face[1], face[2]]
-                    else:
-                        continue
-
-                    # Define lines
-                    gmsh_lines = []
-                    for j in range(len(face_indices)):
-                        start_point = gmsh_points[face_indices[j]]
-                        end_point = gmsh_points[face_indices[(j + 1) % len(face_indices)]]
-                        gmsh_line = model_geo.addLine(start_point, end_point)
-                        gmsh_lines.append(gmsh_line)
-                        lines[line_index] = gmsh_line
-                        line_index += 1
-
-                    # Define line loop and plane surface
-                    line_loop = model_geo.addCurveLoop(gmsh_lines)
-                    plane_surface = model_geo.addPlaneSurface([line_loop])
-                    line_loops[surface_index] = line_loop
-                    plane_surfaces[surface_index] = plane_surface
-                    surface_index += 1
-
-                # Define physical surface group
-                physical_surface = model_geo.addPhysicalGroup(2, [plane_surfaces[surface_index] for surface_index in
-                                                                  range(1, surface_index)])
-                physical_surfaces[obj.Attributes.Id] = physical_surface
-                physical_surface_counter += 1
-
-        # Write the .geo file
-        model_geo.synchronize()
-        gmsh.write(f"{geo_file_path}_unrolled")
-
-        print(f"Converted {rhino_file_path} to {geo_file_path}")
-        return geo_file_path
-
-    finally:
-        gmsh.finalize()

@@ -49,7 +49,7 @@ def update_simulation_by_id(simulation_data, simulation_id):
 def get_simulation_by_model_id(model_id):
     return Simulation.query.filter_by(
         modelId=model_id
-    ).all()
+    ).order_by(Simulation.updatedAt.desc()).all()
 
 
 def get_simulation_by_id(simulation_id):
