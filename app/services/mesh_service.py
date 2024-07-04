@@ -7,10 +7,11 @@ import config
 import gmsh
 import re
 from app.db import db
+from app.types import TaskType, Status
 
 from Diffusion.FiniteVolumeMethod.CreateMeshFVM import generate_mesh
 
-from app.models import Mesh
+from app.models import Mesh, Task, Simulation
 
 # Create logger for this module
 logger = logging.getLogger(__name__)
@@ -27,6 +28,10 @@ def get_mesh_by_id(mesh_id):
     if not mesh:
         abort(404, message="Mesh does not exist")
     return mesh
+
+
+def get_mesh_result_by_id(mesh_id):
+    pass
 
 
 def attach_geo_file(model_id, file_input_id):
@@ -121,12 +126,50 @@ def start_mesh_task(model_id):
     )
     geo_path = os.path.join(directory, f"{file_name}.geo")
     msh_path = os.path.join(directory, f"{file_name}.msh")
+    try:
+        Mesh.query.filter_by(modelId=model_id).delete()
+        db.session.commit()
+        task = Task(
+            taskType=TaskType.Mesh,
+        )
+        db.session.add(task)
+        db.session.commit()
+        mesh = Mesh(
+            modelId=model_id,
+            taskId=task.id
+        )
 
-    generate_mesh(geo_path, msh_path, 1)
+        db.session.add(mesh)
+        db.session.commit()
+    except Exception as ex:
+        db.session.rollback()
+        logger.error(f"Error in mesh generation (db)! Error: {ex}")
+        abort(400, message=f"Error in mesh generation (db)! Error: {ex}")
 
-    # create a new task with type mesh
-    # create a mesh
-    # in the end you should return mesh model
+    try:
+        generate_mesh(geo_path, msh_path, 1)
+    except Exception as ex:
+        logger.error(f"Error in mesh generation (msh)! Error: {ex}")
+        abort(400, message=f"Error in mesh generation (msh)! Error: {ex}")
+
+    if os.path.exists(msh_path):
+        try:
+            task.status = Status.Completed
+            db.session.commit()
+        except Exception as ex:
+            db.session.rollback()
+            logger.error(f"Error in mesh generation (db)! Error: {ex}")
+            abort(400, message=f"Error in mesh generation (db)! Error: {ex}")
+    else:
+        try:
+            task.status = Status.Error
+            db.session.commit()
+        except Exception as ex:
+            db.session.rollback()
+            logger.error(f"Error in mesh generation (db)! Error: {ex}")
+            abort(400, message=f"Error in mesh generation (db)! Error: {ex}")
+
+    return mesh
 
 
 def generate_geo_file(rhino_file_path, geo_file_path):

@@ -28,9 +28,7 @@ class Simulation(db.Model):
     modelId = db.Column(db.Integer, db.ForeignKey('models.id', ondelete='CASCADE'), nullable=False)
 
     simulationRunId = db.Column(db.Integer, db.ForeignKey('simulationRuns.id', ondelete='CASCADE'), nullable=True)
-    # TODO: handle simulationRun backdref and cascade here
-
-    meshId = db.Column(db.Integer, db.ForeignKey('meshes.id'), nullable=True)
+    simulationRun = db.relationship("SimulationRun", cascade="all, delete", foreign_keys=[simulationRunId])
 
     createdAt = db.Column(db.String(), default=datetime.now())
     updatedAt = db.Column(db.String(), default=datetime.now())

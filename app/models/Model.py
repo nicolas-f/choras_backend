@@ -34,7 +34,9 @@ class Model(db.Model):
 
     projectId = db.Column(db.Integer, db.ForeignKey('projects.id', ondelete='CASCADE'), nullable=False)
 
-    mesh = db.relationship("Mesh", backref="model", cascade="all, delete")
+    meshId = db.Column(db.Integer, db.ForeignKey('meshes.id'), nullable=True)
+    mesh = db.relationship("Mesh", cascade="all, delete", foreign_keys=[meshId])
+
     simulations = db.relationship("Simulation", backref="model", cascade="all, delete")
     hasGeo = db.Column(db.Boolean, nullable=False, default=False)
 

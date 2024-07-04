@@ -31,6 +31,7 @@ class ModelInfoSchema(Schema):
     projectTag = fields.String(data_key="projectTag", attribute="project.group")
     projectId = fields.Integer(data_key="projectId", attribute="project.id")
     projectName = fields.String(data_key="projectName", attribute="project.name")
+    meshId = fields.String(data_key="meshId", attribute="mesh.id")
 
     simulationCount = fields.Function(lambda obj: obj.simulation_count)
 

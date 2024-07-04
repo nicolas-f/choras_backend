@@ -8,8 +8,6 @@ class Mesh(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
 
-    modelId = db.Column(db.Integer, db.ForeignKey('models.id', ondelete='CASCADE'), nullable=False)
-
     taskId = db.Column(db.Integer, db.ForeignKey('tasks.id'), nullable=False)
     task = db.relationship("Task", backref="mesh", cascade="all, delete", foreign_keys=[taskId])
 
