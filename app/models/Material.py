@@ -1,4 +1,5 @@
 from datetime import datetime
+from sqlalchemy import JSON
 
 from app.db import db
 
@@ -10,9 +11,6 @@ class Material(db.Model):
     name = db.Column(db.String(), nullable=False)
     description = db.Column(db.String(), nullable=True)
     category = db.Column(db.String(80), nullable=False)
-    materialJson = db.Column(db.String(), nullable=False)
-    materialMetadataJson = db.Column(db.String(), nullable=False)
-    defaultAbsorption = db.Column(db.Double(), nullable=False)
-    defaultScattering = db.Column(db.Double(), nullable=False)
+    absorptionCoefficients = db.Column(JSON, nullable=False)
     createdAt = db.Column(db.String(), default=datetime.now())
     updatedAt = db.Column(db.String(), default=datetime.now())

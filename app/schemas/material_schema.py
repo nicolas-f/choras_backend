@@ -1,12 +1,14 @@
 from marshmallow import Schema, fields
 
 
-class MaterialSchema(Schema):
+class MaterialCreateSchema(Schema):
+    name = fields.String(required=True)
+    category = fields.String(required=True)
+    description = fields.String(allow_none=True)
+    absorptionCoefficients = fields.List(fields.Float())
+
+
+class MaterialSchema(MaterialCreateSchema):
     id = fields.Number()
-    name = fields.Str(required=True)
-    description = fields.Str()
-    category = fields.Str()
-    materialJson = fields.Str()
-    materialMetadataJson = fields.Str()
-    defaultAbsorption = fields.Number()
-    defaultScattering = fields.Str()
+    createdAt = fields.String()
+    updatedAt = fields.String()

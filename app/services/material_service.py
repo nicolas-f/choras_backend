@@ -14,7 +14,24 @@ logger = logging.getLogger(__name__)
 def get_all_materials():
     return Material.query.order_by(
         asc(Material.id)
-    ).all();
+    ).all()
+
+
+def create_new_material(material_data):
+    new_material = Material(
+        **material_data
+    )
+
+    try:
+        db.session.add(new_material)
+        db.session.commit()
+
+    except Exception as ex:
+        db.session.rollback()
+        logger.error(f"Can not create a new material: {ex}")
+        abort(400, message=f"Can not create a new material: {ex}")
+
+    return new_material
 
 
 def insert_initial_materials():
@@ -32,10 +49,7 @@ def insert_initial_materials():
                         name=material['name'],
                         description=material['description'],
                         category=material['category'],
-                        materialJson=material['materialJson'],
-                        materialMetadataJson=material['materialMetadataJson'],
-                        defaultAbsorption=material['defaultAbsorption'],
-                        defaultScattering=material['defaultScattering']
+                        absorptionCoefficients=material['absorptionCoefficients'],
                     )
                 )
 
