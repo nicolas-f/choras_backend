@@ -2,11 +2,6 @@ from marshmallow import Schema, fields, post_load, EXCLUDE
 from app.types import TaskType, Status, Setting
 
 
-class ModelSettingsSchema(Schema):
-    materialIdByObjectId = fields.Dict()
-    scatteringByObjectId = fields.Dict()
-
-
 class SolverSettingsSchema(Schema):
     dgSettings = fields.Dict()
     gaSettings = fields.Dict()
@@ -18,7 +13,7 @@ class SimulationCreateBodySchema(Schema):
 
     description = fields.String(required=False)
 
-    modelSettings = fields.Nested(ModelSettingsSchema)
+    layerIdByMaterialId = fields.Dict()
     solverSettings = fields.Nested(SolverSettingsSchema)
 
 

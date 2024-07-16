@@ -17,10 +17,7 @@ class Simulation(db.Model):
     sources = db.Column(JSON, default=[])
     receivers = db.Column(JSON, default=[])
     taskType = db.Column(db.Enum(TaskType), default=TaskType.DE)
-    modelSettings = db.Column(JSON, default={
-        "materialIdByObjectId": {},
-        "scatteringByObjectId": {}
-    })
+    layerIdByMaterialId = db.Column(JSON, default={})
     settingsPreset = db.Column(db.Enum(Setting), default=Setting.Default)
     solverSettings = db.Column(JSON, nullable=False)
     status = db.Column(db.Enum(Status), default=Status.Created)
