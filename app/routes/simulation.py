@@ -7,6 +7,7 @@ from app.schemas.simulation_schema import (
     SimulationRunSchema,
     SimulationCreateBodySchema,
     SimulationUpdateBodySchema,
+    SimulationRunCreateSchema
 )
 from app.services import simulation_service
 
@@ -60,14 +61,11 @@ class SimulationRunList(MethodView):
         result = simulation_service.get_simulation_run()
         return result
 
-    @blp.arguments(SimulationCreateBodySchema)
-    @blp.response(201, SimulationSchema)
+    @blp.arguments(SimulationRunCreateSchema)
+    @blp.response(201, SimulationRunSchema)
     def post(self, body_data):
-        schema = SimulationCreateBodySchema()
-        validated_data = schema.load(body_data)
-        result = simulation_service.create_new_simulation(validated_data)
+        result = simulation_service.start_solver_task(body_data['simulationId'])
         return result
-
 
 # TODO: implement route for /simulations/run/:simulationrunId
 # TODO: implement route for /simulations/run/status/:simulationsrunId

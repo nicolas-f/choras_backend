@@ -34,7 +34,7 @@ class Model(db.Model):
 
     projectId = db.Column(db.Integer, db.ForeignKey('projects.id', ondelete='CASCADE'), nullable=False)
 
-    meshId = db.Column(db.Integer, db.ForeignKey('meshes.id'), nullable=True)
+    meshId = db.Column(db.Integer, db.ForeignKey('meshes.id', ondelete='SET NULL'), nullable=True)
     mesh = db.relationship("Mesh", cascade="all, delete", foreign_keys=[meshId])
 
     simulations = db.relationship("Simulation", backref="model", cascade="all, delete")

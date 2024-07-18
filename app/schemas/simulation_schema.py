@@ -10,9 +10,7 @@ class SolverSettingsSchema(Schema):
 class SimulationCreateBodySchema(Schema):
     modelId = fields.Integer(required=True)
     name = fields.String(required=True)
-
     description = fields.String(required=False)
-
     layerIdByMaterialId = fields.Dict()
     solverSettings = fields.Nested(SolverSettingsSchema)
 
@@ -43,29 +41,23 @@ class SimulationUpdateBodySchema(SimulationSchema):
         modelId = EXCLUDE
 
 
+class SimulationByModelQuerySchema(Schema):
+    modelId = fields.Integer(required=True)
+
+
+class SimulationRunCreateSchema(Schema):
+    simulationId = fields.Integer()
+
+
 class SimulationRunSchema(Schema):
     id = fields.Integer()
-    name = fields.String(required=True)
-    description = fields.String(required=False)
-    hasBeenEdited = fields.Boolean()
-
     sources = fields.List(fields.Dict())
     receivers = fields.List(fields.Dict())
-    taskType = fields.String()
-    modelSettings = fields.Dict()
-    settingsPreset = fields.String()
+    taskType = fields.Enum(TaskType, required=True)
+    settingsPreset = fields.Enum(Setting, required=True)
+    status = fields.Enum(Status, required=True)
+    layerIdByMaterialId = fields.Dict()
     solverSettings = fields.Dict()
-    status = fields.String()
-
-    modelId = fields.Integer()
-    simulationRunId = fields.Integer()
-
-    meshId = fields.Integer()
-
     createdAt = fields.String()
     updatedAt = fields.String()
     completedAt = fields.String()
-
-
-class SimulationByModelQuerySchema(Schema):
-    modelId = fields.Integer(required=True)

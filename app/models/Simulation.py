@@ -24,7 +24,7 @@ class Simulation(db.Model):
 
     modelId = db.Column(db.Integer, db.ForeignKey('models.id', ondelete='CASCADE'), nullable=False)
 
-    simulationRunId = db.Column(db.Integer, db.ForeignKey('simulationRuns.id', ondelete='CASCADE'), nullable=True)
+    simulationRunId = db.Column(db.Integer, db.ForeignKey('simulationRuns.id', ondelete='SET NULL'), nullable=True)
     simulationRun = db.relationship("SimulationRun", cascade="all, delete", foreign_keys=[simulationRunId])
 
     createdAt = db.Column(db.String(), default=datetime.now())

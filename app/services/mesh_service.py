@@ -19,12 +19,15 @@ logger = logging.getLogger(__name__)
 
 def get_meshes_by_model_id(model_id):
     model = model_service.get_model(model_id)
+    if model.mesh and (model.mesh.task.status == Status.Error):
+        return []
     return [model.mesh] if model.mesh else []
 
 
 def get_mesh_by_id(mesh_id):
     mesh = Mesh.query.filter_by(id=mesh_id).first()
     if not mesh:
+        logger.error('Mesh with id ' + str(mesh_id) + 'does not exists!')
         abort(404, message="Mesh does not exist")
     return mesh
 
@@ -111,6 +114,10 @@ def attach_geo_file(model_id, file_input_id):
     }
 
 
+# This has to be here to run
+gmsh.initialize()
+
+
 def start_mesh_task(model_id):
     model_db = model_service.get_model(model_id)
     file = file_service.get_file_by_id(model_db.outputFileId)
@@ -159,6 +166,9 @@ def start_mesh_task(model_id):
     else:
         try:
             task.status = Status.Error
+            task.message = ("Possibly you don't have Gmsh installed on your device," +
+                            "or Gmsh has not been initialized!")
+            logger.error(f"Someone is trying to create mesh but they can't!")
             db.session.commit()
         except Exception as ex:
             db.session.rollback()

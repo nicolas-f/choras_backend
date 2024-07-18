@@ -32,6 +32,7 @@ def create_new_model(model_data):
 def get_model(model_id):
     model = Model.query.filter_by(id=model_id).first()
     if not model:
+        logger.error('Model with id ' + str(model_id) + 'does not exists!')
         abort(404, message="Model does not exist")
     return model
 

@@ -83,7 +83,8 @@ def consume(slot):
 
 
 def get_file_by_id(file_id):
-    file = File.query.get(file_id)
+    file = File.query.filter_by(id=file_id).first()
+
     if not file:
         logger.error('File with id ' + str(file_id) + 'does not exists!')
         abort(400, message="File doesn't exists!")

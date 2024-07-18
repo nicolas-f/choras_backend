@@ -15,7 +15,7 @@ blp = Blueprint("Mesh", __name__, description="Mesh API")
 @blp.route("/meshes")
 class MeshList(MethodView):
     @blp.arguments(MeshQuerySchema, location='query')
-    @blp.response(200, MeshSchema(many=True))
+    @blp.response(200, MeshWithTaskSchema(many=True))
     def get(self, query_data):
         result = mesh_service.get_meshes_by_model_id(query_data['modelId'])
         return result
