@@ -4,7 +4,7 @@ from app.types import TaskType, Status, Setting
 
 class SolverSettingsSchema(Schema):
     dgSettings = fields.Dict()
-    gaSettings = fields.Dict()
+    deSettings = fields.Dict()
 
 
 class SimulationCreateBodySchema(Schema):
