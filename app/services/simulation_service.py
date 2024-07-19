@@ -1,11 +1,13 @@
 import logging
 from datetime import datetime
 from flask_smorest import abort
-
 from app.db import db
 from app.models import Simulation, SimulationRun, Task
 from app.services import model_service, mesh_service
 from app.types import TaskType, Status
+
+from flask import current_app
+from sqlalchemy.orm import scoped_session, sessionmaker
 import asyncio
 
 # Create logger for this module
@@ -88,7 +90,6 @@ def get_simulation_by_id(simulation_id):
     if not simulation:
         logger.error('Simulation with id ' + str(simulation_id) + 'does not exists!')
         abort(400, message="Simulation doesn't exists!")
-
     return simulation
 
 
@@ -120,6 +121,7 @@ def create_source_task(task_type, source_id):
 
 def start_solver_task(simulation_id):
     simulation = get_simulation_by_id(simulation_id)
+
     if simulation.simulationRunId:
         delete_simulation_run(simulation.simulationRunId)
 
@@ -130,11 +132,11 @@ def start_solver_task(simulation_id):
 
     for source in simulation.sources:
         task_statuses = []
-        if simulation.taskType in (TaskType.DE.value, TaskType.BOTH.value):
+        if simulation.taskType.value in (TaskType.DE.value, TaskType.BOTH.value):
             task_statuses.append(
                 create_source_task(TaskType.DE.value, source['id'])
             )
-        if simulation.taskType in (TaskType.DG.value, TaskType.BOTH.value):
+        if simulation.taskType.value in (TaskType.DG.value, TaskType.BOTH.value):
             task_statuses.append(
                 create_source_task(TaskType.DG.value, source['id'])
             )
@@ -152,7 +154,8 @@ def start_solver_task(simulation_id):
         taskType=simulation.taskType,
         settingsPreset=simulation.settingsPreset,
         layerIdByMaterialId=simulation.layerIdByMaterialId,
-        solverSettings=simulation.solverSettings
+        solverSettings=simulation.solverSettings,
+        status=Status.Created
     )
 
     try:
@@ -169,23 +172,43 @@ def start_solver_task(simulation_id):
 
     # TODO: start the solver task (call their function here)
     # for now i assume it is a function that runs it and update the simulation status
-    asyncio.create_task(
-        run_solver(new_simulation_run)
-    )
+    # Run the background task asynchronously
+    asyncio.ensure_future(run_solver(new_simulation_run.id))
 
     return new_simulation_run
 
 
-async def run_solver(simulation_run: SimulationRun):
-    try:
-        await asyncio.sleep(5)
-        simulation_run.status = Status.ProcessingResults
-        db.session.commit()
-        await asyncio.sleep(5)
-        simulation_run.status = Status.Completed
-        db.session.commit()
+async def run_solver(simulation_run_id):
+    # Ensure this function runs within an async context
+    logger.debug(f"Running solver asynchronously for simulation_run_id: {simulation_run_id}")
 
-    except Exception as ex:
-        db.session.rollback()
-        logger.error(f"Can not create a new simulation run: {ex}")
-        abort(400, message=f"Can not create a new simulation run: {ex}")
+    # Scoped session factory to ensure proper session management
+    session_factory = sessionmaker(bind=db.engine)
+    session = scoped_session(session_factory)()  # Create a new session for this thread
+    with current_app.app_context():
+        try:
+            simulation_run = session.query(SimulationRun).get(simulation_run_id)
+            if simulation_run is None:
+                logger.error(f"SimulationRun with id {simulation_run_id} not found")
+                return
+
+            logger.debug(f"SimulationRun found: {simulation_run}")
+
+            await asyncio.sleep(5)
+            simulation_run.status = Status.ProcessingResults
+            session.commit()
+            logger.debug(f"SimulationRun status updated to {simulation_run.status}")
+
+            await asyncio.sleep(5)
+            simulation_run.status = Status.Completed
+            session.commit()
+            logger.debug(f"SimulationRun status updated to {simulation_run.status}")
+
+        except Exception as ex:
+            session.rollback()
+            logger.error(f"Cannot update simulation run: {ex}")
+            abort(400, message=f"Cannot update simulation run: {ex}")
+
+        finally:
+            session.close()  # Ensure the session is closed after use
+            logger.debug(f"Session closed for simulation_run_id: {simulation_run_id}")
