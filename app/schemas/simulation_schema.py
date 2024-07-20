@@ -1,5 +1,6 @@
 from marshmallow import Schema, fields, post_load, EXCLUDE
 from app.types import TaskType, Status, Setting
+from app.schemas.model_schema import ModelInfoBasicSchema
 
 
 class SolverSettingsSchema(Schema):
@@ -49,6 +50,10 @@ class SimulationRunCreateSchema(Schema):
     simulationId = fields.Integer()
 
 
+class SimulationWithModelInfoSchema(SimulationSchema):
+    model = fields.Nested(ModelInfoBasicSchema)
+
+
 class SimulationRunSchema(Schema):
     id = fields.Integer()
     sources = fields.List(fields.Dict())
@@ -61,3 +66,4 @@ class SimulationRunSchema(Schema):
     createdAt = fields.String()
     updatedAt = fields.String()
     completedAt = fields.String()
+    simulation = fields.Nested(SimulationWithModelInfoSchema)

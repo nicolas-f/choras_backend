@@ -173,7 +173,6 @@ def start_solver_task(simulation_id):
     # TODO: start the solver task (call their function here)
     # for now i assume it is a function that runs it and update the simulation status
     # Run the background task asynchronously
-    asyncio.ensure_future(run_solver(new_simulation_run.id))
 
     return new_simulation_run
 
