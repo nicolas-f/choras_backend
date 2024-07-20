@@ -5,10 +5,9 @@ from app.db import db
 from app.models import Simulation, SimulationRun, Task
 from app.services import model_service, mesh_service
 from app.types import TaskType, Status
-
-from flask import current_app
 from sqlalchemy.orm import scoped_session, sessionmaker
-import asyncio
+
+from celery import shared_task
 
 # Create logger for this module
 logger = logging.getLogger(__name__)
@@ -173,41 +172,50 @@ def start_solver_task(simulation_id):
     # TODO: start the solver task (call their function here)
     # for now i assume it is a function that runs it and update the simulation status
     # Run the background task asynchronously
+    run_solver.delay(new_simulation_run.id)
 
     return new_simulation_run
 
 
-async def run_solver(simulation_run_id):
-    # Ensure this function runs within an async context
-    logger.debug(f"Running solver asynchronously for simulation_run_id: {simulation_run_id}")
+@shared_task
+def run_solver(simulation_run_id):
+    from app.db import db
+    from app.models import SimulationRun
+    from app.types import Status
+    import time
+    import logging
 
-    # Scoped session factory to ensure proper session management
-    session_factory = sessionmaker(bind=db.engine)
-    session = scoped_session(session_factory)()  # Create a new session for this thread
-    with current_app.app_context():
-        try:
-            simulation_run = session.query(SimulationRun).get(simulation_run_id)
-            if simulation_run is None:
-                logger.error(f"SimulationRun with id {simulation_run_id} not found")
-                return
+    # Create logger for this module
+    job_logger = logging.getLogger(__name__)
 
-            logger.debug(f"SimulationRun found: {simulation_run}")
+    job_logger.debug(f"Running solver task for simulation_run_id: {simulation_run_id}")
 
-            await asyncio.sleep(5)
-            simulation_run.status = Status.ProcessingResults
-            session.commit()
-            logger.debug(f"SimulationRun status updated to {simulation_run.status}")
+    try:
+        # Scoped session factory to ensure proper session management
+        session_factory = sessionmaker(bind=db.engine)
+        session = scoped_session(session_factory)()  # Create a new session for this thread
 
-            await asyncio.sleep(5)
-            simulation_run.status = Status.Completed
-            session.commit()
-            logger.debug(f"SimulationRun status updated to {simulation_run.status}")
+        simulation_run = session.query(SimulationRun).get(simulation_run_id)
+        if simulation_run is None:
+            job_logger.error(f"SimulationRun with id {simulation_run_id} not found")
+            return
 
-        except Exception as ex:
-            session.rollback()
-            logger.error(f"Cannot update simulation run: {ex}")
-            abort(400, message=f"Cannot update simulation run: {ex}")
+        job_logger.debug(f"SimulationRun found: {simulation_run}")
 
-        finally:
-            session.close()  # Ensure the session is closed after use
-            logger.debug(f"Session closed for simulation_run_id: {simulation_run_id}")
+        time.sleep(5)  # Simulate processing
+        simulation_run.status = Status.ProcessingResults
+        session.commit()
+        job_logger.debug(f"SimulationRun status updated to {simulation_run.status}")
+
+        time.sleep(5)  # Simulate processing
+        simulation_run.status = Status.Completed
+        session.commit()
+        job_logger.debug(f"SimulationRun status updated to {simulation_run.status}")
+
+    except Exception as ex:
+        session.rollback()
+        job_logger.error(f"Cannot update simulation run: {ex}")
+
+    finally:
+        session.close()  # Ensure the session is closed after use
+        job_logger.debug(f"Session closed for simulation_run_id: {simulation_run_id}")

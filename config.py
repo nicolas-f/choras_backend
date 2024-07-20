@@ -53,7 +53,7 @@ class DefaultConfig:
     APP_ENV_TESTING = "testing"
     APP_ENV_DEVELOP = "develop"
     APP_ENV_PRODUCTION = "production"
-    APP_ENV = ""
+    APP_ENV = APP_ENV_DEVELOP
 
     # Logging
     DATE_FMT = "%Y-%m-%d %H:%M:%S"
@@ -67,7 +67,13 @@ class DefaultConfig:
     if not os.path.exists(UPLOAD_FOLDER):
         os.makedirs(UPLOAD_FOLDER)
 
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'develop.db')
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
 
+    CELERY_CONFIG = {
+        "broker_url": 'sqla+sqlite:///' + os.path.join(basedir, 'celerydb.sqlite'),
+        "result_backend": 'db+sqlite:///' + os.path.join(basedir, 'celerydb.sqlite')
+    }
 
 
 class DevelopConfig(DefaultConfig):
@@ -78,8 +84,8 @@ class DevelopConfig(DefaultConfig):
     DEBUG = True
 
     # Database configuration
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'develop.db')
-    # SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL")
+    # SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'develop.db')
+    # # SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL")
 
 
 class TestingConfig(DefaultConfig):
@@ -98,8 +104,8 @@ class TestingConfig(DefaultConfig):
     # Logging
     LOG_FILE_API = f"{basedir}/logs/api_tests.log"
 
-    # Database configuration
-    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_TEST_URL")
+    # # Database configuration
+    # SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_TEST_URL")
 
 
 class LocalConfig(DefaultConfig):
@@ -109,8 +115,8 @@ class LocalConfig(DefaultConfig):
     # Activate debug mode
     DEBUG = False
 
-    # Database configuration
-    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL")
+    # # Database configuration
+    # SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL")
 
 
 class ProductionConfig(DefaultConfig):
@@ -120,5 +126,5 @@ class ProductionConfig(DefaultConfig):
     # Activate debug mode
     DEBUG = False
 
-    # Database configuration
-    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL")
+    # # Database configuration
+    # SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL")
