@@ -16,7 +16,7 @@ class Simulation(db.Model):
     hasBeenEdited = db.Column(db.Boolean, nullable=False, default=False)
     sources = db.Column(JSON, default=[])
     receivers = db.Column(JSON, default=[])
-    taskType = db.Column(db.Enum(TaskType), default=TaskType.DE)
+    taskType = db.Column(db.Enum(TaskType), default=TaskType.BOTH)
     layerIdByMaterialId = db.Column(JSON, default={})
     settingsPreset = db.Column(db.Enum(Setting), default=Setting.Default)
     solverSettings = db.Column(JSON, nullable=False)

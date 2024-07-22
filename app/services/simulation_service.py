@@ -1,11 +1,11 @@
 import logging
-from datetime import datetime
 from flask_smorest import abort
 from app.db import db
 from app.models import Simulation, SimulationRun, Task
 from app.services import model_service, mesh_service
 from app.types import TaskType, Status
 from sqlalchemy.orm import scoped_session, sessionmaker
+from datetime import datetime
 
 from celery import shared_task
 
@@ -186,9 +186,8 @@ def run_solver(simulation_run_id):
     import logging
 
     # Create logger for this module
-    job_logger = logging.getLogger(__name__)
 
-    job_logger.debug(f"Running solver task for simulation_run_id: {simulation_run_id}")
+    logger.info(f"Running solver task for simulation_run_id: {simulation_run_id}")
 
     try:
         # Scoped session factory to ensure proper session management
@@ -197,25 +196,36 @@ def run_solver(simulation_run_id):
 
         simulation_run = session.query(SimulationRun).get(simulation_run_id)
         if simulation_run is None:
-            job_logger.error(f"SimulationRun with id {simulation_run_id} not found")
+            logger.error(f"SimulationRun with id {simulation_run_id} not found")
             return
 
-        job_logger.debug(f"SimulationRun found: {simulation_run}")
+        logger.info(f"SimulationRun found: {simulation_run}")
+        simulation = session.query(Simulation).filter_by(
+            simulationRunId=simulation_run.id
+        ).first()
 
         time.sleep(5)  # Simulate processing
         simulation_run.status = Status.ProcessingResults
+        if simulation:
+            simulation.status = Status.ProcessingResults
         session.commit()
-        job_logger.debug(f"SimulationRun status updated to {simulation_run.status}")
+        logger.info(f"SimulationRun status updated to {simulation_run.status}")
 
         time.sleep(5)  # Simulate processing
         simulation_run.status = Status.Completed
+        simulation_run.updatedAt = datetime.now()
+        simulation_run.completedAt = datetime.now()
+        if simulation:
+            simulation.status = Status.Completed
+            simulation.updatedAt = datetime.now()
+            simulation.completedAt = datetime.now()
         session.commit()
-        job_logger.debug(f"SimulationRun status updated to {simulation_run.status}")
+        logger.info(f"SimulationRun status updated to {simulation_run.status}")
 
     except Exception as ex:
         session.rollback()
-        job_logger.error(f"Cannot update simulation run: {ex}")
+        logger.error(f"Cannot update simulation run: {ex}")
 
     finally:
         session.close()  # Ensure the session is closed after use
-        job_logger.debug(f"Session closed for simulation_run_id: {simulation_run_id}")
+        logger.info(f"Session closed for simulation_run_id: {simulation_run_id}")
