@@ -14,15 +14,15 @@ class SimulationCreateBodySchema(Schema):
     description = fields.String(required=False)
     layerIdByMaterialId = fields.Dict()
     solverSettings = fields.Nested(SolverSettingsSchema)
+    sources = fields.List(fields.Dict(), required=False)
+    receivers = fields.List(fields.Dict(), required=False)
+    taskType = fields.Enum(TaskType, required=False)
+    settingsPreset = fields.Enum(Setting, required=False)
 
 
 class SimulationSchema(SimulationCreateBodySchema):
     id = fields.Integer()
     hasBeenEdited = fields.Boolean()
-    sources = fields.List(fields.Dict())
-    receivers = fields.List(fields.Dict())
-    taskType = fields.Enum(TaskType, required=True)
-    settingsPreset = fields.Enum(Setting, required=True)
     status = fields.Enum(Status, required=True)
     simulationRunId = fields.Integer(allow_none=True)
     meshId = fields.Integer(allow_none=True)

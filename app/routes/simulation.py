@@ -27,9 +27,7 @@ class SimulationList(MethodView):
     @blp.arguments(SimulationCreateBodySchema)
     @blp.response(201, SimulationSchema)
     def post(self, body_data):
-        schema = SimulationCreateBodySchema()
-        validated_data = schema.load(body_data)
-        result = simulation_service.create_new_simulation(validated_data)
+        result = simulation_service.create_new_simulation(body_data)
         return result
 
 
