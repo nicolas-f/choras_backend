@@ -333,10 +333,16 @@ def get_simulation_run_result_by_id(simulation_run_id):
         logger.error('Simulation for the simulation run id ' + str(simulation_run_id) + 'does not exists!')
         abort(400, message="Simulation doesn't exists!")
 
+    simulation_run = SimulationRun.query.filter_by(id=simulation_run_id).first()
+    if not simulation_run:
+        abort(400, message="Simulation run doesn't exists!")
+
     model = model_service.get_model(simulation.modelId)
     json_path = file_service.get_file_related_path(model.outputFileId, simulation.id, extension='json')
 
     with open(json_path, 'r') as json_file:
         result_container = json.load(json_file)
+
+
 
     return result_container['results']

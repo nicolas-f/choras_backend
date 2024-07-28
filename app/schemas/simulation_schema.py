@@ -62,6 +62,7 @@ class SimulationRunSchema(Schema):
     taskType = fields.Enum(TaskType, required=True)
     settingsPreset = fields.Enum(Setting, required=True)
     status = fields.Enum(Status, required=True)
+    percentage = fields.Integer(required=False)
     layerIdByMaterialId = fields.Dict()
     solverSettings = fields.Dict()
     createdAt = fields.String()
