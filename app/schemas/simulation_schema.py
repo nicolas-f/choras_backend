@@ -36,6 +36,7 @@ class SimulationUpdateBodySchema(SimulationSchema):
         id = EXCLUDE  # To ignore the field
         status = EXCLUDE
         simulationRunId = EXCLUDE
+        simulationRun = EXCLUDE
         createdAt = EXCLUDE
         updatedAt = EXCLUDE
         completedAt = EXCLUDE
@@ -67,3 +68,7 @@ class SimulationRunSchema(Schema):
     updatedAt = fields.String()
     completedAt = fields.String()
     simulation = fields.Nested(SimulationWithModelInfoSchema)
+
+
+class SimulationWithRunSchema(SimulationSchema):
+    simulationRun = fields.Nested(SimulationRunSchema)

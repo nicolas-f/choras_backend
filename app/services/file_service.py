@@ -91,7 +91,29 @@ def get_file_by_id(file_id):
     return file
 
 
+def upload_dir():
+    return f"http://{os.getenv('FLASK_RUN_HOST')}:{os.getenv('FLASK_RUN_PORT')}/uploads"
+
+
+def get_file_related_path(file_id, simulation_id, extension):
+    file = get_file_by_id(file_id)
+    file_name, _ = os.path.splitext(
+        os.path.basename(file.fileName)
+    )
+
+    if extension == 'json':
+        return os.path.join(
+            config.DefaultConfig.UPLOAD_FOLDER,
+            f"{file_name}_{simulation_id}.{extension}"
+        )
+
+    return os.path.join(
+        config.DefaultConfig.UPLOAD_FOLDER,
+        f"{file_name}.{extension}"
+    )
+
+
 def get_file_url(file_id):
     file = get_file_by_id(file_id)
 
-    return f"http://{os.getenv('FLASK_RUN_HOST')}:{os.getenv('FLASK_RUN_PORT')}/uploads/{file.fileName.replace('.3dm', '.zip')}"
+    return f"{upload_dir()}/{file.fileName.replace('.3dm', '.zip')}"

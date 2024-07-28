@@ -44,7 +44,7 @@ with provisions for PostgreSQL as an alternative.
 - **Tests:** Under Planning
 - **Deployment platform:** Under planning for AWS
 - **CI/CD:** Under planning for Github Actions
-
+-**Celery** Job queue
 ## Requirements
 
 - [Python](https://www.python.org/downloads/)
@@ -59,7 +59,8 @@ with provisions for PostgreSQL as an alternative.
 
 Development environment uses SQLite3/Postgresql locally and runs the Flask server in debug mode.
 You can customize the environment variables in the corresponding .env file.
-
+0. **Setup Celery**
+ celery -A app.celery worker --loglevel=info -P eventlet
 1. **Create environment and install packages**
 
 In general, I am using conda to handle virtual env and packages installations, however you can

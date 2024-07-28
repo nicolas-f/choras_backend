@@ -47,3 +47,10 @@ class ServerUploads(MethodView):
     @blp.response(200)
     def get(self, filename):
         return send_from_directory(config.DefaultConfig.UPLOAD_FOLDER, filename)
+
+
+@blp.route(f"/{config.DefaultConfig.UPLOAD_FOLDER_NAME}/data/<filename>")
+class ServerUploads(MethodView):
+    @blp.response(200)
+    def get(self, filename):
+        return send_from_directory(f"{config.DefaultConfig.UPLOAD_FOLDER}/data", filename)

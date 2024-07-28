@@ -1,13 +1,18 @@
 import logging
 from flask_smorest import abort
 from app.db import db
-from app.models import Simulation, SimulationRun, Task
+from app.models import Simulation, SimulationRun, Task, File
 from app.services import model_service, mesh_service
 from app.types import TaskType, Status
 from sqlalchemy.orm import scoped_session, sessionmaker
 from datetime import datetime
-
+from app.services import material_service
+import json
 from celery import shared_task
+from app.services import file_service
+import config
+import os
+import gmsh
 
 # Create logger for this module
 logger = logging.getLogger(__name__)
@@ -58,6 +63,14 @@ def get_simulation_run():
     return SimulationRun.query.all()
 
 
+def get_simulation_run_by_id(simulation_run_id):
+    simulation_run = SimulationRun.query.filter_by(id=simulation_run_id).first()
+    if not simulation_run:
+        logger.error('Simulation Run with id ' + str(simulation_run_id) + 'does not exists!')
+        abort(400, message="Simulation Run doesn't exists!")
+    return simulation_run
+
+
 def delete_simulation(simulation_id):
     try:
         Simulation.query.filter_by(
@@ -106,16 +119,50 @@ def create_source_task(task_type, source_id):
         logger.error(f"Error creating the task: {ex}")
         abort(500, message=f"Error creating the task: {ex}")
 
-    # Extract the public attributes of the SQLAlchemy object
-    task_dict = {k: v for k, v in task.__dict__.items() if not k.startswith('_')}
-
-    # Add additional attributes using dictionary unpacking
-    task_dict.update({
+    return {
+        'id': task.id,
+        'taskType': task.taskType.value,
+        'status': task.status.value,
+        'message': task.message,
         'percentage': 0,
         'sourcePointId': source_id
-    })
+    }
 
-    return task_dict
+
+def create_result_source_object(source, receivers, result_type):
+    responses_obj = []
+
+    for receiver in receivers:
+        responses_obj.append({
+            "label": receiver['label'],
+            'orderNumber': receiver['orderNumber'],
+            'x': receiver['x'],
+            'y': receiver['y'],
+            'z': receiver['z'],
+            'parameters': {
+                "edt": [],
+                "t20": [],
+                "t30": [],
+                "c80": [],
+                "d50": [],
+                "ts": [],
+                "spl_t0_freq": []
+            },
+            "receiverResults": []
+        })
+
+    return {
+        'label': source['label'],
+        'orderNumber': source['orderNumber'],
+        'percentage': 0,
+        'sourcePointId': source['id'],
+        'sourceX': source['x'],
+        'sourceY': source['y'],
+        'sourceZ': source['z'],
+        'resultType': result_type,
+        'frequencies': [125, 250, 500, 1000, 2000],
+        "responses": responses_obj
+    }
 
 
 def start_solver_task(simulation_id):
@@ -125,9 +172,11 @@ def start_solver_task(simulation_id):
         delete_simulation_run(simulation.simulationRunId)
 
     model = model_service.get_model(simulation.modelId)
-    mesh = mesh_service.get_mesh_by_id(model.meshId)
+    json_path = file_service.get_file_related_path(model.outputFileId, simulation_id, extension='json')
+    msh_path = file_service.get_file_related_path(model.outputFileId, simulation_id, extension='msh')
 
     sources_tasks = []
+    results_container = []
 
     for source in simulation.sources:
         task_statuses = []
@@ -135,10 +184,17 @@ def start_solver_task(simulation_id):
             task_statuses.append(
                 create_source_task(TaskType.DE.value, source['id'])
             )
+            results_container.append(
+                create_result_source_object(source, simulation.receivers, TaskType.DE.value)
+            )
         if simulation.taskType.value in (TaskType.DG.value, TaskType.BOTH.value):
             task_statuses.append(
                 create_source_task(TaskType.DG.value, source['id'])
             )
+            results_container.append(
+                create_result_source_object(source, simulation.receivers, TaskType.DG.value)
+            )
+
         sources_tasks.append({
             'label': source['label'],
             'orderNumber': source['orderNumber'],
@@ -172,31 +228,45 @@ def start_solver_task(simulation_id):
         logger.error(f"Can not create a new simulation run: {ex}")
         abort(400, message=f"Can not create a new simulation run: {ex}")
 
-    # TODO: start the solver task (call their function here)
-    # for now i assume it is a function that runs it and update the simulation status
     # Run the background task asynchronously
-    run_solver.delay(new_simulation_run.id)
+    absorption_coefficients = {}
+    for layer, material_id in simulation.layerIdByMaterialId.items():
+        material = material_service.get_material_by_id(material_id)
+        # Ignore the lower frequencies in [63, 125, 250, 500, 1000, 2000, 4000]
+        absorption_coefficients[layer] = ', '.join(map(str, material.absorptionCoefficients[1:-1]))
+
+    with open(json_path, 'w') as json_result_file:
+        json_result_file.write(
+            json.dumps({
+                'absorption_coefficients': absorption_coefficients,
+                'msh_path': msh_path,
+                'results': results_container
+            }, indent=4)
+        )
+
+    run_solver.delay(new_simulation_run.id, json_path)
 
     return new_simulation_run
 
 
 @shared_task
-def run_solver(simulation_run_id):
+def run_solver(simulation_run_id, json_path):
     from app.db import db
     from app.models import SimulationRun
     from app.types import Status
     import time
     import logging
+    from Diffusion.FiniteVolumeMethod.FVMInterface import de_method
 
     # Create logger for this module
 
     logger.info(f"Running solver task for simulation_run_id: {simulation_run_id}")
 
-    try:
-        # Scoped session factory to ensure proper session management
-        session_factory = sessionmaker(bind=db.engine)
-        session = scoped_session(session_factory)()  # Create a new session for this thread
+    # Scoped session factory to ensure proper session management
+    session_factory = sessionmaker(bind=db.engine)
+    session = scoped_session(session_factory)()  # Create a new session for this thread
 
+    try:
         simulation_run = session.query(SimulationRun).get(simulation_run_id)
         if simulation_run is None:
             logger.error(f"SimulationRun with id {simulation_run_id} not found")
@@ -207,23 +277,35 @@ def run_solver(simulation_run_id):
             simulationRunId=simulation_run.id
         ).first()
 
-        time.sleep(5)  # Simulate processing
-        simulation_run.status = Status.ProcessingResults
-        if simulation:
-            simulation.status = Status.ProcessingResults
-        session.commit()
-        logger.info(f"SimulationRun status updated to {simulation_run.status}")
+        if simulation_run:
+            simulation_run.status = Status.Queued
 
-        time.sleep(5)  # Simulate processing
-        simulation_run.status = Status.Completed
-        simulation_run.updatedAt = datetime.now()
-        simulation_run.completedAt = datetime.now()
         if simulation:
+            simulation.status = Status.Queued
+        session.commit()
+        logger.info(f"Simulation(run) status updated to {simulation_run.status}")
+
+        try:
+            if simulation_run:
+                simulation_run.status = Status.InProgress
+            simulation.status = Status.InProgress
+            session.commit()
+            logger.info(f"SimulationRun status updated to {simulation_run.status}")
+            de_method(json_file_path=json_path)
+            if simulation_run:
+                simulation_run.status = Status.Completed
+                simulation_run.updatedAt = datetime.now()
+                simulation_run.completedAt = datetime.now()
             simulation.status = Status.Completed
             simulation.updatedAt = datetime.now()
             simulation.completedAt = datetime.now()
-        session.commit()
-        logger.info(f"SimulationRun status updated to {simulation_run.status}")
+            session.commit()
+            logger.info(f"SimulationRun status updated to {simulation_run.status}")
+        except Exception as ex:
+            simulation_run.status = Status.Error
+            simulation.status = Status.Error
+            session.commit()
+            logger.error(f"Cannot run the method because: {ex}")
 
     except Exception as ex:
         session.rollback()
@@ -232,3 +314,29 @@ def run_solver(simulation_run_id):
     finally:
         session.close()  # Ensure the session is closed after use
         logger.info(f"Session closed for simulation_run_id: {simulation_run_id}")
+
+
+def get_simulation_result_by_id(simulation_id):
+    simulation = get_simulation_by_id(simulation_id)
+    model = model_service.get_model(simulation.modelId)
+    json_path = file_service.get_file_related_path(model.outputFileId, simulation_id, extension='json')
+
+    with open(json_path, 'r') as json_file:
+        result_container = json.load(json_file)
+
+    return result_container['results']
+
+
+def get_simulation_run_result_by_id(simulation_run_id):
+    simulation = Simulation.query.filter_by(simulationRunId=simulation_run_id).first()
+    if not simulation:
+        logger.error('Simulation for the simulation run id ' + str(simulation_run_id) + 'does not exists!')
+        abort(400, message="Simulation doesn't exists!")
+
+    model = model_service.get_model(simulation.modelId)
+    json_path = file_service.get_file_related_path(model.outputFileId, simulation.id, extension='json')
+
+    with open(json_path, 'r') as json_file:
+        result_container = json.load(json_file)
+
+    return result_container['results']

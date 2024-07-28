@@ -60,7 +60,7 @@ class DefaultConfig:
     LOG_FILE_API = f"{basedir}/logs/api.log"
 
     UPLOAD_FOLDER_NAME = "uploads"
-    UPLOAD_FOLDER = f"{basedir}/{UPLOAD_FOLDER_NAME}"
+    UPLOAD_FOLDER = os.path.join(basedir, UPLOAD_FOLDER_NAME)
     ALLOWED_EXTENSIONS = {'obj', 'geo'}
 
     # Ensure the upload folder exists

@@ -4,7 +4,8 @@ from flask_smorest import Blueprint
 from app.schemas.project_schema import (
     ProjectCreateSchema, ProjectSchema, ProjectUpdateSchema, ProjectWithModelsSchema,
     ProjectUpdateByGroupBodySchema,
-    ProjectUpdateByGroupQuerySchema
+    ProjectUpdateByGroupQuerySchema,
+    ProjectSimulationsSchema
 )
 from app.services import project_service
 
@@ -49,6 +50,13 @@ class ProjectGroupDelete(MethodView):
         }
 
 
+@blp.route("/projects/simulations")
+class ProjectSimulations(MethodView):
+    @blp.response(200, ProjectSimulationsSchema(many=True))
+    def get(self):
+        return project_service.get_all_projects_simulations()
+
+
 @blp.route("/projects/<int:project_id>")
 class Project(MethodView):
     @blp.response(200, ProjectWithModelsSchema)
@@ -68,5 +76,3 @@ class Project(MethodView):
         return {
             "message": "Project deleted successfully!"
         }
-
-# TODO: projects with simulations routes /projects/simulations

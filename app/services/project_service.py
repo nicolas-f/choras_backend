@@ -3,6 +3,8 @@ from flask_smorest import abort
 from app.db import db
 from app.models import Project
 from sqlalchemy import asc
+from app.services import simulation_service
+from flask import jsonify
 
 # Create logger for this module
 logger = logging.getLogger(__name__)
@@ -10,6 +12,27 @@ logger = logging.getLogger(__name__)
 
 def get_all_projects():
     return Project.query.order_by(asc(Project.createdAt)).all()
+
+
+def get_all_projects_simulations():
+    projects = get_all_projects()
+    project_simulations = []
+    for project in projects:
+        for model in project.models:
+            simulations = simulation_service.get_simulation_by_model_id(
+                model.id
+            )
+            project_simulations.append({
+                "simulations": simulations,
+                "modelId": model.id,
+                "modelName": model.name,
+                "modelCreatedAt": model.createdAt,
+                "projectId": project.id,
+                "projectName": project.name,
+                "group": project.group
+            })
+
+    return project_simulations
 
 
 def create_new_project(project_data):
@@ -90,7 +113,3 @@ def update_project_by_group(group, new_group):
         abort(400, message=f"Can not update! Error: {ex}")
 
     return result
-
-
-def project_simulations(project_id):
-    pass  # TODO

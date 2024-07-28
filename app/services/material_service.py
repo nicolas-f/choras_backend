@@ -34,6 +34,14 @@ def create_new_material(material_data):
     return new_material
 
 
+def get_material_by_id(material_id):
+    material = Material.query.filter_by(id=material_id).first()
+    if not material:
+        logger.error('Material with id ' + str(material_id) + 'does not exists!')
+        abort(400, message="Material doesn't exists!")
+    return material
+
+
 def insert_initial_materials():
     materials = get_all_materials()
     if len(materials):

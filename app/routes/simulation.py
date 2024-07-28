@@ -7,7 +7,8 @@ from app.schemas.simulation_schema import (
     SimulationRunSchema,
     SimulationCreateBodySchema,
     SimulationUpdateBodySchema,
-    SimulationRunCreateSchema
+    SimulationRunCreateSchema,
+    SimulationWithRunSchema
 )
 from app.services import simulation_service
 
@@ -17,7 +18,7 @@ blp = Blueprint("Simulation", __name__, description="Simulation API")
 @blp.route("/simulations")
 class SimulationList(MethodView):
     @blp.arguments(SimulationByModelQuerySchema, location='query')
-    @blp.response(200, SimulationSchema(many=True))
+    @blp.response(200, SimulationWithRunSchema(many=True))
     def get(self, query_data):
         result = simulation_service.get_simulation_by_model_id(
             query_data['modelId']
@@ -52,6 +53,14 @@ class SimulationList(MethodView):
         }
 
 
+@blp.route("/simulations/<int:simulation_id>/result")
+class SimulationList(MethodView):
+    @blp.response(200)
+    def get(self, simulation_id):
+        result = simulation_service.get_simulation_result_by_id(simulation_id)
+        return result
+
+
 @blp.route("/simulations/run")
 class SimulationRunList(MethodView):
     @blp.response(200, SimulationRunSchema(many=True))
@@ -65,5 +74,18 @@ class SimulationRunList(MethodView):
         result = simulation_service.start_solver_task(body_data['simulationId'])
         return result
 
-# TODO: implement route for /simulations/run/:simulationrunId
-# TODO: implement route for /simulations/run/status/:simulationsrunId
+
+@blp.route("/simulations/run/<int:simulation_run_id>")
+class SimulationList(MethodView):
+    @blp.response(200, SimulationRunSchema)
+    def get(self, simulation_run_id):
+        result = simulation_service.get_simulation_run_by_id(simulation_run_id)
+        return result
+
+
+@blp.route("/simulations/run/<int:simulation_run_id>/status")
+class SimulationResultList(MethodView):
+    @blp.response(200)
+    def get(self, simulation_run_id):
+        result = simulation_service.get_simulation_run_result_by_id(simulation_run_id)
+        return result
