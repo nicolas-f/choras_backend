@@ -327,7 +327,22 @@ def get_simulation_result_by_id(simulation_id):
     return result_container['results']
 
 
-def get_simulation_run_result_by_id(simulation_run_id):
+def update_simulation_run_status(simulation_run, simulation):
+    # TODO: update source percentage later
+    model = model_service.get_model(simulation.modelId)
+    json_path = file_service.get_file_related_path(model.outputFileId, simulation.id, extension='json')
+    with open(json_path, 'r') as json_file:
+        result_container = json.load(json_file)
+        try:
+            simulation_run.percentage = result_container['results'][0]['percentage']
+            db.session.commit()
+        except Exception as ex:
+            db.session.rollback()
+            logger.warning(msg=f"Can not update percentage of the simulation run: {ex}")
+            abort(400, message=f"Can not update percentage of the simulation run: {ex}")
+
+
+def get_simulation_run_status_by_id(simulation_run_id):
     simulation = Simulation.query.filter_by(simulationRunId=simulation_run_id).first()
     if not simulation:
         logger.error('Simulation for the simulation run id ' + str(simulation_run_id) + 'does not exists!')
@@ -337,12 +352,6 @@ def get_simulation_run_result_by_id(simulation_run_id):
     if not simulation_run:
         abort(400, message="Simulation run doesn't exists!")
 
-    model = model_service.get_model(simulation.modelId)
-    json_path = file_service.get_file_related_path(model.outputFileId, simulation.id, extension='json')
+    update_simulation_run_status(simulation_run, simulation)
 
-    with open(json_path, 'r') as json_file:
-        result_container = json.load(json_file)
-
-
-
-    return result_container['results']
+    return simulation_run
