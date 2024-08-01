@@ -13,6 +13,8 @@ from app.services import file_service
 import config
 import os
 import gmsh
+from sqlalchemy.orm import joinedload
+
 
 # Create logger for this module
 logger = logging.getLogger(__name__)
@@ -60,7 +62,8 @@ def get_simulation_by_model_id(model_id):
 
 
 def get_simulation_run():
-    return SimulationRun.query.all()
+    return SimulationRun.query.options(joinedload(SimulationRun.simulation)).filter(SimulationRun.simulation != None).all()
+
 
 
 def get_simulation_run_by_id(simulation_run_id):
@@ -73,9 +76,15 @@ def get_simulation_run_by_id(simulation_run_id):
 
 def delete_simulation(simulation_id):
     try:
-        Simulation.query.filter_by(
+        simulations = Simulation.query.filter_by(
             id=simulation_id
-        ).delete()
+        ).all()
+        for simulation in simulations:
+            SimulationRun.query.filter_by(
+                id=simulation.id
+            ).delete()
+            simulation.delete()
+
         db.session.commit()
 
     except Exception as ex:
@@ -170,6 +179,7 @@ def start_solver_task(simulation_id):
 
     if simulation.simulationRunId:
         delete_simulation_run(simulation.simulationRunId)
+
 
     model = model_service.get_model(simulation.modelId)
     json_path = file_service.get_file_related_path(model.outputFileId, simulation_id, extension='json')
