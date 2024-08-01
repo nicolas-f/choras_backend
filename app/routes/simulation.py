@@ -34,7 +34,7 @@ class SimulationList(MethodView):
 
 @blp.route("/simulations/<int:simulation_id>")
 class SimulationList(MethodView):
-    @blp.response(200, SimulationSchema)
+    @blp.response(200, SimulationWithRunSchema)
     def get(self, simulation_id):
         result = simulation_service.get_simulation_by_id(simulation_id)
         return result
