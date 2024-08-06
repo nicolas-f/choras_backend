@@ -1,6 +1,6 @@
 from marshmallow import Schema, fields
 from app.schemas.model_schema import ModelSchema
-from app.schemas.simulation_schema import SimulationSchema
+from app.schemas.simulation_schema import SimulationWithRunSchema
 from app.models import Project
 
 
@@ -39,7 +39,7 @@ class ProjectUpdateByGroupBodySchema(Schema):
 class ProjectSimulationsSchema(Schema):
     modelName = fields.Str(required=True)
     modelId = fields.Integer(required=True)
-    simulations = fields.List(fields.Nested(SimulationSchema))
+    simulations = fields.List(fields.Nested(SimulationWithRunSchema))
     modelCreatedAt = fields.String(required=True)
     projectId = fields.Integer(required=True)
     projectName = fields.String(required=True)
