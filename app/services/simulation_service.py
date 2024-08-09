@@ -259,6 +259,14 @@ def start_solver_task(simulation_id):
         )
 
     run_solver.delay(new_simulation_run.id, json_path)
+    try:
+        simulation.status = Status.Queued
+        new_simulation_run.status = Status.Queued
+        db.session.commit()
+    except Exception as ex:
+        db.session.rollback()
+        logger.error(f"Can not update the new simulation run status: {ex}")
+        abort(400, message=f"Can not update a new simulation run status: {ex}")
 
     return new_simulation_run
 
