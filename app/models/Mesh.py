@@ -3,6 +3,7 @@ from datetime import datetime
 
 from app.db import db
 
+
 class Mesh(db.Model):
     __tablename__ = "meshes"
 

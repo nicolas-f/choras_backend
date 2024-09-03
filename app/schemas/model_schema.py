@@ -2,12 +2,6 @@ from marshmallow import Schema, fields, post_load
 from app.services import file_service
 
 
-# class ProjectSchemaInModel(Schema):
-#     id = fields.Integer(data_key="projectId")
-#     name = fields.Str(required=True, data_key="projectName")
-#     group = fields.Str(required=True, data_key="projectTag")
-#
-
 class ModelSchema(Schema):
     id = fields.Number()
     name = fields.Str(required=True)

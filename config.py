@@ -37,7 +37,7 @@ class DefaultConfig:
     JWT_TOKEN_LOCATION = "headers"
 
     # Config API documents
-    API_TITLE = "Flask REST API Template"
+    API_TITLE = "UI Backend RESTAPI"
     API_VERSION = "v1"
     OPENAPI_VERSION = "3.0.3"
     OPENAPI_URL_PREFIX = "/"

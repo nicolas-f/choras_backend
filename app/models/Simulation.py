@@ -26,7 +26,8 @@ class Simulation(db.Model):
 
     simulationRunId = db.Column(db.Integer, db.ForeignKey('simulationRuns.id', ondelete='SET NULL'), nullable=True)
     # Relationship to SimulationRun
-    simulationRun = db.relationship("SimulationRun", backref=db.backref("simulation", uselist=False), cascade="all, delete", foreign_keys=[simulationRunId])
+    simulationRun = db.relationship("SimulationRun", backref=db.backref("simulation", uselist=False),
+                                    cascade="all, delete", foreign_keys=[simulationRunId])
 
     createdAt = db.Column(db.String(), default=datetime.now())
     updatedAt = db.Column(db.String(), default=datetime.now())

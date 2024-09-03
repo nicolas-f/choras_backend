@@ -25,25 +25,25 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
 
 
 def create_app(settings_module):
-    app = Flask(os.getenv('APP_NAME'))
-    app.config.from_object(settings_module)
+    local_app = Flask(os.getenv('APP_NAME'))
+    local_app.config.from_object(settings_module)
     # Initialize the extensions
-    db.init_app(app)
+    db.init_app(local_app)
 
-    celery = make_celery(app)
-    celery.set_default()
+    local_celery = make_celery(local_app)
+    local_celery.set_default()
 
-    migrate.init_app(app, db)
-    cors.init_app(app, supports_credentials="true", resources={r"*": {"origins": "*"}})
-    manage.init_app(app)
+    migrate.init_app(local_app, db)
+    cors.init_app(local_app, supports_credentials="true", resources={r"*": {"origins": "*"}})
+    manage.init_app(local_app)
 
     # Logging configuration
-    configure_logging(app)
+    configure_logging(local_app)
 
     # Register Blueprint
-    register_routing(app)
+    register_routing(local_app)
 
-    return app, celery
+    return local_app, local_celery
 
 
 app, celery = create_app(

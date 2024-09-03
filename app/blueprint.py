@@ -8,6 +8,7 @@ from app.routes.geometry import blp as geometry_blueprint
 from app.routes.simulation import blp as simulation_blueprint
 from app.routes.mesh import blp as mesh_blueprint
 
+
 # Register Blueprint
 def register_routing(app):
     api = Api(app)

@@ -23,9 +23,11 @@ class MeshWithTaskSchema(MeshSchema):
 class MeshQuerySchema(Schema):
     modelId = fields.Integer(required=True)
 
+
 class GeoQuerySchema(Schema):
     modelId = fields.Integer(required=True)
     fileUploadId = fields.Integer(required=True)
+
 
 class MeshUpdateSchema(Schema):
     name = fields.Str(required=True)

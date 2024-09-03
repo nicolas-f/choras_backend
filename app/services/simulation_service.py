@@ -63,7 +63,7 @@ def get_simulation_by_model_id(model_id):
 def get_simulation_run():
     result = SimulationRun.query.options(
         joinedload(SimulationRun.simulation)
-    ).filter(SimulationRun.simulation != None).all()
+    ).filter(SimulationRun.simulation is not None).all()
 
     for simulation_run in result:
         update_simulation_run_status(simulation_run, simulation_run.simulation)

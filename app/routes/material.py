@@ -1,7 +1,7 @@
 from flask.views import MethodView
 from flask_smorest import Blueprint
 
-from app.schemas.material_schema import MaterialSchema,MaterialCreateSchema
+from app.schemas.material_schema import MaterialSchema, MaterialCreateSchema
 from app.services import material_service
 
 blp = Blueprint("Material", __name__, description="Material API")

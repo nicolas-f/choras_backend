@@ -166,9 +166,10 @@ def start_mesh_task(model_id):
     else:
         try:
             task.status = Status.Error
-            task.message = ("Possibly you don't have Gmsh installed on your device," +
-                            "or Gmsh has not been initialized!")
-            logger.error(f"Someone is trying to create mesh but they can't!")
+            message = "Possibly you don't have Gmsh installed on your device,"
+            message += "or Gmsh has not been initialized!"
+            task.message = message
+            logger.error("Someone is trying to create mesh but they can't!")
             db.session.commit()
         except Exception as ex:
             db.session.rollback()
@@ -240,7 +241,8 @@ def generate_geo_file(rhino_file_path, geo_file_path):
 
             # Write physical surface group
             physical_surfaces[
-                obj.Attributes.Id] = f"Physical Surface(\"{obj.Attributes.Id}\") = {{{', '.join(map(str, range(1, surface_index)))}}};\n"
+                obj.Attributes.Id] = \
+                f"Physical Surface(\"{obj.Attributes.Id}\") = {{{', '.join(map(str, range(1, surface_index)))}}};\n"
             physical_surface_counter += 1
 
     with open(geo_file_path, 'w') as geo_file:

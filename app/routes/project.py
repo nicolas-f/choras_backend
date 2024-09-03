@@ -33,7 +33,7 @@ class ProjectGroupUpdate(MethodView):
     @blp.arguments(ProjectUpdateByGroupBodySchema)
     @blp.response(200)
     def patch(self, query_data, body_data):
-        result = project_service.update_project_by_group(query_data['group'], body_data['newGroup'])
+        project_service.update_project_by_group(query_data['group'], body_data['newGroup'])
         return {
             'message': 'group name updated successfully'
         }

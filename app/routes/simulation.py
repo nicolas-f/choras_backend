@@ -33,7 +33,7 @@ class SimulationList(MethodView):
 
 
 @blp.route("/simulations/<int:simulation_id>")
-class SimulationList(MethodView):
+class SimulationObject(MethodView):
     @blp.response(200, SimulationWithRunSchema)
     def get(self, simulation_id):
         result = simulation_service.get_simulation_by_id(simulation_id)
@@ -54,7 +54,7 @@ class SimulationList(MethodView):
 
 
 @blp.route("/simulations/<int:simulation_id>/result")
-class SimulationList(MethodView):
+class SimulationListResult(MethodView):
     @blp.response(200)
     def get(self, simulation_id):
         result = simulation_service.get_simulation_result_by_id(simulation_id)
@@ -76,7 +76,7 @@ class SimulationRunList(MethodView):
 
 
 @blp.route("/simulations/run/<int:simulation_run_id>")
-class SimulationList(MethodView):
+class SimulationRunObject(MethodView):
     @blp.response(200, SimulationRunSchema)
     def get(self, simulation_run_id):
         result = simulation_service.get_simulation_run_by_id(simulation_run_id)
