@@ -5,10 +5,7 @@ import coverage
 from passlib.hash import pbkdf2_sha256
 
 from app.db import db
-
-from app.services import (
-    material_service
-)
+from app.services import material_service
 
 
 @click.option(

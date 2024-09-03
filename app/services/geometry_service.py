@@ -1,14 +1,16 @@
 import logging
-from flask_smorest import abort
-from app.db import db
-from app.models import Geometry, Task, File
-from app.types import TaskType, Status
-import config
-import trimesh
-import numpy as np
-import rhino3dm
 import os
 import zipfile
+
+import numpy as np
+import rhino3dm
+import trimesh
+from flask_smorest import abort
+
+import config
+from app.db import db
+from app.models import File, Geometry, Task
+from app.types import Status, TaskType
 
 # Create logger for this module
 logger = logging.getLogger(__name__)
@@ -21,16 +23,10 @@ def get_geometry_by_id(geometry_id):
 
 def start_geometry_check_task(file_upload_id):
     try:
-        task = Task(
-            taskType=TaskType.GeometryCheck,
-            status=Status.Created
-        )
+        task = Task(taskType=TaskType.GeometryCheck, status=Status.Created)
         db.session.add(task)
         db.session.commit()
-        geometry = Geometry(
-            inputModelUploadId=file_upload_id,
-            taskId=task.id
-        )
+        geometry = Geometry(inputModelUploadId=file_upload_id, taskId=task.id)
 
         db.session.add(geometry)
         db.session.commit()
@@ -66,9 +62,7 @@ def map_to_3dm(geometry_id):
     task = Task.query.filter_by(id=geometry.taskId).first()
 
     directory = config.DefaultConfig.UPLOAD_FOLDER
-    file_name, file_extension = os.path.splitext(
-        os.path.basename(file.fileName)
-    )
+    file_name, file_extension = os.path.splitext(os.path.basename(file.fileName))
 
     obj_path = os.path.join(directory, file.fileName)
     obj_clean_path = os.path.join(directory, f"{file_name}_clean{file_extension}")
@@ -90,15 +84,13 @@ def map_to_3dm(geometry_id):
         return False
 
     try:
-        file3dm = File(
-            fileName=f"{file_name}.3dm"
-        )
+        file3dm = File(fileName=f"{file_name}.3dm")
         db.session.add(file3dm)
         db.session.commit()
         geometry.outputModelId = file3dm.id
 
         # Create a zip file from 3dm
-        with zipfile.ZipFile(zip_file_path, 'w') as zipf:
+        with zipfile.ZipFile(zip_file_path, "w") as zipf:
             zipf.write(rhino3dm_path, arcname=f"{file_name}.3dm")
 
         db.session.commit()
@@ -110,19 +102,19 @@ def map_to_3dm(geometry_id):
 
 
 def clean_obj_file(obj_file_path, obj_clean_path):
-    with open(obj_file_path, 'r') as infile, open(obj_clean_path, 'w') as outfile:
+    with open(obj_file_path, "r") as infile, open(obj_clean_path, "w") as outfile:
         lines = infile.readlines()
         current_material = None
         custom_material_counter = 1
 
         for line in lines:
-            if line.startswith('usemtl'):
+            if line.startswith("usemtl"):
                 current_material = line.strip()
-            elif line.startswith('f'):
+            elif line.startswith("f"):
                 if current_material:
-                    outfile.write(current_material + '\n')
+                    outfile.write(current_material + "\n")
                 else:
-                    custom_material = f'usemtl M_{custom_material_counter}\n'
+                    custom_material = f"usemtl M_{custom_material_counter}\n"
                     outfile.write(custom_material)
                     current_material = custom_material.strip()
                     custom_material_counter += 1
@@ -135,10 +127,10 @@ def parse_obj_materials(obj_path):
     material_map = {}
     face_index = 0
 
-    with open(obj_path, 'r') as f:
+    with open(obj_path, "r") as f:
         for line in f:
             line = line.strip()
-            if line.startswith('usemtl'):
+            if line.startswith("usemtl"):
                 material_map[face_index] = line.split()[1]
                 face_index += 1
     return material_map
@@ -151,7 +143,7 @@ def convert_obj_to_3dm(obj_clean_path, rhino_path, png_path):
         group_material=False,
         skip_materials=False,
         maintain_order=True,
-        Process=False
+        Process=False,
     )
 
     # Create a new 3dm file
@@ -166,14 +158,10 @@ def convert_obj_to_3dm(obj_clean_path, rhino_path, png_path):
         meshes.reverse()
     else:
         meshes = [scene]
-    print('_____________________')
+    print("_____________________")
     print(meshes)
     # Define a 90-degree rotation matrix around the X-axis
-    rotation_matrix = np.array([
-        [1, 0, 0],
-        [0, 0, -1],
-        [0, 1, 0]
-    ])
+    rotation_matrix = np.array([[1, 0, 0], [0, 0, -1], [0, 1, 0]])
 
     for mesh_index, mesh in enumerate(meshes):
         vertices = mesh.vertices
@@ -183,7 +171,9 @@ def convert_obj_to_3dm(obj_clean_path, rhino_path, png_path):
 
         for vertex in vertices:
             rotated_vertex = np.dot(rotation_matrix, vertex)
-            rhino_mesh.Vertices.Add(rotated_vertex[0], rotated_vertex[1], rotated_vertex[2])
+            rhino_mesh.Vertices.Add(
+                rotated_vertex[0], rotated_vertex[1], rotated_vertex[2]
+            )
 
         for face_index, face in enumerate(faces):
             if len(face) == 3:  # Triangular face
@@ -191,7 +181,7 @@ def convert_obj_to_3dm(obj_clean_path, rhino_path, png_path):
             elif len(face) == 4:  # Quad face
                 rhino_mesh.Faces.AddFace(face[0], face[1], face[2], face[3])
 
-        rhino_mesh.SetUserString('material_name', str(material_map[mesh_index]))
+        rhino_mesh.SetUserString("material_name", str(material_map[mesh_index]))
         model.Objects.AddMesh(rhino_mesh)
         # rhino_mesh.Attributes
 

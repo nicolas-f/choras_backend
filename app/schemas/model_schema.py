@@ -1,4 +1,5 @@
 from marshmallow import Schema, fields, post_load
+
 from app.services import file_service
 
 
@@ -24,7 +25,7 @@ class ModelInfoBasicSchema(Schema):
 
 
 class ModelInfoSchema(ModelInfoBasicSchema):
-    hasGeo = fields.Boolean(data_key='hasGeo')
+    hasGeo = fields.Boolean(data_key="hasGeo")
     sourceFileId = fields.Integer(data_key="modelUploadId")
     modelUrl = fields.Method("get_model_url", dump_only=True)
     meshId = fields.String(data_key="meshId", attribute="mesh.id")

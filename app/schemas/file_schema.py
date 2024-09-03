@@ -1,4 +1,4 @@
-from marshmallow import Schema, fields, ValidationError
+from marshmallow import Schema, ValidationError, fields
 
 
 class FileSchema(Schema):
@@ -19,7 +19,7 @@ class FileCreateQuerySchema(Schema):
 
 class FileField(fields.Field):
     def _deserialize(self, value, attr, data, **kwargs):
-        if not hasattr(value, 'filename'):
+        if not hasattr(value, "filename"):
             raise ValidationError("Invalid file.")
         return value
 

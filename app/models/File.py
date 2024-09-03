@@ -1,7 +1,7 @@
+import uuid
 from datetime import datetime
 
 from app.db import db
-import uuid
 
 
 class File(db.Model):

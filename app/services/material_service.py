@@ -1,26 +1,24 @@
-import logging
 import json
-from app.db import db
-from sqlalchemy import asc
-from flask_smorest import abort
-from config import app_dir
-from app.models import Material
+import logging
 import os
+
+from flask_smorest import abort
+from sqlalchemy import asc
+
+from app.db import db
+from app.models import Material
+from config import app_dir
 
 # Create logger for this module
 logger = logging.getLogger(__name__)
 
 
 def get_all_materials():
-    return Material.query.order_by(
-        asc(Material.id)
-    ).all()
+    return Material.query.order_by(asc(Material.id)).all()
 
 
 def create_new_material(material_data):
-    new_material = Material(
-        **material_data
-    )
+    new_material = Material(**material_data)
 
     try:
         db.session.add(new_material)
@@ -37,7 +35,7 @@ def create_new_material(material_data):
 def get_material_by_id(material_id):
     material = Material.query.filter_by(id=material_id).first()
     if not material:
-        logger.error('Material with id ' + str(material_id) + 'does not exists!')
+        logger.error("Material with id " + str(material_id) + "does not exists!")
         abort(400, message="Material doesn't exists!")
     return material
 
@@ -47,17 +45,19 @@ def insert_initial_materials():
     if len(materials):
         return
     logger.info("Inserting initial materials")
-    with open(os.path.join(app_dir, 'models', 'data', 'materials.json')) as json_materials:
+    with open(
+        os.path.join(app_dir, "models", "data", "materials.json")
+    ) as json_materials:
         initial_materials = json.load(json_materials)
         try:
             new_materials = []
             for material in initial_materials:
                 new_materials.append(
                     Material(
-                        name=material['name'],
-                        description=material['description'],
-                        category=material['category'],
-                        absorptionCoefficients=material['absorptionCoefficients'],
+                        name=material["name"],
+                        description=material["description"],
+                        category=material["category"],
+                        absorptionCoefficients=material["absorptionCoefficients"],
                     )
                 )
 

@@ -1,12 +1,11 @@
 from flask.views import MethodView
-from flask_smorest import Blueprint
-from flask_smorest import abort
+from flask_smorest import Blueprint, abort
 
 from app.schemas.model_schema import (
     ModelCreateSchema,
+    ModelInfoSchema,
     ModelSchema,
     ModelUpdateSchema,
-    ModelInfoSchema
 )
 from app.services import model_service
 
@@ -15,8 +14,7 @@ blp = Blueprint("Model", __name__, description="Model API")
 
 @blp.route("/models")
 class ModelList(MethodView):
-
-    @blp.arguments(ModelCreateSchema, location='query')
+    @blp.arguments(ModelCreateSchema, location="query")
     @blp.response(201, ModelSchema)
     def post(self, query_data):
         result = model_service.create_new_model(query_data)
@@ -39,6 +37,4 @@ class Model(MethodView):
     @blp.response(200)
     def delete(self, model_id):
         model_service.delete_model(model_id)
-        return {
-            "message": "Model deleted successfully!"
-        }
+        return {"message": "Model deleted successfully!"}

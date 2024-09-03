@@ -16,12 +16,12 @@ with provisions for PostgreSQL as an alternative.
 - [Technology](#technology)
 - [Requirements](#requirements)
 - [Environments](#environments)
-    - [Develop](#develop)
-    - [Production](#production)
+  - [Develop](#develop)
+  - [Production](#production)
 - [Flask Commands](#flask-commands)
-    - [Flask-cli](#flask-cli)
+  - [Flask-cli](#flask-cli)
 - [Database commands](#bbdd-commands)
-    - [Flask-migrate](#flask-migrate)
+  - [Flask-migrate](#flask-migrate)
 - [Swagger](#swagger)
 - [Reference](#reference)
 - [Contribution](#contribution)
@@ -43,8 +43,8 @@ with provisions for PostgreSQL as an alternative.
 - **Proxy:** Nginx
 - **Tests:** Under Planning
 - **Deployment platform:** Under planning for AWS
-- **CI/CD:** Under planning for Github Actions
--**Celery** Job queue
+- **CI/CD:** Under planning for Github Actions -**Celery** Job queue
+
 ## Requirements
 
 - [Python](https://www.python.org/downloads/)
@@ -58,9 +58,9 @@ with provisions for PostgreSQL as an alternative.
 ### Develop
 
 Development environment uses SQLite3/Postgresql locally and runs the Flask server in debug mode.
-You can customize the environment variables in the corresponding .env file.
-0. **Setup Celery**
- celery -A app.celery worker --loglevel=info -P eventlet
+You can customize the environment variables in the corresponding .env file. 0. **Setup Celery**
+celery -A app.celery worker --loglevel=info -P eventlet
+
 1. **Create environment and install packages**
 
 In general, I am using conda to handle virtual env and packages installations, however you can
@@ -177,45 +177,45 @@ and docker-compose.
 
 1. **Create `.env.api.local`, `.env.db.local` files**
 
-    1. **.env.api.local**
+   1. **.env.api.local**
 
-       ```shell
-       # APP configuration
-       APP_NAME=[Name APP] # For example Flask API Rest Template
-       APP_ENV=local
- 
-       # Flask configuration
-       API_ENTRYPOINT=app:app
-       APP_SETTINGS_MODULE=config.LocalConfig
-       APP_TEST_SETTINGS_MODULE=config.TestingConfig
- 
-       # API service configuration
-       API_HOST=<api_host> # For example 0.0.0.0
-       API_PORT=<port_api> # For example 5000
- 
-       # Database service configuration
-       DATABASE=postgres
-       DB_HOST=<name_container_bbdd> # For example db_service (name service in docker-compose)
-       DB_PORT=<port_container_bbdd> # For example 5432 (port service in docker-compose)
-       POSTGRES_DB=<name_database> # For example db_dev
-       POSTGRES_USER=<name_user> # For example db_user
-       PGPASSWORD=<password_user> # For example db_password
- 
-       # Secret key
-       SECRET_KEY=<your-secret-key>
-       JWT_SECRET_KEY=<your-jwt-secret-key>
- 
-       DATABASE_TEST_URL=<url database test> # For example postgresql+psycopg2://db_user:db_password@db_service:5432/db_test
-       DATABASE_URL=<url database> # For example postgresql+psycopg2://db_user:db_password@db_service:5432/db_dev
-       ```
+      ```shell
+      # APP configuration
+      APP_NAME=[Name APP] # For example Flask API Rest Template
+      APP_ENV=local
 
-    2. **.env.db.local**:
+      # Flask configuration
+      API_ENTRYPOINT=app:app
+      APP_SETTINGS_MODULE=config.LocalConfig
+      APP_TEST_SETTINGS_MODULE=config.TestingConfig
 
-       ```shell
-       POSTGRES_USER=<name_user> # For example db_user
-       POSTGRES_PASSWORD=<password> # For example db_password
-       POSTGRES_DB=<name_DB> # For example db_dev
-       ```
+      # API service configuration
+      API_HOST=<api_host> # For example 0.0.0.0
+      API_PORT=<port_api> # For example 5000
+
+      # Database service configuration
+      DATABASE=postgres
+      DB_HOST=<name_container_bbdd> # For example db_service (name service in docker-compose)
+      DB_PORT=<port_container_bbdd> # For example 5432 (port service in docker-compose)
+      POSTGRES_DB=<name_database> # For example db_dev
+      POSTGRES_USER=<name_user> # For example db_user
+      PGPASSWORD=<password_user> # For example db_password
+
+      # Secret key
+      SECRET_KEY=<your-secret-key>
+      JWT_SECRET_KEY=<your-jwt-secret-key>
+
+      DATABASE_TEST_URL=<url database test> # For example postgresql+psycopg2://db_user:db_password@db_service:5432/db_test
+      DATABASE_URL=<url database> # For example postgresql+psycopg2://db_user:db_password@db_service:5432/db_dev
+      ```
+
+   2. **.env.db.local**:
+
+      ```shell
+      POSTGRES_USER=<name_user> # For example db_user
+      POSTGRES_PASSWORD=<password> # For example db_password
+      POSTGRES_DB=<name_DB> # For example db_dev
+      ```
 
 2. **Build and run services**
    `shell docker-compose up --build ` 2. Stop services:
@@ -254,6 +254,75 @@ Apply CI/CD with Github Actions to automatically deployed to AWS platform use EC
    # Deploy platform
    PLATFORM_DEPLOY=AWS
    ```
+
+# Commands
+
+You can run the following commands in order to use specific features of the application. Note that all of these
+commands are also ran in the pipeline on every commit, but it is recommended to run them locally too. Most notably,
+[PEP8 verification](#pep8-verification-flake8), [Import sorting](#import-sorting-isort), and
+[test cases](#test-cases-unittest), as committing without satisfying these tools will cause the pipeline to fail.
+
+## PEP8 verification _(flake8)_
+
+You can check whether your code adheres to the [PEP8](https://peps.python.org/pep-0008/) code style standard by doing
+`cd painting_explorer`. And then running the following:
+
+```shell
+flake8
+```
+
+If you want to write the output of this to file as well, you can run the following:
+
+```shell
+flake8 --output-file ../reports/flake8/flake8stats.txt
+```
+
+## Import sorting _(isort)_
+
+To sort all of your imported Python packages, similarly make sure you are in the `painting_explorer` folder, and then
+run the following:
+
+```shell
+isort .
+```
+
+If you just want to check what changes isort would make, you can run the following:
+
+```shell
+isort . --check --diff
+```
+
+## Code coverage calculation _(Coverage.py)_
+
+For code coverage as well, make sure you are in the `painting_explorer` folder. You can then run the following command
+to first erase any previous coverage reports:
+
+```shell
+coverage erase --data-file=../reports/coverage/.coverage
+```
+
+Next, calculate the new coverage using:
+
+```shell
+coverage run --source='.' --data-file=../reports/coverage/.coverage manage.py test
+```
+
+To print a report of this coverage, run:
+
+```shell
+coverage report --data-file=../reports/coverage/.coverage
+```
+
+Lastly if you want to generate a report in XML format too, you can use this:
+
+```shell
+coverage xml --data-file=../reports/coverage/.coverage -o ../reports/coverage/coverage.xml
+```
+
+## a pre-commit configuration
+
+Install the git hook scripts
+run pre-commit install to set up the git hook scripts
 
 ## Flask Commands
 
@@ -315,8 +384,8 @@ Apply CI/CD with Github Actions to automatically deployed to AWS platform use EC
 http://localhost:<port>/swagger-ui
 ```
 
-<p align="center"> 
-<img src="./assets/swagger.png" alt="Swagger" /> 
+<p align="center">
+<img src="./assets/swagger.png" alt="Swagger" />
 </p>
 
 ## Reference

@@ -1,17 +1,17 @@
 import os
-from flask import Flask
-from dotenv import load_dotenv
 
+from dotenv import load_dotenv
+from flask import Flask
+from sqlalchemy import event
+from sqlalchemy.engine import Engine
+
+import config
 import manage
 from app.blueprint import register_routing
 from app.db import db
 from app.extention import cors, migrate
-from app.utils.logging import configure_logging
-
-from sqlalchemy.engine import Engine
-from sqlalchemy import event
-import config
 from app.job_queue import make_celery  # Import the Celery setup
+from app.utils.logging import configure_logging
 
 # Load environment variables from a .env file
 load_dotenv()
@@ -25,7 +25,7 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
 
 
 def create_app(settings_module):
-    local_app = Flask(os.getenv('APP_NAME'))
+    local_app = Flask(os.getenv("APP_NAME"))
     local_app.config.from_object(settings_module)
     # Initialize the extensions
     db.init_app(local_app)
@@ -34,7 +34,9 @@ def create_app(settings_module):
     local_celery.set_default()
 
     migrate.init_app(local_app, db)
-    cors.init_app(local_app, supports_credentials="true", resources={r"*": {"origins": "*"}})
+    cors.init_app(
+        local_app, supports_credentials="true", resources={r"*": {"origins": "*"}}
+    )
     manage.init_app(local_app)
 
     # Logging configuration
@@ -46,8 +48,6 @@ def create_app(settings_module):
     return local_app, local_celery
 
 
-app, celery = create_app(
-    os.getenv("APP_SETTINGS_MODULE")
-)
+app, celery = create_app(os.getenv("APP_SETTINGS_MODULE"))
 
 app.app_context().push()

@@ -11,7 +11,7 @@ class Geometry(db.Model):
     inputModelUploadId = db.Column(db.Integer, nullable=False)
     outputModelId = db.Column(db.Integer, nullable=True)
 
-    taskId = db.Column(db.Integer, db.ForeignKey('tasks.id'), nullable=False)
+    taskId = db.Column(db.Integer, db.ForeignKey("tasks.id"), nullable=False)
     task = db.relationship("Task", cascade="all, delete", foreign_keys=[taskId])
 
     createdAt = db.Column(db.String(), default=datetime.now())

@@ -2,7 +2,6 @@ from datetime import datetime
 
 from app.db import db
 
-
 # name: Optional[str] = None,
 # type_: Optional[_TypeEngineArgument[_T]] = None,
 # autoincrement: _AutoIncrementType = "auto",
@@ -23,6 +22,7 @@ from app.db import db
 # system: bool = False,
 # comment: Optional[str] = None,
 
+
 class Model(db.Model):
     __tablename__ = "models"
 
@@ -32,9 +32,13 @@ class Model(db.Model):
     sourceFileId = db.Column(db.Integer, nullable=False)
     outputFileId = db.Column(db.Integer, nullable=False)
 
-    projectId = db.Column(db.Integer, db.ForeignKey('projects.id', ondelete='CASCADE'), nullable=False)
+    projectId = db.Column(
+        db.Integer, db.ForeignKey("projects.id", ondelete="CASCADE"), nullable=False
+    )
 
-    meshId = db.Column(db.Integer, db.ForeignKey('meshes.id', ondelete='SET NULL'), nullable=True)
+    meshId = db.Column(
+        db.Integer, db.ForeignKey("meshes.id", ondelete="SET NULL"), nullable=True
+    )
     mesh = db.relationship("Mesh", cascade="all, delete", foreign_keys=[meshId])
 
     simulations = db.relationship("Simulation", backref="model", cascade="all, delete")
@@ -45,4 +49,6 @@ class Model(db.Model):
 
     @property
     def simulation_count(self):
-        return len(self.simulations)  # Assuming 'simulations' is the backref in Simulation model
+        return len(
+            self.simulations
+        )  # Assuming 'simulations' is the backref in Simulation model

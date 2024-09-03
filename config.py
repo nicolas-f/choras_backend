@@ -2,9 +2,7 @@ import datetime
 import os
 
 basedir = os.path.abspath(os.path.dirname(__file__))
-app_dir = os.path.join(
-    os.path.abspath(os.path.dirname(__file__)), 'app'
-)
+app_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)), "app")
 
 
 class DefaultConfig:
@@ -61,18 +59,18 @@ class DefaultConfig:
 
     UPLOAD_FOLDER_NAME = "uploads"
     UPLOAD_FOLDER = os.path.join(basedir, UPLOAD_FOLDER_NAME)
-    ALLOWED_EXTENSIONS = {'obj', 'geo'}
+    ALLOWED_EXTENSIONS = {"obj", "geo"}
 
     # Ensure the upload folder exists
     if not os.path.exists(UPLOAD_FOLDER):
         os.makedirs(UPLOAD_FOLDER)
 
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'develop.db')
+    SQLALCHEMY_DATABASE_URI = "sqlite:///" + os.path.join(basedir, "develop.db")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     CELERY_CONFIG = {
-        "broker_url": 'sqla+sqlite:///' + os.path.join(basedir, 'celerydb.sqlite'),
-        "result_backend": 'db+sqlite:///' + os.path.join(basedir, 'celerydb.sqlite')
+        "broker_url": "sqla+sqlite:///" + os.path.join(basedir, "celerydb.sqlite"),
+        "result_backend": "db+sqlite:///" + os.path.join(basedir, "celerydb.sqlite"),
     }
 
 

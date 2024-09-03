@@ -1,5 +1,7 @@
 from datetime import datetime
+
 from sqlalchemy import JSON
+
 from app.db import db
 
 

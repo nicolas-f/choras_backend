@@ -1,10 +1,9 @@
 from datetime import datetime
 
-from app.types import Task, Setting, Status
+from sqlalchemy import JSON
 
 from app.db import db
-from sqlalchemy import JSON
-from app.types import TaskType
+from app.types import Setting, Status, Task, TaskType
 
 
 class SimulationRun(db.Model):

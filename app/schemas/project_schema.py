@@ -1,7 +1,8 @@
 from marshmallow import Schema, fields
+
+from app.models import Project
 from app.schemas.model_schema import ModelSchema
 from app.schemas.simulation_schema import SimulationWithRunSchema
-from app.models import Project
 
 
 class ProjectSchema(Schema):

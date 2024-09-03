@@ -1,6 +1,7 @@
-from marshmallow import Schema, fields, post_load, EXCLUDE
-from app.types import TaskType, Status, Setting
+from marshmallow import EXCLUDE, Schema, fields, post_load
+
 from app.schemas.model_schema import ModelInfoBasicSchema
+from app.types import Setting, Status, TaskType
 
 
 class SolverSettingsSchema(Schema):

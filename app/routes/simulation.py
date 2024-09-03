@@ -3,12 +3,12 @@ from flask_smorest import Blueprint
 
 from app.schemas.simulation_schema import (
     SimulationByModelQuerySchema,
-    SimulationSchema,
-    SimulationRunSchema,
     SimulationCreateBodySchema,
-    SimulationUpdateBodySchema,
     SimulationRunCreateSchema,
-    SimulationWithRunSchema
+    SimulationRunSchema,
+    SimulationSchema,
+    SimulationUpdateBodySchema,
+    SimulationWithRunSchema,
 )
 from app.services import simulation_service
 
@@ -17,12 +17,10 @@ blp = Blueprint("Simulation", __name__, description="Simulation API")
 
 @blp.route("/simulations")
 class SimulationList(MethodView):
-    @blp.arguments(SimulationByModelQuerySchema, location='query')
+    @blp.arguments(SimulationByModelQuerySchema, location="query")
     @blp.response(200, SimulationWithRunSchema(many=True))
     def get(self, query_data):
-        result = simulation_service.get_simulation_by_model_id(
-            query_data['modelId']
-        )
+        result = simulation_service.get_simulation_by_model_id(query_data["modelId"])
         return result
 
     @blp.arguments(SimulationCreateBodySchema)
@@ -48,9 +46,7 @@ class SimulationObject(MethodView):
     @blp.response(200)
     def delete(self, simulation_id):
         simulation_service.delete_simulation(simulation_id)
-        return {
-            "message": "Simulation deleted successfully!"
-        }
+        return {"message": "Simulation deleted successfully!"}
 
 
 @blp.route("/simulations/<int:simulation_id>/result")
@@ -71,7 +67,7 @@ class SimulationRunList(MethodView):
     @blp.arguments(SimulationRunCreateSchema)
     @blp.response(201, SimulationRunSchema)
     def post(self, body_data):
-        result = simulation_service.start_solver_task(body_data['simulationId'])
+        result = simulation_service.start_solver_task(body_data["simulationId"])
         return result
 
 
