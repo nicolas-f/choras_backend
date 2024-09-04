@@ -140,24 +140,6 @@ Some of the planned commands:
 flask tests
 ```
 
-2. **Run unit tests**
-
-```shell
-flask tests_unit
-```
-
-3. **Run integration tests**
-
-```shell
-flask tests_integration
-```
-
-4. **Run API tests**
-
-```shell
-flask tests_api
-```
-
 5. **Run coverage**
 
 ```shell
@@ -323,6 +305,7 @@ coverage xml --data-file=../reports/coverage/.coverage -o ../reports/coverage/co
 
 Install the git hook scripts
 run pre-commit install to set up the git hook scripts
+run: pre-commit
 
 ## Flask Commands
 
@@ -395,3 +378,8 @@ http://localhost:<port>/swagger-ui
 ## Contribution
 
 Feel free to make any suggestions or improvements to the project.
+
+## generate docs
+
+1. sphinx-quickstart docs
+2. sphinx-build -M html docs/source/ docs/build/

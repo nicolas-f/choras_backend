@@ -2,7 +2,7 @@ import json
 import logging
 import os
 
-from flask_smorest import abort
+from flask import abort
 from sqlalchemy import asc
 
 from app.db import db
@@ -27,7 +27,7 @@ def create_new_material(material_data):
     except Exception as ex:
         db.session.rollback()
         logger.error(f"Can not create a new material: {ex}")
-        abort(400, message=f"Can not create a new material: {ex}")
+        abort(400, f"Can not create a new material: {ex}")
 
     return new_material
 
@@ -35,8 +35,8 @@ def create_new_material(material_data):
 def get_material_by_id(material_id):
     material = Material.query.filter_by(id=material_id).first()
     if not material:
-        logger.error("Material with id " + str(material_id) + "does not exists!")
-        abort(400, message="Material doesn't exists!")
+        logger.error("Material with id " + str(material_id) + " does not exists!")
+        abort(400, "Material doesn't exists!")
     return material
 
 
@@ -67,6 +67,6 @@ def insert_initial_materials():
         except Exception as ex:
             db.session.rollback()
             logger.error(f"Can not insert initial materials! Error: {ex}")
-            abort(400, message=f"Can not insert initial materials! Error: {ex}")
+            abort(400, f"Can not insert initial materials! Error: {ex}")
 
     return {"message": "Initial materials added successfully!"}

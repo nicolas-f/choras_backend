@@ -16,7 +16,7 @@ repos:
     rev: v2.5.1
     hooks:
       - id: prettier
-        files: \.(js|ts|jsx|tsx|css|less|html|json|markdown|md|yaml|yml)$
+        files: \.(js|ts|jsx|tsx|css|less|html|json|yaml|yml)$
 
   # Sort the order of importing libs
   - repo: https://github.com/PyCQA/isort

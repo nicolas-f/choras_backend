@@ -9,7 +9,7 @@ from app.services import material_service
 
 
 @click.option(
-    "--pattern", default="tests_*.py", help="Test search pattern", required=False
+    "--pattern", default="test*.py", help="Test search pattern", required=False
 )
 def cov(pattern):
     """
@@ -17,8 +17,15 @@ def cov(pattern):
     """
     cov = coverage.coverage(branch=True, include="app/*")
     cov.start()
-    tests = unittest.TestLoader().discover("tests", pattern=pattern)
-    result = unittest.TextTestRunner(verbosity=2).run(tests)
+
+    # Discover tests in both the unit and integration directories
+    unit_tests = unittest.TestLoader().discover("tests/unit", pattern=pattern)
+    integration_tests = unittest.TestLoader().discover(
+        "tests/integration", pattern=pattern
+    )
+    all_tests = unittest.TestSuite([unit_tests, integration_tests])
+
+    result = unittest.TextTestRunner(verbosity=2).run(all_tests)
     if result.wasSuccessful():
         cov.stop()
         cov.save()
@@ -30,7 +37,7 @@ def cov(pattern):
 
 
 @click.option(
-    "--pattern", default="tests_*.py", help="Test search pattern", required=False
+    "--pattern", default="test*.py", help="Test search pattern", required=False
 )
 def cov_html(pattern):
     """
@@ -39,9 +46,14 @@ def cov_html(pattern):
     cov = coverage.coverage(branch=True, include="app/*")
     cov.start()
 
-    tests = unittest.TestLoader().discover("tests", pattern=pattern)
-    result = unittest.TextTestRunner(verbosity=2).run(tests)
+    # Discover tests in both the unit and integration directories
+    unit_tests = unittest.TestLoader().discover("tests/unit", pattern=pattern)
+    integration_tests = unittest.TestLoader().discover(
+        "tests/integration", pattern=pattern
+    )
+    all_tests = unittest.TestSuite([unit_tests, integration_tests])
 
+    result = unittest.TextTestRunner(verbosity=2).run(all_tests)
     if result.wasSuccessful():
         cov.stop()
         cov.save()
@@ -55,13 +67,19 @@ def cov_html(pattern):
     return 1
 
 
-@click.option("--pattern", default="tests_*.py", help="Test pattern", required=False)
+@click.option("--pattern", default="test_*.py", help="Test pattern", required=False)
 def tests(pattern):
     """
     Run the tests without code coverage
     """
-    tests = unittest.TestLoader().discover("tests", pattern=pattern)
-    result = unittest.TextTestRunner(verbosity=2).run(tests)
+    # Discover tests in both the unit and integration directories
+    unit_tests = unittest.TestLoader().discover("tests/unit", pattern=pattern)
+    integration_tests = unittest.TestLoader().discover(
+        "tests/integration", pattern=pattern
+    )
+    all_tests = unittest.TestSuite([unit_tests, integration_tests])
+
+    result = unittest.TextTestRunner(verbosity=2).run(all_tests)
     if result.wasSuccessful():
         return 0
     return 1

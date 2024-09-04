@@ -102,8 +102,8 @@ class TestingConfig(DefaultConfig):
     # Logging
     LOG_FILE_API = f"{basedir}/logs/api_tests.log"
 
-    # # Database configuration
-    # SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_TEST_URL")
+    # Database configuration
+    SQLALCHEMY_DATABASE_URI = "sqlite:///" + os.path.join(basedir, "test.db")
 
 
 class LocalConfig(DefaultConfig):

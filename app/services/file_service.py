@@ -14,6 +14,10 @@ logger = logging.getLogger(__name__)
 
 
 def allowed_file(filename):
+    """A new file to allow uploads to the system
+    :param filename:
+    :return:
+    """
     return (
         "." in filename
         and filename.rsplit(".", 1)[1].lower()
