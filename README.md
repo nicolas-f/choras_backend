@@ -307,6 +307,10 @@ Install the git hook scripts
 run pre-commit install to set up the git hook scripts
 run: pre-commit
 
+## Celery Commands
+```
+celery -A app.celery worker --loglevel=info -P eventlet
+```
 ## Flask Commands
 
 ### Flask-cli
