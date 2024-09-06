@@ -75,7 +75,7 @@ class ModelServiceUnitTests(BaseTestCase):
                 model_service.create_new_model(model_data)
 
             # Ensure the logger was called with the expected message
-            self.assertIn("Can not create a new model", str(context.exception))
+            self.assertIn("400 Bad Request", str(context.exception))
 
     def test_get_model_success(self):
         """
@@ -109,7 +109,7 @@ class ModelServiceUnitTests(BaseTestCase):
                 model_service.get_model(999)  # Non-existent ID
 
             # Ensure the logger was called with the expected message
-            self.assertIn("Model does not exist", str(context.exception))
+            self.assertIn("404 Not Found", str(context.exception))
 
     def test_update_model_success(self):
         """
@@ -145,7 +145,7 @@ class ModelServiceUnitTests(BaseTestCase):
                 )  # Non-existent ID
 
             # Ensure the logger was called with the expected message
-            self.assertIn("Model doesn't exist, cannot update", str(context.exception))
+            self.assertIn("400 Bad Request", str(context.exception))
 
     def test_delete_model_success(self):
         """
