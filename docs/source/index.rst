@@ -1,76 +1,23 @@
-Welcome to the Backend Application Documentation!
-=====
+Welcome to Room Acoustics Backend's documentation
+=================================================
+----
 
-This documentation provides a detailed overview of the backend application, including its modules, functionalities, and usage instructions.
+This is the backend implementation documentation for room acoustics software for research, education and industry in acoustics.
+
+The software is using the `Acoustics Diffusion Equation (DE) Method <https://github.com/Building-acoustics-TU-Eindhoven/Diffusion>`_ and `Wave-based Room Acoustics (DG) Method <https://github.com/Building-acoustics-TU-Eindhoven/edg-acoustics>`_ as sub-modules for modeling of sound behaviour in complex geometrical spaces.
+
+The software has been implemented in Python using the Flask framework. Currently, it has been tested only in the development environment. Future plans include support for Docker and deployment in production environments. The application supports SQLite3 as the default database, with provisions for PostgreSQL as an alternative.
+
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+   :maxdepth: 3
+   :caption: 🚀 Overview
 
-   introduction
-   installation
-   configuration
-   architecture
-   modules
-   api_reference
-   usage
-   testing
-   contributing
-   changelog
+   includes/overview.md
+   includes/getting_started.md
 
-Introduction
-------------
+.. toctree::
+   :maxdepth: 3
+   :caption: 📚 Guide
 
-This section provides an overview of the backend application, including its purpose, goals, and main functionalities.
-
-Installation
-------------
-
-Instructions for installing the backend application, including required dependencies and setup steps.
-
-Configuration
--------------
-
-Details on configuring the backend application, such as environment variables, settings files, and important parameters.
-
-Architecture
-------------
-
-An explanation of the backend application architecture, including high-level design, main components, and data flow.
-
-Modules
--------
-
-Documentation of the main modules of the backend application, including their purposes and usage examples.
-
-API Reference
--------------
-
-Detailed documentation of the available API endpoints, request/response formats, and usage guidelines.
-
-Usage
------
-
-Guidelines on how to use the backend application, including command-line options, configurations, and examples.
-
-Testing
--------
-
-Information on the testing strategy and practices used for the backend application, including unit tests, integration tests, and other test types.
-
-Contributing
-------------
-
-Guidelines for contributing to the backend application, including coding standards, pull request instructions, and community conduct.
-
-Changelog
----------
-
-A log of all changes made to the backend application, including new features, bug fixes, and other updates.
-
-Indices and Tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+   includes/development.md

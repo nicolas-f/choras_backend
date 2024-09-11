@@ -12,7 +12,11 @@ from tests.unit import BaseTestCase
 class ModelServiceUnitTests(BaseTestCase):
 
     def setUp(self):
+        """
+        Set up test variables and initialize a new app context.
+        """
         super().setUp()
+
         # Create a new app context for the tests
         self.ctx = self.app.app_context()
         self.ctx.push()

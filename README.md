@@ -1,4 +1,4 @@
-# Backend application [Room acoustics UI]
+# Backend Repository
 
 <p align="center">
 <img src="./assets/logo.png" alt="Logo" />
@@ -237,7 +237,7 @@ Apply CI/CD with Github Actions to automatically deployed to AWS platform use EC
    PLATFORM_DEPLOY=AWS
    ```
 
-# Commands
+## Commands
 
 You can run the following commands in order to use specific features of the application. Note that all of these
 commands are also ran in the pipeline on every commit, but it is recommended to run them locally too. Most notably,

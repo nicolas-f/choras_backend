@@ -19,7 +19,10 @@ extensions = [
     "sphinx.ext.doctest",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
+    "myst_parser",
+    "sphinx_design",
 ]
+source_suffix = [".rst", ".md"]
 
 templates_path = ["_templates"]
 exclude_patterns = []

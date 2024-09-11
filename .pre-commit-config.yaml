@@ -30,6 +30,18 @@ repos:
     rev: 24.8.0
     hooks:
       - id: black
+        exclude: |
+          (?x)^(
+            \.git
+            | __pycache__
+            | docs
+            | old
+            | build
+            | dist
+            | Diffusion
+            | logs
+            | migrations
+          )/
 
   - repo: https://github.com/PyCQA/flake8
     rev: 6.1.0
@@ -52,7 +64,7 @@ repos:
           (?x)^(
             \.git
             | __pycache__
-            | docs/source/conf\.py
+            | docs
             | old
             | build
             | dist
