@@ -22,6 +22,13 @@ def get_geometry_by_id(geometry_id):
 
 
 def start_geometry_check_task(file_upload_id):
+    """
+    This function is a wrapper over 3dm mapper. It creates a task and geometry given a file upload id.
+    Then calls the map_to_3dm function to map the given geometry file format to a rhino model.
+
+    :param file_upload_id: represents an id related to the uploaded file
+    :return: Geometry: returns an object of Geometry model corresponding to the uploaded file
+    """
     try:
         task = Task(taskType=TaskType.GeometryCheck, status=Status.Created)
         db.session.add(task)
