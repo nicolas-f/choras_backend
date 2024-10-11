@@ -1,9 +1,10 @@
 import logging
+
+from flask import abort
 from flask_smorest import abort
 
 from app.db import db
 from app.models import Model
-from app.services import file_service
 
 # Create logger for this module
 logger = logging.getLogger(__name__)
@@ -14,7 +15,7 @@ def create_new_model(model_data):
         name=model_data["name"],
         projectId=model_data["projectId"],
         sourceFileId=model_data["sourceFileId"],
-        outputFileId=model_data["sourceFileId"]
+        outputFileId=model_data["sourceFileId"],
     )
 
     try:
@@ -24,7 +25,7 @@ def create_new_model(model_data):
     except Exception as ex:
         db.session.rollback()
         logger.error(f"Can not create a new model: {ex}")
-        abort(400, message=f"Can not create a new model: {ex}")
+        abort(400, f"Can not create a new model: {ex}")
 
     return new_model
 
@@ -32,7 +33,8 @@ def create_new_model(model_data):
 def get_model(model_id):
     model = Model.query.filter_by(id=model_id).first()
     if not model:
-        abort(404, message="Model does not exist")
+        logger.error("Model with id " + str(model_id) + "does not exists!")
+        abort(404, "Model does not exist")
     return model
 
 
@@ -40,7 +42,7 @@ def update_model(model_id, model_data):
     model = Model.query.filter_by(id=model_id).first()
     if not model:
         logger.error("Model doesn't exist, cannot update!")
-        abort(400, message="Model doesn't exist, cannot update!")
+        abort(400, "Model doesn't exist, cannot update!")
 
     try:
         model.name = model_data["name"]
@@ -60,4 +62,4 @@ def delete_model(model_id):
     except Exception as ex:
         db.session.rollback()
         logger.error(f"Error deleting the model!: {ex}")
-        abort(500, message=f"Error deleting the model!: {ex}")
+        abort(500, f"Error deleting the model!: {ex}")

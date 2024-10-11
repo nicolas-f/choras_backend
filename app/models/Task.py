@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from app.db import db
-from app.types import TaskType, Status
+from app.types import Status, TaskType
 
 
 class Task(db.Model):

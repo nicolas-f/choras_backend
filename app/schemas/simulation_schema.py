@@ -1,34 +1,29 @@
-from marshmallow import Schema, fields, post_load, EXCLUDE
-from app.types import TaskType, Status, Setting
+from marshmallow import EXCLUDE, Schema, fields, post_load
 
-
-class ModelSettingsSchema(Schema):
-    materialIdByObjectId = fields.Dict()
-    scatteringByObjectId = fields.Dict()
+from app.schemas.model_schema import ModelInfoBasicSchema
+from app.types import Setting, Status, TaskType
 
 
 class SolverSettingsSchema(Schema):
     dgSettings = fields.Dict()
-    gaSettings = fields.Dict()
+    deSettings = fields.Dict()
 
 
 class SimulationCreateBodySchema(Schema):
     modelId = fields.Integer(required=True)
     name = fields.String(required=True)
-
     description = fields.String(required=False)
-
-    modelSettings = fields.Nested(ModelSettingsSchema)
+    layerIdByMaterialId = fields.Dict()
     solverSettings = fields.Nested(SolverSettingsSchema)
+    sources = fields.List(fields.Dict(), required=False)
+    receivers = fields.List(fields.Dict(), required=False)
+    taskType = fields.Enum(TaskType, required=False)
+    settingsPreset = fields.Enum(Setting, required=False)
 
 
 class SimulationSchema(SimulationCreateBodySchema):
     id = fields.Integer()
     hasBeenEdited = fields.Boolean()
-    sources = fields.List(fields.Dict())
-    receivers = fields.List(fields.Dict())
-    taskType = fields.Enum(TaskType, required=True)
-    settingsPreset = fields.Enum(Setting, required=True)
     status = fields.Enum(Status, required=True)
     simulationRunId = fields.Integer(allow_none=True)
     meshId = fields.Integer(allow_none=True)
@@ -42,35 +37,40 @@ class SimulationUpdateBodySchema(SimulationSchema):
         id = EXCLUDE  # To ignore the field
         status = EXCLUDE
         simulationRunId = EXCLUDE
+        simulationRun = EXCLUDE
         createdAt = EXCLUDE
         updatedAt = EXCLUDE
         completedAt = EXCLUDE
         modelId = EXCLUDE
 
 
+class SimulationByModelQuerySchema(Schema):
+    modelId = fields.Integer(required=True)
+
+
+class SimulationRunCreateSchema(Schema):
+    simulationId = fields.Integer()
+
+
+class SimulationWithModelInfoSchema(SimulationSchema):
+    model = fields.Nested(ModelInfoBasicSchema)
+
+
 class SimulationRunSchema(Schema):
     id = fields.Integer()
-    name = fields.String(required=True)
-    description = fields.String(required=False)
-    hasBeenEdited = fields.Boolean()
-
     sources = fields.List(fields.Dict())
     receivers = fields.List(fields.Dict())
-    taskType = fields.String()
-    modelSettings = fields.Dict()
-    settingsPreset = fields.String()
+    taskType = fields.Enum(TaskType, required=True)
+    settingsPreset = fields.Enum(Setting, required=True)
+    status = fields.Enum(Status, required=True)
+    percentage = fields.Integer(required=False)
+    layerIdByMaterialId = fields.Dict()
     solverSettings = fields.Dict()
-    status = fields.String()
-
-    modelId = fields.Integer()
-    simulationRunId = fields.Integer()
-
-    meshId = fields.Integer()
-
     createdAt = fields.String()
     updatedAt = fields.String()
     completedAt = fields.String()
+    simulation = fields.Nested(SimulationWithModelInfoSchema)
 
 
-class SimulationByModelQuerySchema(Schema):
-    modelId = fields.Integer(required=True)
+class SimulationWithRunSchema(SimulationSchema):
+    simulationRun = fields.Nested(SimulationRunSchema)

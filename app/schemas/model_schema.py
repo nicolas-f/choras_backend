@@ -1,12 +1,7 @@
 from marshmallow import Schema, fields, post_load
+
 from app.services import file_service
 
-
-# class ProjectSchemaInModel(Schema):
-#     id = fields.Integer(data_key="projectId")
-#     name = fields.Str(required=True, data_key="projectName")
-#     group = fields.Str(required=True, data_key="projectTag")
-#
 
 class ModelSchema(Schema):
     id = fields.Number()
@@ -21,18 +16,19 @@ class ModelSchema(Schema):
     updatedAt = fields.Str()
 
 
-class ModelInfoSchema(Schema):
+class ModelInfoBasicSchema(Schema):
     id = fields.Integer(data_key="id")
-    hasGeo = fields.Boolean(data_key='hasGeo')
-    name = fields.String(data_key="modelName")
-    sourceFileId = fields.Integer(data_key="modelUploadId")
-    modelUrl = fields.Method("get_model_url", dump_only=True)
-
     projectTag = fields.String(data_key="projectTag", attribute="project.group")
     projectId = fields.Integer(data_key="projectId", attribute="project.id")
+    name = fields.String(data_key="modelName")
     projectName = fields.String(data_key="projectName", attribute="project.name")
-    meshId = fields.String(data_key="meshId", attribute="mesh.id")
 
+
+class ModelInfoSchema(ModelInfoBasicSchema):
+    hasGeo = fields.Boolean(data_key="hasGeo")
+    sourceFileId = fields.Integer(data_key="modelUploadId")
+    modelUrl = fields.Method("get_model_url", dump_only=True)
+    meshId = fields.String(data_key="meshId", attribute="mesh.id")
     simulationCount = fields.Function(lambda obj: obj.simulation_count)
 
     def get_model_url(self, obj):

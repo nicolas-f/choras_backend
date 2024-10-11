@@ -1,12 +1,16 @@
-from flask.views import MethodView
 from flask import send_from_directory
-from flask_smorest import Blueprint
-from flask_smorest import abort
-import config
+from flask.views import MethodView
+from flask_smorest import Blueprint, abort
 
-from app.schemas.file_schema import FileSchema, FileCreateQuerySchema, GetSlotSchema, FileCreateBodySchema
-from app.services import file_service
+import config
 from app.models import File
+from app.schemas.file_schema import (
+    FileCreateBodySchema,
+    FileCreateQuerySchema,
+    FileSchema,
+    GetSlotSchema,
+)
+from app.services import file_service
 
 blp = Blueprint("File", __name__, description="File API")
 
@@ -17,20 +21,20 @@ class FileList(MethodView):
     def get(self):
         return file_service.get_slot()
 
-    @blp.arguments(FileCreateQuerySchema, location='query')
-    @blp.arguments(FileCreateBodySchema, location='files')
+    @blp.arguments(FileCreateQuerySchema, location="query")
+    @blp.arguments(FileCreateBodySchema, location="files")
     @blp.response(201, FileSchema)
     def post(self, query_data, body_data):
-        if 'file' not in body_data:
+        if "file" not in body_data:
             abort(404, "No file provided!")
 
         result = file_service.create_file(query_data, body_data)
         return result
 
-    @blp.arguments(FileCreateQuerySchema, location='query')
+    @blp.arguments(FileCreateQuerySchema, location="query")
     @blp.response(200, FileSchema)
     def delete(self, file_data):
-        result = file_service.consume(file_data['slot'])
+        result = file_service.consume(file_data["slot"])
         return result
 
 
@@ -47,3 +51,12 @@ class ServerUploads(MethodView):
     @blp.response(200)
     def get(self, filename):
         return send_from_directory(config.DefaultConfig.UPLOAD_FOLDER, filename)
+
+
+@blp.route(f"/{config.DefaultConfig.UPLOAD_FOLDER_NAME}/data/<filename>")
+class ServerUploadsData(MethodView):
+    @blp.response(200)
+    def get(self, filename):
+        return send_from_directory(
+            f"{config.DefaultConfig.UPLOAD_FOLDER}/data", filename
+        )

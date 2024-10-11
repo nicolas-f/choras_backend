@@ -2,9 +2,7 @@ import datetime
 import os
 
 basedir = os.path.abspath(os.path.dirname(__file__))
-app_dir = os.path.join(
-    os.path.abspath(os.path.dirname(__file__)), 'app'
-)
+app_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)), "app")
 
 
 class DefaultConfig:
@@ -37,7 +35,7 @@ class DefaultConfig:
     JWT_TOKEN_LOCATION = "headers"
 
     # Config API documents
-    API_TITLE = "Flask REST API Template"
+    API_TITLE = "UI Backend RESTAPI"
     API_VERSION = "v1"
     OPENAPI_VERSION = "3.0.3"
     OPENAPI_URL_PREFIX = "/"
@@ -53,21 +51,27 @@ class DefaultConfig:
     APP_ENV_TESTING = "testing"
     APP_ENV_DEVELOP = "develop"
     APP_ENV_PRODUCTION = "production"
-    APP_ENV = ""
+    APP_ENV = APP_ENV_DEVELOP
 
     # Logging
     DATE_FMT = "%Y-%m-%d %H:%M:%S"
     LOG_FILE_API = f"{basedir}/logs/api.log"
 
     UPLOAD_FOLDER_NAME = "uploads"
-    UPLOAD_FOLDER = f"{basedir}/{UPLOAD_FOLDER_NAME}"
-    ALLOWED_EXTENSIONS = {'obj', 'geo'}
+    UPLOAD_FOLDER = os.path.join(basedir, UPLOAD_FOLDER_NAME)
+    ALLOWED_EXTENSIONS = {"obj", "geo"}
 
     # Ensure the upload folder exists
     if not os.path.exists(UPLOAD_FOLDER):
         os.makedirs(UPLOAD_FOLDER)
 
+    SQLALCHEMY_DATABASE_URI = "sqlite:///" + os.path.join(basedir, "develop.db")
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
 
+    CELERY_CONFIG = {
+        "broker_url": "sqla+sqlite:///" + os.path.join(basedir, "celerydb.sqlite"),
+        "result_backend": "db+sqlite:///" + os.path.join(basedir, "celerydb.sqlite"),
+    }
 
 
 class DevelopConfig(DefaultConfig):
@@ -78,8 +82,8 @@ class DevelopConfig(DefaultConfig):
     DEBUG = True
 
     # Database configuration
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'develop.db')
-    # SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL")
+    # SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'develop.db')
+    # # SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL")
 
 
 class TestingConfig(DefaultConfig):
@@ -99,7 +103,7 @@ class TestingConfig(DefaultConfig):
     LOG_FILE_API = f"{basedir}/logs/api_tests.log"
 
     # Database configuration
-    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_TEST_URL")
+    SQLALCHEMY_DATABASE_URI = "sqlite:///" + os.path.join(basedir, "test.db")
 
 
 class LocalConfig(DefaultConfig):
@@ -109,8 +113,8 @@ class LocalConfig(DefaultConfig):
     # Activate debug mode
     DEBUG = False
 
-    # Database configuration
-    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL")
+    # # Database configuration
+    # SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL")
 
 
 class ProductionConfig(DefaultConfig):
@@ -120,5 +124,5 @@ class ProductionConfig(DefaultConfig):
     # Activate debug mode
     DEBUG = False
 
-    # Database configuration
-    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL")
+    # # Database configuration
+    # SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL")

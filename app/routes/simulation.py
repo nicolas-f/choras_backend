@@ -3,10 +3,12 @@ from flask_smorest import Blueprint
 
 from app.schemas.simulation_schema import (
     SimulationByModelQuerySchema,
-    SimulationSchema,
-    SimulationRunSchema,
     SimulationCreateBodySchema,
+    SimulationRunCreateSchema,
+    SimulationRunSchema,
+    SimulationSchema,
     SimulationUpdateBodySchema,
+    SimulationWithRunSchema,
 )
 from app.services import simulation_service
 
@@ -15,26 +17,22 @@ blp = Blueprint("Simulation", __name__, description="Simulation API")
 
 @blp.route("/simulations")
 class SimulationList(MethodView):
-    @blp.arguments(SimulationByModelQuerySchema, location='query')
-    @blp.response(200, SimulationSchema(many=True))
+    @blp.arguments(SimulationByModelQuerySchema, location="query")
+    @blp.response(200, SimulationWithRunSchema(many=True))
     def get(self, query_data):
-        result = simulation_service.get_simulation_by_model_id(
-            query_data['modelId']
-        )
+        result = simulation_service.get_simulation_by_model_id(query_data["modelId"])
         return result
 
     @blp.arguments(SimulationCreateBodySchema)
     @blp.response(201, SimulationSchema)
     def post(self, body_data):
-        schema = SimulationCreateBodySchema()
-        validated_data = schema.load(body_data)
-        result = simulation_service.create_new_simulation(validated_data)
+        result = simulation_service.create_new_simulation(body_data)
         return result
 
 
 @blp.route("/simulations/<int:simulation_id>")
-class SimulationList(MethodView):
-    @blp.response(200, SimulationSchema)
+class SimulationObject(MethodView):
+    @blp.response(200, SimulationWithRunSchema)
     def get(self, simulation_id):
         result = simulation_service.get_simulation_by_id(simulation_id)
         return result
@@ -48,9 +46,15 @@ class SimulationList(MethodView):
     @blp.response(200)
     def delete(self, simulation_id):
         simulation_service.delete_simulation(simulation_id)
-        return {
-            "message": "Simulation deleted successfully!"
-        }
+        return {"message": "Simulation deleted successfully!"}
+
+
+@blp.route("/simulations/<int:simulation_id>/result")
+class SimulationListResult(MethodView):
+    @blp.response(200)
+    def get(self, simulation_id):
+        result = simulation_service.get_simulation_result_by_id(simulation_id)
+        return result
 
 
 @blp.route("/simulations/run")
@@ -60,6 +64,24 @@ class SimulationRunList(MethodView):
         result = simulation_service.get_simulation_run()
         return result
 
+    @blp.arguments(SimulationRunCreateSchema)
+    @blp.response(201, SimulationRunSchema)
+    def post(self, body_data):
+        result = simulation_service.start_solver_task(body_data["simulationId"])
+        return result
 
-# TODO: implement route for /simulations/run/:simulationrunId
-# TODO: implement route for /simulations/run/status/:simulationsrunId
+
+@blp.route("/simulations/run/<int:simulation_run_id>")
+class SimulationRunObject(MethodView):
+    @blp.response(200, SimulationRunSchema)
+    def get(self, simulation_run_id):
+        result = simulation_service.get_simulation_run_by_id(simulation_run_id)
+        return result
+
+
+@blp.route("/simulations/run/<int:simulation_run_id>/status")
+class SimulationResultList(MethodView):
+    @blp.response(200, SimulationRunSchema)
+    def get(self, simulation_run_id):
+        result = simulation_service.get_simulation_run_status_by_id(simulation_run_id)
+        return result
