@@ -110,8 +110,8 @@ def delete_simulation_run(simulation_run_id):
 def get_simulation_by_id(simulation_id):
     simulation = Simulation.query.filter_by(id=simulation_id).first()
     if not simulation:
-        logger.error("Simulation with id " + str(simulation_id) + "does not exists!")
-        abort(400, message="Simulation doesn't exists!")
+        logger.error("Simulation with id " + str(simulation_id) + "does not exist!")
+        abort(400, message="Simulation doesn't exist!")
     return simulation
 
 
@@ -323,7 +323,24 @@ def run_solver(simulation_run_id, json_path):
             simulation.status = Status.InProgress
             session.commit()
             logger.info(f"SimulationRun status updated to {simulation_run.status}")
-            de_method(json_file_path=json_path)
+
+            result_container = {}
+            if json_path is not None:
+                with open(json_path, 'r') as json_file:
+                    result_container = json.load(json_file)
+            
+            taskType = TaskType(result_container["results"][0]['resultType'])
+            logger.info(f"{taskType}")
+            match taskType:
+                case TaskType.DE:
+                    logger.info("DE method")
+                    de_method(json_file_path=json_path)
+                case TaskType.DG:
+                    # DG METHOD
+                    logger.info("DG method")
+                case _:
+                    raise Exception ("The selected tasktype is not valid!")
+
             if simulation_run:
                 simulation_run.status = Status.Completed
                 simulation_run.updatedAt = datetime.now()
