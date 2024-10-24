@@ -1,3 +1,6 @@
 [submodule "Diffusion"]
 	path = Diffusion
 	url = https://github.com/Building-acoustics-TU-Eindhoven/Diffusion.git
+[submodule "edg-acoustics"]
+	path = edg-acoustics
+	url = git@github.com:Building-acoustics-TU-Eindhoven/edg-acoustics.git
