@@ -203,6 +203,7 @@ def start_solver_task(simulation_id):
             )
         if simulation.taskType.value in (TaskType.DG.value, TaskType.BOTH.value):
             task_statuses.append(create_source_task(TaskType.DG.value, source["id"]))
+            # TODO: Create custom DG JSON results_container
             results_container.append(
                 create_result_source_object(
                     source, simulation.receivers, TaskType.DG.value
@@ -260,12 +261,15 @@ def start_solver_task(simulation_id):
                     "absorption_coefficients": absorption_coefficients,
                     "msh_path": msh_path,
                     "results": results_container,
+                    "should_cancel": False,
                 },
                 indent=4,
             )
         )
 
+    # run_solver(new_simulation_run.id, json_path)
     run_solver.delay(new_simulation_run.id, json_path)
+
     try:
         simulation.status = Status.Queued
         new_simulation_run.status = Status.Queued
@@ -331,23 +335,38 @@ def run_solver(simulation_run_id, json_path):
             
             taskType = TaskType(result_container["results"][0]['resultType'])
             logger.info(f"{taskType}")
+
             match taskType:
                 case TaskType.DE:
                     logger.info("DE method")
                     de_method(json_file_path=json_path)
+
                 case TaskType.DG:
                     # DG METHOD
                     logger.info("DG method")
                 case _:
                     raise Exception ("The selected tasktype is not valid!")
 
+            result_container = {}
+            if json_path is not None:
+                with open(json_path, 'r') as json_file:
+                    result_container = json.load(json_file)
+
             if simulation_run:
-                simulation_run.status = Status.Completed
-                simulation_run.updatedAt = datetime.now()
-                simulation_run.completedAt = datetime.now()
-            simulation.status = Status.Completed
+                if result_container["should_cancel"]:
+                    simulation_run.status = Status.Cancelled
+                    simulation_run.completedAt = ""
+                    simulation.status = Status.Cancelled
+                    simulation.completedAt = ""
+                else:
+                    simulation_run.status = Status.Completed
+                    simulation_run.completedAt = datetime.now()
+                    simulation.status = Status.Completed
+                    simulation.completedAt = datetime.now()
+
+            simulation_run.updatedAt = datetime.now()
             simulation.updatedAt = datetime.now()
-            simulation.completedAt = datetime.now()
+
             session.commit()
             logger.info(f"SimulationRun status updated to {simulation_run.status}")
         except Exception as ex:
@@ -386,6 +405,7 @@ def update_simulation_run_status(simulation_run, simulation):
     )
     with open(json_path, "r") as json_file:
         result_container = json.load(json_file)
+
         try:
             simulation_run.percentage = result_container["results"][0]["percentage"]
             db.session.commit()
@@ -399,14 +419,45 @@ def get_simulation_run_status_by_id(simulation_run_id):
     simulation = Simulation.query.filter_by(simulationRunId=simulation_run_id).first()
     if not simulation:
         logger.error(
-            f"Simulation for the simulation run id {str(simulation_run_id)} does not exists!"
+            f"Simulation for the simulation run id {str(simulation_run_id)} does not exist!"
         )
-        abort(400, message="Simulation doesn't exists!")
+        abort(400, message="Simulation doesn't exist!")
 
     simulation_run = SimulationRun.query.filter_by(id=simulation_run_id).first()
     if not simulation_run:
-        abort(400, message="Simulation run doesn't exists!")
+        abort(400, message="Simulation run doesn't exist!")
 
     update_simulation_run_status(simulation_run, simulation)
 
     return simulation_run
+
+def cancel_solver_task(simulation_id):
+
+    simulation = get_simulation_by_id(simulation_id)
+
+    if not simulation:
+        logger.error(
+            f"Simulation for the simulation id {str(simulation_id)} does not exist!"
+        )
+        abort(400, message="Simulation doesn't exist!")
+
+    model = model_service.get_model(simulation.modelId)
+    json_path = file_service.get_file_related_path(
+        model.outputFileId, simulation_id, extension="json"
+    )
+
+    if json_path is not None:
+        with open(json_path, 'r') as json_file:
+            data = json.load(json_file)
+
+    # Update the specified field value
+    if 'should_cancel' in data:
+        data['should_cancel'] = True
+
+    with open(json_path, "w") as json_result_file:
+        json_result_file.write(
+            json.dumps(data)
+        )
+
+
+

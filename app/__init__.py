@@ -37,6 +37,7 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
 def create_app(settings_module):
     local_app = Flask(os.getenv("APP_NAME"))
     local_app.config.from_object(settings_module)
+
     # Initialize the extensions
     db.init_app(local_app)
 
