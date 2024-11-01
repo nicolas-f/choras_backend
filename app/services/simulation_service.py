@@ -404,9 +404,9 @@ def update_simulation_run_status(simulation_run, simulation):
         model.outputFileId, simulation.id, extension="json"
     )
     with open(json_path, "r") as json_file:
-        result_container = json.load(json_file)
 
         try:
+            result_container = json.load(json_file)
             simulation_run.percentage = result_container["results"][0]["percentage"]
             db.session.commit()
         except Exception as ex:
@@ -453,6 +453,8 @@ def cancel_solver_task(simulation_id):
     # Update the specified field value
     if 'should_cancel' in data:
         data['should_cancel'] = True
+    print('should_cancel = ' + str(data['should_cancel']))
+    print("json path: " + json_path)
 
     with open(json_path, "w") as json_result_file:
         json_result_file.write(
