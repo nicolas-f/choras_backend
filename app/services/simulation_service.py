@@ -14,6 +14,7 @@ from app.models import File, Simulation, SimulationRun, Task
 from app.services import file_service, material_service, mesh_service, model_service
 from app.types import Status, TaskType
 
+
 # Create logger for this module
 logger = logging.getLogger(__name__)
 
@@ -110,7 +111,7 @@ def delete_simulation_run(simulation_run_id):
 def get_simulation_by_id(simulation_id):
     simulation = Simulation.query.filter_by(id=simulation_id).first()
     if not simulation:
-        logger.error("Simulation with id " + str(simulation_id) + "does not exist!")
+        logger.error("Simulation with id " + str(simulation_id) + " does not exist!")
         abort(400, message="Simulation doesn't exist!")
     return simulation
 
@@ -291,6 +292,7 @@ def run_solver(simulation_run_id, json_path):
     from app.models import SimulationRun
     from app.types import Status
     from Diffusion.FiniteVolumeMethod.FVMInterface import de_method
+    from edg_acoustics.DGinterface import dg_method
 
     # Create logger for this module
 
@@ -343,6 +345,7 @@ def run_solver(simulation_run_id, json_path):
 
                 case TaskType.DG:
                     # DG METHOD
+                    dg_method(json_file_path=json_path)
                     logger.info("DG method")
                 case _:
                     raise Exception ("The selected tasktype is not valid!")
