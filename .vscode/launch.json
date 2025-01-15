@@ -5,6 +5,14 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Python Debugger: Python File",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "justMyCode": false
+        },
+        {
             "name": "Python Debugger: Flask",
             "type": "debugpy",
             "request": "launch",
@@ -19,6 +27,7 @@
                 "--no-debugger",
                 "--no-reload"
             ],
+            // "python": "${env:RA_Backend}/bin/python3",
             "jinja": true,
             "autoStartBrowser": false,
             "justMyCode": false
