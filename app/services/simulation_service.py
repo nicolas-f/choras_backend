@@ -8,11 +8,13 @@ from celery import shared_task
 from flask_smorest import abort
 from sqlalchemy.orm import joinedload, scoped_session, sessionmaker
 
-import config
-from app.db import db
-from app.models import File, Simulation, SimulationRun, Task
-from app.services import file_service, material_service, mesh_service, model_service
-from app.types import Status, TaskType
+# Allows for easier debugging
+if __name__ != '__main__':
+    import config
+    from app.db import db
+    from app.models import File, Simulation, SimulationRun, Task
+    from app.services import file_service, material_service, mesh_service, model_service
+    from app.types import Status, TaskType
 
 
 # Create logger for this module
@@ -77,9 +79,9 @@ def get_simulation_run_by_id(simulation_run_id):
     simulation_run = SimulationRun.query.filter_by(id=simulation_run_id).first()
     if not simulation_run:
         logger.error(
-            "Simulation Run with id " + str(simulation_run_id) + "does not exists!"
+            "Simulation Run with id " + str(simulation_run_id) + "does not exist!"
         )
-        abort(400, message="Simulation Run doesn't exists!")
+        abort(400, message="Simulation Run doesn't exist!")
     return simulation_run
 
 
@@ -465,4 +467,51 @@ def cancel_solver_task(simulation_id):
         )
 
 
+## Experiments with celery revoke
+# Scoped session factory to ensure proper session management
+    # session_factory = sessionmaker(bind=db.engine)
+    # session = scoped_session(session_factory)()  # Create a new session for this thread
+    # simulation_run_id = simulation.simulationRunId
 
+    # simulation_run = get_simulation_run_by_id(simulation.simulationRunId)
+
+    # if not simulation_run:
+    #     logger.error(
+    #         "Simulation Run with id " + str(simulation_run_id) + "does not exist!"
+    #     )
+    #     abort(400, message="Simulation Run doesn't exist!")
+
+    # try: 
+    #     try:    
+            
+    #         revoke(_state, [simulation_run_id], True)
+    #         if simulation_run and simulation:
+    #             simulation_run.status = Status.Cancelled
+    #             simulation_run.completedAt = ""
+    #             simulation.status = Status.Cancelled
+    #             simulation.completedAt = ""
+    #             simulation_run.updatedAt = datetime.now()
+    #             simulation.updatedAt = datetime.now()
+
+    #             session.commit()
+    #             logger.info(f"SimulationRun status updated to {simulation_run.status}")
+
+    #     except Exception as ex:
+    #         if simulation_run and simulation:
+    #             simulation_run.status = Status.Error
+    #             simulation.status = Status.Error
+    #             session.commit()
+    #             logger.error(f"Cannot revoke because: {ex}")
+
+    # except Exception as ex:
+    #     session.rollback()
+    #     logger.error(f"Cannot cancel simulation run: {ex}")
+
+    # finally:
+    #     session.close()  # Ensure the session is closed after use
+    #     logger.info(f"Session closed for simulation_run_id: {simulation_run_id}")
+
+# Allows for easier debugging
+if __name__ == '__main__':
+    from edg_acoustics.DGinterface import dg_method
+    dg_method(json_file_path="/Users/SilvinW/repositories/ra_ui_backend/uploads/MeasurementRoom_6ac4df41866940688befd2e948fa8d22_1.json")
