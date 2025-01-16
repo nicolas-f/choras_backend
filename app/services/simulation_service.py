@@ -8,14 +8,11 @@ from celery import shared_task
 from flask_smorest import abort
 from sqlalchemy.orm import joinedload, scoped_session, sessionmaker
 
-# Allows for easier debugging
-if __name__ != '__main__':
-    import config
-    from app.db import db
-    from app.models import File, Simulation, SimulationRun, Task
-    from app.services import file_service, material_service, mesh_service, model_service
-    from app.types import Status, TaskType
-
+import config
+from app.db import db
+from app.models import File, Simulation, SimulationRun, Task
+from app.services import file_service, material_service, mesh_service, model_service
+from app.types import Status, TaskType
 
 # Create logger for this module
 logger = logging.getLogger(__name__)
@@ -289,12 +286,27 @@ def start_solver_task(simulation_id):
 def run_solver(simulation_run_id, json_path):
     import logging
     import time
+    import os
+    import edg_acoustics
+    path = os.path.abspath(edg_acoustics.__file__)
+    print("Path to edg_acoustics module")
+    print (path)
+
+    import simulation_backend
+    path = os.path.abspath(simulation_backend.__file__)
+    print("Path to simulation_backend module")
+    print (path)
+
+    from simulation_backend.FVMinterface import de_method
+    from simulation_backend.DGinterface import dg_method
+
+    path = os.path.abspath(simulation_backend.__file__)
+    print("Path to simulation_backend module")
+    print (path)
 
     from app.db import db
     from app.models import SimulationRun
     from app.types import Status
-    from Diffusion.FiniteVolumeMethod.FVMInterface import de_method
-    from edg_acoustics.DGinterface import dg_method
 
     # Create logger for this module
 
@@ -511,7 +523,3 @@ def cancel_solver_task(simulation_id):
     #     session.close()  # Ensure the session is closed after use
     #     logger.info(f"Session closed for simulation_run_id: {simulation_run_id}")
 
-# Allows for easier debugging
-if __name__ == '__main__':
-    from edg_acoustics.DGinterface import dg_method
-    dg_method(json_file_path="/Users/SilvinW/repositories/ra_ui_backend/uploads/MeasurementRoom_6ac4df41866940688befd2e948fa8d22_1.json")

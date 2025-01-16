@@ -11,7 +11,7 @@ from app.db import db
 from app.models import Mesh, Simulation, Task
 from app.services import file_service, model_service
 from app.types import Status, TaskType
-from Diffusion.FiniteVolumeMethod.CreateMeshFVM import generate_mesh
+from Diffusion_Module.FiniteVolumeMethod.CreateMeshFVM import generate_mesh
 
 # Create logger for this module
 logger = logging.getLogger(__name__)
