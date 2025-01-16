@@ -287,22 +287,9 @@ def run_solver(simulation_run_id, json_path):
     import logging
     import time
     import os
-    import edg_acoustics
-    path = os.path.abspath(edg_acoustics.__file__)
-    print("Path to edg_acoustics module")
-    print (path)
-
-    import simulation_backend
-    path = os.path.abspath(simulation_backend.__file__)
-    print("Path to simulation_backend module")
-    print (path)
 
     from simulation_backend.FVMinterface import de_method
     from simulation_backend.DGinterface import dg_method
-
-    path = os.path.abspath(simulation_backend.__file__)
-    print("Path to simulation_backend module")
-    print (path)
 
     from app.db import db
     from app.models import SimulationRun
