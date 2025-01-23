@@ -4,7 +4,7 @@ import os
 from datetime import datetime
 
 import gmsh
-from celery import shared_task
+from celery import shared_task #, current_task
 from flask_smorest import abort
 from sqlalchemy.orm import joinedload, scoped_session, sessionmaker
 
@@ -174,7 +174,6 @@ def create_result_source_object(source, receivers, result_type):
         "responses": responses_obj,
     }
 
-
 def start_solver_task(simulation_id):
     simulation = get_simulation_by_id(simulation_id)
 
@@ -262,6 +261,7 @@ def start_solver_task(simulation_id):
                     "msh_path": msh_path,
                     "results": results_container,
                     "should_cancel": False,
+                    "task_id": -1
                 },
                 indent=4,
             )
@@ -269,6 +269,25 @@ def start_solver_task(simulation_id):
 
     # run_solver(new_simulation_run.id, json_path)
     run_solver.delay(new_simulation_run.id, json_path)
+
+    # result_container = {}
+    # if json_path is not None:
+    #     with open(json_path, 'r') as json_file:
+    #         result_container = json.load(json_file)
+
+    # result_container['task_id'] = task.id
+
+    # if json_path is not None:
+    #     with open(json_path, 'w') as json_task_id:
+    #         json_task_id.write(
+    #             json.dumps(result_container, indent=4)
+    #         )
+    # if json_path is not None:
+    #     with open(json_path, 'r') as json_file:
+    #         test = json.load(json_file)
+    #     print("Task id from JSON")
+    #     print(test['task_id'])
+
 
     try:
         simulation.status = Status.Queued
@@ -453,6 +472,17 @@ def cancel_solver_task(simulation_id):
     if json_path is not None:
         with open(json_path, 'r') as json_file:
             data = json.load(json_file)
+
+    taskID = data['task_id']
+
+    from app import app, celery
+    from celery.worker.control import revoke
+    from celery.result import AsyncResult
+    print ("taskID = " + str(taskID))
+    res = AsyncResult (taskID)
+    res.revoke(connection=celery._acquire_connection(), terminate=True, signal="KILL")
+    # revoke(app, task_id=taskID, terminate=True, signal="KILL")
+    return
 
     # Update the specified field value
     if 'should_cancel' in data:
