@@ -8,9 +8,7 @@ from app.db import db
 from app.services import material_service
 
 
-@click.option(
-    "--pattern", default="test*.py", help="Test search pattern", required=False
-)
+@click.option("--pattern", default="test*.py", help="Test search pattern", required=False)
 def cov(pattern):
     """
     Run the unit tests with coverage
@@ -20,9 +18,7 @@ def cov(pattern):
 
     # Discover tests in both the unit and integration directories
     unit_tests = unittest.TestLoader().discover("tests/unit", pattern=pattern)
-    integration_tests = unittest.TestLoader().discover(
-        "tests/integration", pattern=pattern
-    )
+    integration_tests = unittest.TestLoader().discover("tests/integration", pattern=pattern)
     all_tests = unittest.TestSuite([unit_tests, integration_tests])
 
     result = unittest.TextTestRunner(verbosity=2).run(all_tests)
@@ -36,9 +32,7 @@ def cov(pattern):
     return 1
 
 
-@click.option(
-    "--pattern", default="test*.py", help="Test search pattern", required=False
-)
+@click.option("--pattern", default="test*.py", help="Test search pattern", required=False)
 def cov_html(pattern):
     """
     Run the unit tests with coverage and generate an HTML report.
@@ -48,9 +42,7 @@ def cov_html(pattern):
 
     # Discover tests in both the unit and integration directories
     unit_tests = unittest.TestLoader().discover("tests/unit", pattern=pattern)
-    integration_tests = unittest.TestLoader().discover(
-        "tests/integration", pattern=pattern
-    )
+    integration_tests = unittest.TestLoader().discover("tests/integration", pattern=pattern)
     all_tests = unittest.TestSuite([unit_tests, integration_tests])
 
     result = unittest.TextTestRunner(verbosity=2).run(all_tests)
@@ -74,9 +66,7 @@ def tests(pattern):
     """
     # Discover tests in both the unit and integration directories
     unit_tests = unittest.TestLoader().discover("tests/unit", pattern=pattern)
-    integration_tests = unittest.TestLoader().discover(
-        "tests/integration", pattern=pattern
-    )
+    integration_tests = unittest.TestLoader().discover("tests/integration", pattern=pattern)
     all_tests = unittest.TestSuite([unit_tests, integration_tests])
 
     result = unittest.TextTestRunner(verbosity=2).run(all_tests)

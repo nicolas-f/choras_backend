@@ -22,9 +22,7 @@ class Simulation(db.Model):
     solverSettings = db.Column(JSON, nullable=False)
     status = db.Column(db.Enum(Status), default=Status.Created)
 
-    modelId = db.Column(
-        db.Integer, db.ForeignKey("models.id", ondelete="CASCADE"), nullable=False
-    )
+    modelId = db.Column(db.Integer, db.ForeignKey("models.id", ondelete="CASCADE"), nullable=False)
 
     simulationRunId = db.Column(
         db.Integer,

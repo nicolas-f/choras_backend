@@ -32,9 +32,7 @@ class MeshGeo(MethodView):
     @blp.arguments(GeoQuerySchema, location="query")
     @blp.response(200)
     def post(self, query_data):
-        return mesh_service.attach_geo_file(
-            query_data["modelId"], query_data["fileUploadId"]
-        )
+        return mesh_service.attach_geo_file(query_data["modelId"], query_data["fileUploadId"])
 
 
 @blp.route("/meshes/<int:mesh_id>")

@@ -71,8 +71,10 @@ class SimulationRunSchema(Schema):
     completedAt = fields.String()
     simulation = fields.Nested(SimulationWithModelInfoSchema)
 
+
 class SimulationCancelSchema(Schema):
     simulationId = fields.Integer()
+
 
 class SimulationWithRunSchema(SimulationSchema):
     simulationRun = fields.Nested(SimulationRunSchema)

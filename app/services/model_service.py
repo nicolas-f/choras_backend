@@ -1,6 +1,5 @@
 import logging
 
-from flask import abort
 from flask_smorest import abort
 
 from app.db import db

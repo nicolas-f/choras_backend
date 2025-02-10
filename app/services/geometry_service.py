@@ -178,9 +178,7 @@ def convert_obj_to_3dm(obj_clean_path, rhino_path, png_path):
 
         for vertex in vertices:
             rotated_vertex = np.dot(rotation_matrix, vertex)
-            rhino_mesh.Vertices.Add(
-                rotated_vertex[0], rotated_vertex[1], rotated_vertex[2]
-            )
+            rhino_mesh.Vertices.Add(rotated_vertex[0], rotated_vertex[1], rotated_vertex[2])
 
         for face_index, face in enumerate(faces):
             if len(face) == 3:  # Triangular face
