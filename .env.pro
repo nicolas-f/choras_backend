@@ -8,7 +8,7 @@ APP_SETTINGS_MODULE=config.ProductionConfig
 
 # API service configuration
 API_HOST=0.0.0.0
-API_PORT=5000
+API_PORT=5001
 
 # Secret key
 SECRET_KEY=<your-secret-key>
