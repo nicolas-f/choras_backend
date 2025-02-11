@@ -8,9 +8,9 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class ExcelExportHelper:
+class ExportHelper:
     def __init__(self, load_path: str, save_path: str, export_separate_csvs: bool = True) -> None:
-        """`ExcelExportHelper` is for converting simulation results to an Excel file
+        """`ExportHelper` is for converting simulation results to an Excel file, and separately to csv files.
 
         Args:
             load_path (str): the path to the JSON file containing the simulation results, extension included.
