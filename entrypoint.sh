@@ -35,11 +35,11 @@ if [ "$APP_ENV" = "local" ] || [ "$APP_ENV" = "production" ]; then
     echo "APP_SETTINGS_MODULE: $APP_SETTINGS_MODULE"
     echo "SQLALCHEMY_DATABASE_URI: $SQLALCHEMY_DATABASE_URI"
 
-    gunicorn -c ./gunicorn/gunicorn_config.py "app:app" --bind 0.0.0.0:5001
+    gunicorn -c ./gunicorn/gunicorn_config.py "app:app" --bind 0.0.0.0:5001 &
 
     # Start Celery worker if needed
     echo "Starting Celery worker..."
-    celery -A $CELERY_APP worker --loglevel=info &
+    celery -A $CELERY_APP worker --loglevel=info -P eventlet &
     
     # Start Celery Beat if needed
     if [ "$APP_ENV" = "local" ]; then
