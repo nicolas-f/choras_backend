@@ -33,15 +33,19 @@ load_dotenv()
 #     cursor.execute("PRAGMA foreign_keys=ON")
 #     cursor.close()
 
+db_host = os.getenv("BBDD_HOST", "localhost")  # Default to localhost if not set (for local dev)
+db_user = os.getenv("POSTGRES_USER", "db_user")
+db_password = os.getenv("POSTGRES_PASSWORD", "db_password")
+db_name = os.getenv("POSTGRES_DB", "db_dev")
 
 def create_app(settings_module=None):
     local_app = Flask(os.getenv("APP_NAME"))
     if settings_module==None:
         settings_module = config.LocalConfig
+
     local_app.config.from_object(settings_module)
-    print("APP_NAME " + str(os.getenv("APP_NAME")));
-    print("SQLALCHEMY_DATABASE_URI " + settings_module.SQLALCHEMY_DATABASE_URI);
-    # Initialize the extensions
+    local_app.config["SQLALCHEMY_DATABASE_URI"] = f"postgresql://{db_user}:{db_password}@{db_host}:5432/{db_name}"
+
     db.init_app(local_app)
 
     local_celery = make_celery(local_app)
