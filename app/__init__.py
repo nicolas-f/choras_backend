@@ -17,27 +17,30 @@ from app.utils.logging import configure_logging
 load_dotenv()
 
 
-@event.listens_for(Engine, "connect")
-def set_sqlite_pragma(dbapi_connection, connection_record):
-    """
-    Return a list of random ingredients as strings.
+# @event.listens_for(Engine, "connect")
+# def set_sqlite_pragma(dbapi_connection, connection_record):
+#     """
+#     Return a list of random ingredients as strings.
 
-    :param kind: Optional "kind" of ingredients.
-    :type kind: list[str] or None
-    :raise lumache.InvalidKindError: If the kind is invalid.
-    :return: The ingredients list.
-    :rtype: list[str]
+#     :param kind: Optional "kind" of ingredients.
+#     :type kind: list[str] or None
+#     :raise lumache.InvalidKindError: If the kind is invalid.
+#     :return: The ingredients list.
+#     :rtype: list[str]
 
-    """
-    cursor = dbapi_connection.cursor()
-    cursor.execute("PRAGMA foreign_keys=ON")
-    cursor.close()
+#     """
+#     cursor = dbapi_connection.cursor()
+#     cursor.execute("PRAGMA foreign_keys=ON")
+#     cursor.close()
 
 
-def create_app(settings_module):
+def create_app(settings_module=None):
     local_app = Flask(os.getenv("APP_NAME"))
+    if settings_module==None:
+        settings_module = config.LocalConfig
     local_app.config.from_object(settings_module)
-
+    print("APP_NAME " + str(os.getenv("APP_NAME")));
+    print("SQLALCHEMY_DATABASE_URI " + settings_module.SQLALCHEMY_DATABASE_URI);
     # Initialize the extensions
     db.init_app(local_app)
 
@@ -59,6 +62,6 @@ def create_app(settings_module):
     return local_app, local_celery
 
 
-app, celery = create_app(os.getenv("APP_SETTINGS_MODULE"))
+app, celery = create_app()
 
 app.app_context().push()

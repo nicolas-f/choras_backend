@@ -19,3 +19,7 @@ DATABASE_URL=sqlite:///production.db
 
 # Deployment platform
 PLATFORM_DEPLOY=AWS
+
+POSTGRES_DB=db_dev
+POSTGRES_USER=db_user
+POSTGRES_PASSWORD=db_password # Ensure this is set

@@ -23,19 +23,23 @@ if [ "$APP_ENV" = "local" ]; then
     echo "Done creating the database"
 
     echo "Start checking user-admin"
-    flask create-user-admin
+    # flask create-user-admin
     echo "Done initializing user-admin"
 fi
 
 # Start the Flask app using Gunicorn
 if [ "$APP_ENV" = "local" ] || [ "$APP_ENV" = "production" ]; then
     echo "Running the Flask app with Gunicorn..."
-    # gunicorn -c ./gunicorn/gunicorn_config.py $API_ENTRYPOINT --env APP_SETTINGS_MODULE=config.ProductionConfig
-    exec gunicorn --bind 0.0.0.0:5001 "app:create_app('$FLASK_CONFIG')"
+    # gunicorn -c ./gunicorn/gunicorn_config.py "$API_ENTRYPOINT" --env APP_SETTINGS_MODULE=$APP_SETTINGS_MODULE
+    echo "API_ENTRYPOINT: $API_ENTRYPOINT"
+    echo "APP_SETTINGS_MODULE: $APP_SETTINGS_MODULE"
+    echo "SQLALCHEMY_DATABASE_URI: $SQLALCHEMY_DATABASE_URI"
+
+    gunicorn -c ./gunicorn/gunicorn_config.py "app:create_app" --bind 0.0.0.0:5001
 
     # Start Celery worker if needed
     echo "Starting Celery worker..."
-    celery -A $CELERY_APP worker --loglevel=info &
+    celery -A $CELERY_APP worker --loglevel=info -P eventlet &
     
     # Start Celery Beat if needed
     if [ "$APP_ENV" = "local" ]; then
