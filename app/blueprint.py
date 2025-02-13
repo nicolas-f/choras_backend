@@ -7,6 +7,7 @@ from app.routes.mesh import blp as mesh_blueprint
 from app.routes.model import blp as model_blueprint
 from app.routes.project import blp as project_blueprint
 from app.routes.simulation import blp as simulation_blueprint
+from app.routes.export import blp as export_blueprint
 
 
 # Register Blueprint
@@ -19,3 +20,4 @@ def register_routing(app):
     api.register_blueprint(geometry_blueprint)
     api.register_blueprint(simulation_blueprint)
     api.register_blueprint(mesh_blueprint)
+    api.register_blueprint(export_blueprint)
