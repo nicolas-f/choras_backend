@@ -13,8 +13,8 @@ import config
 from app.db import db
 from app.models import File, Simulation, SimulationRun, Task, Export
 from app.services import file_service, material_service, mesh_service, model_service
+from app.services.export_service import ExportHelper
 from app.types import Status, TaskType
-from app.utils.helper import ExportHelper
 
 # Create logger for this module
 logger = logging.getLogger(__name__)
