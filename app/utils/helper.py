@@ -46,7 +46,7 @@ class ExportHelper:
             xlsx_path = Path(self.save_path)
             parameters_path = Path(self.save_path.replace('.xlsx', '_parameters.csv'))
             edc_path = Path(self.save_path.replace('.xlsx', '_edc.csv'))
-            
+
             with zipfile.ZipFile(zip_path, 'w') as zipf:
                 zipf.write(xlsx_path, xlsx_path.name)
                 if self.export_separate_csvs:

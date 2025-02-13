@@ -330,22 +330,22 @@ def run_solver(simulation_run_id: int, json_path: str):
                 case TaskType.DE:
                     logger.info("DE method")
                     de_method(json_file_path=json_path)
-                    
-                    ### export edc, parameters, and make them to zip
+
+                    # export edc, parameters, and make them to zip
                     exportHelper = ExportHelper(
                         load_path=json_path,
                         save_path=json_path.replace(".json", ".xlsx"),
                         export_separate_csvs=True,
                     )
                     if not (exportHelper.export() and exportHelper.make_zip()):
-                        logger.error(f"Error exporting results")
+                        logger.error("Error exporting results")
                         raise IOError("Error exporting results")
-                    
-                    ### db-write pressure_data for further auralization process ###
+
+                    # db-write pressure_data for further auralization process ###
                     export = Export(
                         zipFileName=Path(json_path).name.replace(".json", ".zip"),
                         preCsvFileName=Path(json_path).name.replace(".json", "_pressure.csv"),
-                        simulationId = simulation.id,
+                        simulationId=simulation.id,
                     )
                     session.add(export)
 
