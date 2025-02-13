@@ -1,6 +1,7 @@
 from alembic import op
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import MetaData
+import sqlalchemy
 
 naming_convention = {
     "ix": "ix_%(column_0_label)s",
@@ -25,4 +26,4 @@ def upgrade():
 
 metadata = MetaData(naming_convention=naming_convention)
 
-db = SQLAlchemy()
+db: sqlalchemy = SQLAlchemy()

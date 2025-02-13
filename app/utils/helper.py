@@ -3,6 +3,7 @@ import json
 import zipfile
 import pandas as pd
 import logging
+from pathlib import Path
 
 # Create Logger for this module
 logger = logging.getLogger(__name__)
@@ -41,12 +42,16 @@ class ExportHelper:
             bool: zipping success or not
         """
         try:
-            with zipfile.ZipFile(self.save_path.replace('.xlsx', '.zip'), 'w') as zipf:
-                zipf.write(self.save_path)
+            zip_path = Path(self.save_path.replace('.xlsx', '.zip'))
+            xlsx_path = Path(self.save_path)
+            parameters_path = Path(self.save_path.replace('.xlsx', '_parameters.csv'))
+            edc_path = Path(self.save_path.replace('.xlsx', '_edc.csv'))
+            
+            with zipfile.ZipFile(zip_path, 'w') as zipf:
+                zipf.write(xlsx_path, xlsx_path.name)
                 if self.export_separate_csvs:
-                    zipf.write(self.save_path.replace('.xlsx', '_parameters.csv'))
-                    zipf.write(self.save_path.replace('.xlsx', '_edc.csv'))
-                    zipf.write(self.save_path.replace('.xlsx', '_pressure.csv'))
+                    zipf.write(parameters_path, parameters_path.name)
+                    zipf.write(edc_path, edc_path.name)
         except Exception as e:
             logger.error(f'Error zipping files: {e}')
             return False
@@ -71,25 +76,20 @@ class ExportHelper:
 
             parameter_sheet = pd.DataFrame(parameters)
             edc_sheet = pd.DataFrame()
-            pressure_sheet = pd.DataFrame()
 
             # fill in edc_sheet and pressure_sheet
             time = receiver_results[0]['t']
             edc_sheet['t'] = time
-            pressure_sheet['t'] = time
             for result in receiver_results:
                 edc_sheet[str(result['frequency']) + 'Hz'] = result['data']
-                pressure_sheet[str(result['frequency']) + 'Hz'] = result['data_pressure']
 
             with pd.ExcelWriter(self.save_path) as writer:
                 parameter_sheet.to_excel(writer, sheet_name='Parameters', index=False)
                 edc_sheet.to_excel(writer, sheet_name='EDC', index=False)
-                pressure_sheet.to_excel(writer, sheet_name='Pressure', index=False)
 
             if self.export_separate_csvs:
                 parameter_sheet.to_csv(self.save_path.replace('.xlsx', '_parameters.csv'), index=False)
                 edc_sheet.to_csv(self.save_path.replace('.xlsx', '_edc.csv'), index=False)
-                pressure_sheet.to_csv(self.save_path.replace('.xlsx', '_pressure.csv'), index=False)
 
         except Exception as e:
             logger.error(f'Error saving data to xlsx: {e}')
