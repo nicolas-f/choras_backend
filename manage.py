@@ -5,7 +5,7 @@ import coverage
 from passlib.hash import pbkdf2_sha256
 
 from app.db import db
-from app.services import material_service
+from app.services import material_service, auralization_service
 
 
 @click.option("--pattern", default="test*.py", help="Test search pattern", required=False)
@@ -81,6 +81,7 @@ def create_db():
     """
     db.create_all()
     material_service.insert_initial_materials()
+    auralization_service.insert_initial_audios_examples()
     db.session.commit()
 
 
@@ -91,6 +92,7 @@ def reset_db():
     db.drop_all()
     db.create_all()
     material_service.insert_initial_materials()
+    auralization_service.insert_initial_audios_examples()
     db.session.commit()
 
 

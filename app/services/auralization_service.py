@@ -2,11 +2,19 @@ from typing import Optional, List
 from scipy.signal import butter, sosfilt, resample_poly
 from scipy.io import wavfile
 import numpy as np
+from sqlalchemy import asc
 import soundfile as sf
 import logging
+import json
 import gc
+import os
+
+from flask_smorest import abort
 
 from config import AuralizationParametersConfig as AuralizationParameters
+from config import app_dir
+from app.models.AudioFile import AudioFile
+from app.db import db
 
 # Create Logger for this module
 logger = logging.getLogger(__name__)
@@ -131,3 +139,33 @@ def auralization_calculation(
     
 def normalize_to_int16(sh_conv: np.ndarray) -> np.ndarray:
     return np.int16(sh_conv / np.max(np.abs(sh_conv)) * 32767)
+
+def get_all_audio_files():
+    return AudioFile.query.order_by(asc(AudioFile.id)).all()
+
+def insert_initial_audios_examples():
+    audio_files = get_all_audio_files()
+    if len(audio_files):
+        return
+    logger.info("Inserting initial audio example files")
+    with open(os.path.join(app_dir, "models", "data", "audio_files.json")) as json_audio_files:
+        initial_audio_files = json.load(json_audio_files)
+        try:
+            new_audio_files = []
+            for audio_file in initial_audio_files:
+                new_audio_files.append(
+                    AudioFile(
+                        name=audio_file["name"],
+                        description=audio_file["description"]
+                    )
+                )
+
+            db.session.add_all(new_audio_files)
+            db.session.commit()
+
+        except Exception as ex:
+            db.session.rollback()
+            logger.error(f"Can not insert initial audio files! Error: {ex}")
+            abort(400, f"Can not insert initial audio files! Error: {ex}")
+
+    return {"message": "Initial audio files added successfully!"}
