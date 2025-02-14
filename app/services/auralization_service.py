@@ -116,16 +116,18 @@ def auralization_calculation(
         # Create impulse response
         sh_conv = np.convolve(imp_tot, data_signal)  # convolution of the impulse response with the anechoic signal
         sh_conv = sh_conv / max(abs(sh_conv))  # normalized to the maximum value of the convolved signal
+        sh_conv_normalized = normalize_to_int16(sh_conv) # normalize the floating-point data to the range of int16
         t_conv = np.arange(0, (len(sh_conv)) / fs, 1 / fs)  # Time vector of the convolved signal
 
         if wav_output_file_name is not None:
             # Create a file wav for auralization
-            # Normalize the floating-point data to the range of int16
-            sh_conv_normalized = np.int16(sh_conv / np.max(np.abs(sh_conv)) * 32767)
             wavfile.write(wav_output_file_name, fs, sh_conv_normalized)
 
-        return sh_conv_normalized, fs, t_conv
+        return sh_conv, fs, t_conv
 
     except Exception as e:
         logger.error(f'Error during auralization calculation: {e}')
         return None
+    
+def normalize_to_int16(sh_conv: np.ndarray) -> np.ndarray:
+    return np.int16(sh_conv / np.max(np.abs(sh_conv)) * 32767)
