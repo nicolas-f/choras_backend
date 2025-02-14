@@ -10,14 +10,56 @@ import gc
 import os
 
 from flask_smorest import abort
+from celery import shared_task
 
 from config import AuralizationParametersConfig as AuralizationParameters
 from config import app_dir
+from app.types import Status
 from app.models.AudioFile import AudioFile
+from app.models.Auralization import Auralization
 from app.db import db
 
 # Create Logger for this module
 logger = logging.getLogger(__name__)
+
+
+def get_auralization_by_id(auralization_id: int) -> Optional[Auralization]:
+    auralization: Optional[Auralization] = Auralization.query.filter_by(id=auralization_id).first()
+    return auralization if auralization else Auralization(status=Status.Uncreated)
+
+
+def get_auralization_by_simulation_audiofile_ids(simulation_id: int, audiofile_id: int) -> Optional[Auralization]:
+    auralization: Optional[Auralization] = Auralization.query.filter_by(
+        simulationId=simulation_id, audioFileId=audiofile_id
+    ).first()
+    return auralization if auralization else Auralization(status=Status.Uncreated)
+
+
+def create_new_auralization(simulation_id: int, audiofile_id: int) -> Optional[Auralization]:
+    auralization: Optional[Auralization] = get_auralization_by_simulation_audiofile_ids(simulation_id, audiofile_id)
+    if auralization.status == Status.Uncreated:
+        try:
+            auralization = Auralization(simulationId=simulation_id, audioFileId=audiofile_id)
+            auralization.status = Status.Created
+
+            # TODO run auralization task asynchronously
+            # logger.info(f"Start running auralization task for auralization id: {auralization.id}")
+            # run_auralization.delay(auralization)
+            # logger.info(f"Auralization task for auralization id: {auralization.id} is running")
+
+            db.session.add(auralization)
+            db.session.commit()
+
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Error creating auralization: {e}")
+            abort(400, "Error creating auralization")
+        
+    return auralization
+
+
+@shared_task
+def run_auralization(auralization: Auralization) -> Optional[Auralization]: ...
 
 
 def auralization_calculation(
@@ -124,7 +166,7 @@ def auralization_calculation(
         # Create impulse response
         sh_conv = np.convolve(imp_tot, data_signal)  # convolution of the impulse response with the anechoic signal
         sh_conv = sh_conv / max(abs(sh_conv))  # normalized to the maximum value of the convolved signal
-        sh_conv_normalized = normalize_to_int16(sh_conv) # normalize the floating-point data to the range of int16
+        sh_conv_normalized = normalize_to_int16(sh_conv)  # normalize the floating-point data to the range of int16
         t_conv = np.arange(0, (len(sh_conv)) / fs, 1 / fs)  # Time vector of the convolved signal
 
         if wav_output_file_name is not None:
@@ -136,12 +178,15 @@ def auralization_calculation(
     except Exception as e:
         logger.error(f'Error during auralization calculation: {e}')
         return None
-    
+
+
 def normalize_to_int16(sh_conv: np.ndarray) -> np.ndarray:
     return np.int16(sh_conv / np.max(np.abs(sh_conv)) * 32767)
 
+
 def get_all_audio_files():
     return AudioFile.query.order_by(asc(AudioFile.id)).all()
+
 
 def insert_initial_audios_examples():
     audio_files = get_all_audio_files()
@@ -153,12 +198,7 @@ def insert_initial_audios_examples():
         try:
             new_audio_files = []
             for audio_file in initial_audio_files:
-                new_audio_files.append(
-                    AudioFile(
-                        name=audio_file["name"],
-                        description=audio_file["description"]
-                    )
-                )
+                new_audio_files.append(AudioFile(name=audio_file["name"], description=audio_file["description"]))
 
             db.session.add_all(new_audio_files)
             db.session.commit()
