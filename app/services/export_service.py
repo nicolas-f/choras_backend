@@ -2,6 +2,7 @@ import json
 import zipfile
 import pandas as pd
 import logging
+import os
 from pathlib import Path
 from flask_smorest import abort
 from typing import Dict, List, Optional
@@ -24,7 +25,7 @@ def get_zip_path_by_sim_id(simulation_id: int) -> Optional[Path]:
         abort(404, message="No export found for this simulation.")
 
     try:
-        zipfile_path = config.DefaultConfig.UPLOAD_FOLDER + '\\' + export.zipFileName
+        zipfile_path = os.path.join(config.DefaultConfig.UPLOAD_FOLDER, +export.zipFileName)
         return Path(zipfile_path)
     except Exception as ex:
         abort(400, message=f"Error while getting the zip file path: {ex}")
