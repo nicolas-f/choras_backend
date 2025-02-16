@@ -19,5 +19,7 @@ class Auralization(db.Model):
 
     status = db.Column(db.Enum(Status), default=Status.Created)
 
+    wavFileName = db.Column(db.String(), nullable=True)
+
     createdAt = db.Column(db.String(), default=datetime.now())
     updatedAt = db.Column(db.String(), default=datetime.now())

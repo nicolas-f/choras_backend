@@ -1,8 +1,8 @@
 from typing import Optional, List
 from scipy.signal import butter, sosfilt, resample_poly
 from scipy.io import wavfile
-import numpy as np
 from sqlalchemy import asc
+import numpy as np
 import soundfile as sf
 import logging
 import json
@@ -13,10 +13,13 @@ from flask_smorest import abort
 from celery import shared_task
 
 from config import AuralizationParametersConfig as AuralizationParameters
+from config import DefaultConfig
 from config import app_dir
+
 from app.types import Status
 from app.models.AudioFile import AudioFile
 from app.models.Auralization import Auralization
+from app.models.Export import Export
 from app.db import db
 
 # Create Logger for this module
@@ -37,29 +40,63 @@ def get_auralization_by_simulation_audiofile_ids(simulation_id: int, audiofile_i
 
 def create_new_auralization(simulation_id: int, audiofile_id: int) -> Optional[Auralization]:
     auralization: Optional[Auralization] = get_auralization_by_simulation_audiofile_ids(simulation_id, audiofile_id)
-    if auralization.status == Status.Uncreated:
+    if auralization.status == Status.Uncreated or auralization.status == Status.Error:
         try:
             auralization = Auralization(simulationId=simulation_id, audioFileId=audiofile_id)
             auralization.status = Status.Created
 
-            # TODO run auralization task asynchronously
-            # logger.info(f"Start running auralization task for auralization id: {auralization.id}")
-            # run_auralization.delay(auralization)
-            # logger.info(f"Auralization task for auralization id: {auralization.id} is running")
-
             db.session.add(auralization)
             db.session.commit()
+
+            logger.info(f"Start running auralization task for auralization id: {auralization.id}")
+            run_auralization.delay(auralization.id)
+            logger.info(f"Auralization task for auralization id: {auralization.id} is running")
 
         except Exception as e:
             db.session.rollback()
             logger.error(f"Error creating auralization: {e}")
             abort(400, "Error creating auralization")
-        
+
     return auralization
 
 
 @shared_task
-def run_auralization(auralization: Auralization) -> Optional[Auralization]: ...
+def run_auralization(auralizationId: int) -> None:
+    try:
+        auralization: Auralization = get_auralization_by_id(auralizationId)
+        auralization.status = Status.InProgress
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error updating auralization status to InProgress: {e}")
+        abort(400, "Error updating auralization status to InProgress")
+
+    try:
+        input_audio_file: AudioFile = auralization.audioFile
+        signal_file_name = os.path.join(input_audio_file.path, input_audio_file.name)
+
+        export: Export = auralization.simulation.export
+        pressure_file_name = os.path.join(DefaultConfig.UPLOAD_FOLDER_NAME, export.preCsvFileName)
+
+        auralization.wavFileName = export.preCsvFileName.replace("_pressure.csv", ".wav")
+        wav_output_file_name = os.path.join(DefaultConfig.UPLOAD_FOLDER_NAME, auralization.wavFileName)
+
+        logger.debug("signal_file_name: %s", signal_file_name)
+        logger.debug("pressure_file_name: %s", pressure_file_name)
+        logger.debug("wav_output_file_name: %s", wav_output_file_name)
+
+        _, _, _ = auralization_calculation(signal_file_name, pressure_file_name, wav_output_file_name)
+
+        auralization.status = Status.Completed
+
+        db.session.commit()
+
+    except Exception as e:
+        db.session.rollback()
+        auralization.status = Status.Error
+        db.session.commit()
+        logger.error(f"Error running this auralization {auralization.id}: {e}")
+        abort(400, "Error running this auralization")
 
 
 def auralization_calculation(
@@ -172,6 +209,7 @@ def auralization_calculation(
         if wav_output_file_name is not None:
             # Create a file wav for auralization
             wavfile.write(wav_output_file_name, fs, sh_conv_normalized)
+            return sh_conv_normalized, fs, t_conv  # in 16 bit format
 
         return sh_conv, fs, t_conv
 
