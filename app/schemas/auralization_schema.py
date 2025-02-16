@@ -16,6 +16,6 @@ class AuralizationSchema(Schema):
     id = fields.Integer()
     simulationId = fields.Integer()
     audioFileId = fields.Integer()
-    status = fields.String(default=Status.Uncreated)
+    status = fields.Enum(Status, default=Status.Uncreated)
     createdAt = fields.String()
     updatedAt = fields.String()

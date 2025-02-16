@@ -2,6 +2,7 @@ from typing import Optional, List
 from scipy.signal import butter, sosfilt, resample_poly
 from scipy.io import wavfile
 from sqlalchemy import asc
+from pathlib import Path
 import numpy as np
 import soundfile as sf
 import logging
@@ -36,6 +37,23 @@ def get_auralization_by_simulation_audiofile_ids(simulation_id: int, audiofile_i
         simulationId=simulation_id, audioFileId=audiofile_id
     ).first()
     return auralization if auralization else Auralization(status=Status.Uncreated)
+
+
+def get_auralization_wav_path(auralization_id: int) -> Optional[Path]:
+    auralization: Optional[Auralization] = get_auralization_by_id(auralization_id)
+    if auralization is None:
+        abort(404, message="No auralization found with this id.")
+
+    elif auralization.status != Status.Completed:
+        abort(400, message="Auralization is not completed yet.")
+
+    else:
+        try:
+            wav_file_path = os.path.join(DefaultConfig.UPLOAD_FOLDER_NAME, auralization.wavFileName)
+            return Path(wav_file_path)
+        except Exception as e:
+            abort(400, message=f"Error while getting the wav file path: {e}")
+            return None
 
 
 def create_new_auralization(simulation_id: int, audiofile_id: int) -> Optional[Auralization]:

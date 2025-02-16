@@ -33,3 +33,11 @@ class AuralizationStatus(MethodView):
     def get(self, auralization_id):
         result = auralization_service.get_auralization_by_id(auralization_id)
         return result
+
+
+@blp.route("/auralizations/<int:auralization_id>/wav")
+class AuralizationWav(MethodView):
+    @blp.response(200)
+    def get(self, auralization_id):
+        wav_path = auralization_service.get_auralization_wav_path(auralization_id)
+        return send_from_directory(wav_path.parent, wav_path.name, as_attachment=True)
