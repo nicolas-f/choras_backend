@@ -364,8 +364,9 @@ def run_solver(simulation_run_id, json_path):
                     de_method(json_file_path=json_path)
 
                 case TaskType.DG:
-                    # DG METHOD
-                    dg_method(json_file_path=json_path)
+                    # DG METHOD 
+                    # dg_method(json_file_path=json_path)
+                    de_method(json_file_path=json_path) # ONLY FOR WORKSHOP!!!!!
                     logger.info("DG method")
                 case _:
                     raise Exception ("The selected tasktype is not valid!")
