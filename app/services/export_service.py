@@ -25,7 +25,8 @@ def get_zip_path_by_sim_id(simulation_id: int) -> Optional[Path]:
         abort(404, message="No export found for this simulation.")
 
     try:
-        zipfile_path = os.path.join(config.DefaultConfig.UPLOAD_FOLDER, +export.zipFileName)
+        zipfile_path = os.path.join(config.DefaultConfig.UPLOAD_FOLDER, export.zipFileName)
+        print(zipfile_path)
         return Path(zipfile_path)
     except Exception as ex:
         abort(400, message=f"Error while getting the zip file path: {ex}")
