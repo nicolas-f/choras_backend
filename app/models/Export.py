@@ -7,8 +7,7 @@ class Export(db.Model):
     __tablename__ = "exports"
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    zipFileName = db.Column(db.String(), nullable=False)
-    preCsvFileName = db.Column(db.String(), nullable=False)
+    name = db.Column(db.String(), nullable=False, comment="xlsx file name")
 
     # Relationship to Simulation
     simulationId = db.Column(db.Integer, db.ForeignKey("simulations.id", ondelete="CASCADE"), nullable=False)

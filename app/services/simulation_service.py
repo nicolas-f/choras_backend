@@ -331,20 +331,15 @@ def run_solver(simulation_run_id: int, json_path: str):
                     logger.info("DE method")
                     de_method(json_file_path=json_path)
 
-                    # export edc, parameters, and make them to zip
-                    exportHelper = ExportHelper(
-                        load_path=json_path,
-                        save_path=json_path.replace(".json", ".xlsx"),
-                        export_separate_csvs=True,
-                    )
-                    if not (exportHelper.export() and exportHelper.make_zip()):
-                        logger.error("Error exporting results")
-                        raise IOError("Error exporting results")
+                    # save the simulation result json to xlsx
+                    exportHelper = ExportHelper()
+                    if not exportHelper.parse_json_file_to_xlsx_file(json_path, json_path.replace(".json", ".xlsx")):
+                        logger.error("Error saving the result to xlsx")
+                        raise "Error saving the result to xlsx"
 
-                    # db-write pressure_data for further auralization process ###
+                    # db - save the xlsx file
                     export = Export(
-                        zipFileName=Path(json_path).name.replace(".json", ".zip"),
-                        preCsvFileName=Path(json_path).name.replace(".json", "_pressure.csv"),
+                        name=Path(json_path).name.replace(".json", ".xlsx"),
                         simulationId=simulation.id,
                     )
                     session.add(export)

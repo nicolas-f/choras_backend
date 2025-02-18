@@ -1,0 +1,141 @@
+from typing import Optional, List
+import numpy as np
+from scipy.signal import butter, sosfilt, resample_poly
+from scipy.io import wavfile
+import soundfile as sf
+import logging
+import gc
+
+# Create Logger for this module
+logger = logging.getLogger(__name__)
+
+
+class AuralizationParameters:
+    # some hardcode values for the auralization parameters
+    original_fs = 20000
+    filter_order = 8
+    nth_octave = 1
+    W = 0.01
+    dist_sr = 1.5
+    rho = 1.21
+    c0 = 343
+    random_seed = 215
+
+
+def auralization_calculation(
+    signal_file_name: str, pressure_file_name: str, wav_output_file_name: Optional[str] = None
+) -> Optional[List]:
+    # Load the signal and pressure data
+    try:
+        # Extract data and sampling rate from file
+        data_signal, fs = sf.read(signal_file_name)  # this returns "data_signal", which is the
+        # audiodata (one_dimentional array) of the anechoic signal. It returns also the
+        # "fs" sample frequency of the signal
+
+        data_pressure = np.loadtxt(
+            pressure_file_name, skiprows=1, usecols=range(1, 6), delimiter=','
+        )  # this returns the pressure data
+        center_freq = np.loadtxt(
+            pressure_file_name, usecols=range(1, 6), delimiter=',', dtype=str, max_rows=1
+        )  # this returns the center frequencies of the bands with the suffix "Hz"
+
+        center_freq = np.array([np.int32(f[:-2]) for f in center_freq])  # remove "Hz" suffix from the center frequency
+        nBands = len(center_freq)  # number of bands
+        p_rec_off_deriv_band = (
+            data_pressure.transpose().copy()
+        )  # energy decay curve in terms of pressure differentiated
+
+        del data_pressure  # Delete the data to free up memory
+        gc.collect()  # Force garbage collection
+
+    except Exception as e:
+        logger.error(f'Error loading files: {e}')
+        return None
+
+    # Auralization Calculation
+    try:
+        # RESAMPLING PRESSURE ENVELOPE
+        num_samples = int(p_rec_off_deriv_band.shape[1] * fs / AuralizationParameters.original_fs)
+        p_rec_off_deriv_band_resampled = np.zeros((p_rec_off_deriv_band.shape[0], num_samples))
+        for i in range(p_rec_off_deriv_band.shape[0]):
+            p_rec_off_deriv_band_resampled[i, :] = resample_poly(
+                p_rec_off_deriv_band[i, :], up=int(fs), down=int(AuralizationParameters.original_fs)
+            )
+
+        # Clip negative values to zero
+        p_rec_off_deriv_band_resampled = np.clip(p_rec_off_deriv_band_resampled, a_min=0, a_max=None)
+
+        # SQUARE-ROOT of ENVELOPE
+        # From the envelope of the impulse response, we need to get the impulse response
+        square_root = np.sqrt(p_rec_off_deriv_band_resampled)  # this gives the impulse response at each frequency
+
+        # FOURTH ATTEMPT of noise creation
+        np.random.seed(AuralizationParameters.random_seed)
+        noise = np.random.rand(1, p_rec_off_deriv_band_resampled.shape[1]) * 2 * (np.sqrt(3)) - (
+            np.sqrt(3)
+        )  # random noise vector with unifrom distribution and with numbers between -1 and 1
+        noise = sum(noise)  # this line of code is used for passing from a row vector to a column vector
+
+        # BUTTER FILTER
+        Nyquist_freq = int(fs / 2)
+        filter_order = AuralizationParameters.filter_order  # number of biquad sections of the desired system
+        nth_octave = AuralizationParameters.nth_octave  # e.g., 3 for third-octave
+        filter_tot = []
+        for fc in center_freq:
+            # Calculate low and high cutoff frequencies for each band
+            lowcut = fc / (2 ** (1 / (2 * nth_octave)))
+            highcut = fc * (2 ** (1 / (2 * nth_octave)))
+
+            # Normalize the cutoff frequencies by the Nyquist frequency
+            low = lowcut / Nyquist_freq
+            high = highcut / Nyquist_freq
+
+            # Design Butterworth bandpass filter
+            butter_band = butter(
+                filter_order, [low, high], btype='band', output='sos'
+            )  # butter_band contains the second-order sections representation of the Butterworth filter
+
+            # Append filter coefficients to filter tot
+            filter_tot.append(butter_band)
+
+        # TIME DOMAIN OF THE FILTERED RANDOM NOISE: for each band the sosfilt creates
+        # a time domain convolution of the noise with the filter
+        filt_noise_band = [
+            sosfilt(band, noise) for band in filter_tot
+        ]  # this is in the time domain because the sosfilt gives the time domain
+
+        # Make the filt_noise_band list into an array
+        filt_noise_band = np.array(filt_noise_band)
+
+        # Padding the square-root to the same length as the filtered random noise
+        pad_length = filt_noise_band.shape[1] - p_rec_off_deriv_band_resampled.shape[1]
+        square_root_padded = np.pad(square_root, ((0, 0), (0, pad_length)), mode='constant')
+
+        # Multiplication of SQUARE-ROOT of envelope with filtered random noise (FILTERED)
+        imp_filt_band = []
+        for fi in range(nBands):
+            imp_filt = square_root_padded[fi, :] * filt_noise_band[fi, :]
+            imp_filt_band.append(imp_filt)
+
+        # ALL FREQUENCY IMPULSE RESPONSE WITHOUT DIRECT SOUND
+        # Sum of the bands in the time domain
+        imp_tot = [sum(imp_filt_band[i][j] for i in range(len(imp_filt_band))) for j in range(len(imp_filt_band[0]))]
+        imp_tot = np.array(imp_tot, dtype=float)
+
+        # CONVOLUTION FOR AURALIZATION
+        # Create impulse response
+        sh_conv = np.convolve(imp_tot, data_signal)  # convolution of the impulse response with the anechoic signal
+        sh_conv = sh_conv / max(abs(sh_conv))  # normalized to the maximum value of the convolved signal
+        t_conv = np.arange(0, (len(sh_conv)) / fs, 1 / fs)  # Time vector of the convolved signal
+
+        if wav_output_file_name is not None:
+            # Create a file wav for auralization
+            # Normalize the floating-point data to the range of int16
+            sh_conv_normalized = np.int16(sh_conv / np.max(np.abs(sh_conv)) * 32767)
+            wavfile.write(wav_output_file_name, fs, sh_conv_normalized)
+
+        return sh_conv, fs, t_conv
+
+    except Exception as e:
+        logger.error(f'Error during auralization calculation: {e}')
+        return None

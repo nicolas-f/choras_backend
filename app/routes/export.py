@@ -1,12 +1,13 @@
 from flask.views import MethodView
 from flask_smorest import Blueprint
-from flask import send_from_directory
+from flask import send_from_directory, send_file
 
 from app.services import export_service
 
 blp = Blueprint("Export", __name__, description="Export API")
 
 
+# TODO: @almasmuhtadi @bbaigalmaa
 @blp.route("/exports/<int:simulation_id>")
 class ExportList(MethodView):
     @blp.response(200, content_type="application/zip")
@@ -19,5 +20,3 @@ class ExportList(MethodView):
         zip_path = export_service.execute_export(request_body)
 
         return send_from_directory(zip_path.parent, zip_path.name, as_attachment=True)
-
-
