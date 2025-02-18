@@ -132,6 +132,7 @@ class ProductionConfig(DefaultConfig):
 class AuralizationParametersConfig(DefaultConfig):
     # some hardcode values for the auralization parameters
     original_fs = 20000
+    visualization_fs = 44100    
     filter_order = 8
     nth_octave = 1
     W = 0.01

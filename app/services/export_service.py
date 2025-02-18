@@ -42,10 +42,10 @@ class ExportHelper:
 
         return self.__parse_json_data_to_xlsx_file__(data, xlsx_path)
 
-    def write_data_to_xlsx_file(self, xlsx_path: str, sheet: str, data: Dict) -> bool:
+    def write_data_to_xlsx_file(self, xlsx_path: str, sheet: str, data: Dict, mode: str = 'a') -> bool:
         try:
             df = pd.DataFrame(data)
-            with pd.ExcelWriter(xlsx_path) as writer:
+            with pd.ExcelWriter(xlsx_path, mode = mode) as writer:
                 df.to_excel(writer, sheet_name=sheet, index=False)
             return True
 
@@ -85,10 +85,10 @@ class ExportHelper:
             logger.error(f'Error saving data to csv: {e}')
             return None
 
-    def write_file_to_zip_binary(self, zip_buffer: io.BytesIO, file_path: str) -> Optional[io.BytesIO]:
+    def write_file_to_zip_binary(self, zip_buffer: io.BytesIO, file_path: str, mode: str = 'a') -> Optional[io.BytesIO]:
         try:
             file_path: Path = Path(file_path)
-            zip_file = zipfile.ZipFile(zip_buffer, 'a')
+            zip_file = zipfile.ZipFile(zip_buffer, mode = mode)
             zip_file.write(file_path, arcname=file_path.name)
             return zip_buffer
 
