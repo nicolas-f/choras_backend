@@ -10,7 +10,7 @@ from app.schemas.auralization_schema import AudioFileSchema, AuralizationSchema
 blp = Blueprint("Auralization", __name__, description="Auralization API")
 
 
-@blp.route("/auralizations/aduiofiles")
+@blp.route("/auralizations/audiofiles")
 class AudioFileList(MethodView):
     @blp.response(200, AudioFileSchema(many=True))
     def get(self):
