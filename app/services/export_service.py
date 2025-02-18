@@ -31,6 +31,41 @@ def get_zip_path_by_sim_id(simulation_id: int) -> Optional[Path]:
         return None
 
 
+def execute_export(request_body):
+    parse the simulation id into list
+    simulation_ids: [1,2,3,4,5]
+    parse the request_body and collect the type and request into dict
+    export_request:
+         K               Value
+    "parameters"       ["T20","SPL"] or if nil or [] assume all selected
+    "plots"           ["1000KHz,200KHz"]  or if nil or [] assume all selected
+
+
+    check if export_request contain define exporttype in key -> parameters, plots, auralization call get_export_types
+
+    throw error if none valid
+
+    zip_buffer = io.BytesIO()
+
+    with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
+        for resource_type in selected_resources:
+            strategy = ExportFactory.get_exporter(resource_type)
+            if strategy:
+                file_names = strategy.export({})
+                iteratively
+                write
+                to
+                zip
+                zip_file.writestr(file_name, f"Dummy content of {file_name}")
+
+    zip_buffer.seek(0)
+
+    cleanup the files
+
+    return zip file
+
+
+
 class ExportHelper:
     def __init__(self, load_path: str, save_path: str, export_separate_csvs: bool = True) -> None:
         """`ExportHelper` is for converting simulation results to an Excel file, and separately to csv files.
