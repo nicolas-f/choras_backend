@@ -344,11 +344,15 @@ def run_solver(simulation_run_id: int, json_path: str):
                         simulationId=simulation.id,
                     )
                     session.add(export)
-                    
-                    # auralization: generate impulse response wav file 
-                    imp_tot, fs = auralization_calculation(None, json_path.replace(".json", "_pressure.csv"), json_path.replace(".json", ".wav"))
+
+                    # auralization: generate impulse response wav file
+                    imp_tot, fs = auralization_calculation(
+                        None, json_path.replace(".json", "_pressure.csv"), json_path.replace(".json", ".wav")
+                    )
                     # auralization: save the impulse response to xlsx
-                    if not exportHelper.write_data_to_xlsx_file(json_path.replace(".json", ".xlsx"), "impulse response", {f"{fs}Hz": imp_tot}):
+                    if not exportHelper.write_data_to_xlsx_file(
+                        json_path.replace(".json", ".xlsx"), "impulse response", {f"{fs}Hz": imp_tot}
+                    ):
                         logger.error("Error saving the impulse response to xlsx")
                         raise "Error saving the impulse response to xlsx"
 

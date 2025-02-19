@@ -49,8 +49,8 @@ class AuralizationImpulseReponseWav(MethodView):
     def get(self, simulation_id):
         wav_path = auralization_service.get_impulse_response_wav_path(simulation_id)
         return send_from_directory(wav_path.parent, wav_path.name, as_attachment=True)
-    
-    
+
+
 @blp.route("/auralizations/<int:simulation_id>/impulse/plot")
 class AuralizationImpulseReponsePlot(MethodView):
     @blp.response(200, AuralizationResponsePlotSchema)
