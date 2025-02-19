@@ -19,3 +19,9 @@ class AuralizationSchema(Schema):
     status = fields.Enum(Status, default=Status.Uncreated)
     createdAt = fields.String()
     updatedAt = fields.String()
+    
+    
+class AuralizationResponsePlotSchema(Schema):
+    simulationId = fields.Integer()
+    fs = fields.Integer()
+    impulseResponse = fields.List(fields.Integer())

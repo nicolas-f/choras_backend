@@ -57,6 +57,35 @@ def get_auralization_wav_path(auralization_id: int) -> Optional[Path]:
             abort(400, message=f"Error while getting the wav file path: {e}")
             return None
 
+def get_impulse_response_wav_path(simulation_id: int) -> Optional[Path]:
+    simulation: Optional[Simulation] = Simulation.query.filter_by(id=simulation_id).first()
+    if simulation is None:
+        abort(404, message="No simulation found with this id.")
+    elif simulation.status != Status.Completed:
+        abort(400, message="Simulation is not completed yet.")
+    else:
+        try:
+            wav_file_path = os.path.join(DefaultConfig.UPLOAD_FOLDER_NAME, f"{simulation.export.name.replace('.xlsx', '.wav')}")
+            return Path(wav_file_path)
+        except Exception as e:
+            abort(400, message=f"Error while getting the impulse response wav file path: {e}")
+            return None
+
+def get_impulse_response_plot(simulation_id: int) -> Optional[dict]:
+    simulation: Optional[Simulation] = Simulation.query.filter_by(id=simulation_id).first()
+    if simulation is None:
+        abort(404, message="No simulation found with this id.")
+    elif simulation.status != Status.Completed:
+        abort(400, message="Simulation is not completed yet.")
+    else:
+        try:
+            xlsx_file_path = os.path.join(DefaultConfig.UPLOAD_FOLDER_NAME, simulation.export.name)
+            exportHelper = ExportHelper()
+            plot_data = exportHelper.extract_from_xlsx_to_dict(xlsx_file_path, {"impulse response": [f"{AuralizationParameters.visualization_fs}Hz"]})
+            return {"impulseResponse": plot_data["impulse response"][f"{AuralizationParameters.visualization_fs}Hz"], "fs": AuralizationParameters.visualization_fs, "simulationId": simulation.id}
+        except Exception as e:
+            abort(400, message=f"Error while getting the impulse response plot: {e}")
+            return None
 
 def create_new_auralization(simulation_id: int, audiofile_id: int) -> Optional[Auralization]:
     auralization: Optional[Auralization] = get_auralization_by_simulation_audiofile_ids(simulation_id, audiofile_id)

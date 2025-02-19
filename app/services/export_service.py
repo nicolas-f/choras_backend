@@ -95,6 +95,26 @@ class ExportHelper:
         except Exception as e:
             logger.error(f'Error saving file to zip: {e}')
             return None
+        
+    
+    def extract_from_xlsx_to_dict(self, xlsx_path: str, sheets_columns: Dict[str, List[str]]) -> Optional[pd.DataFrame]:
+        try:
+            xlsx_path: Path = Path(xlsx_path)
+            xlsx = pd.ExcelFile(xlsx_path)
+
+            data: Dict[str, Dict[str, List]] = {}
+            for sheet, columns in sheets_columns.items():
+                df = pd.read_excel(xlsx, sheet_name=sheet)
+                data[sheet] = {}
+                for col in columns:
+                    data[sheet][col] = df[col].tolist()
+
+            return data
+
+        except Exception as e:
+            logger.error(f'Error extracting data from xlsx: {e}')
+            return None
+
 
     def __load_json__(self, json_path) -> Optional[Dict]:
         try:
