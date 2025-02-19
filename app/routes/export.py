@@ -13,10 +13,11 @@ class ExportList(MethodView):
     @blp.response(200, content_type="application/zip")
     def get(self, simulation_id):
         zip_path = export_service.get_zip_path_by_sim_id(simulation_id)
+        
         return send_from_directory(zip_path.parent, zip_path.name, as_attachment=True)
 
-    @blp.response(200, content_type="application/zip")
-    def post(self, request_body):
-        zip_path = export_service.execute_export(request_body)
+    # @blp.response(200, content_type="application/zip")
+    # def post(self, request_body):
+    #     zip_path = export_service.execute_export(request_body)
 
-        return send_from_directory(zip_path.parent, zip_path.name, as_attachment=True)
+    #     return send_from_directory(zip_path.parent, zip_path.name, as_attachment=True)

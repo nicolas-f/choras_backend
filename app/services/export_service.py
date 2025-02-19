@@ -8,9 +8,9 @@ from pathlib import Path
 from flask_smorest import abort
 from typing import Dict, List, Optional
 
-import config
 from app.models.Export import Export
 from app.models.Simulation import Simulation
+from app.services.export_factory.factory import ExportFactory
 
 # Create Logger for this module
 logger = logging.getLogger(__name__)
@@ -33,38 +33,58 @@ def get_zip_path_by_sim_id(simulation_id: int) -> io.BytesIO:
         return None
 
 
-def execute_export(request_body):
-    parse the simulation id into list
-    simulation_ids: [1,2,3,4,5]
-    parse the request_body and collect the type and request into dict
-    export_request:
-         K               Value
-    "parameters"       ["T20","SPL"] or if nil or [] assume all selected
-    "plots"           ["1000KHz,200KHz"]  or if nil or [] assume all selected
+#http://localhost:3000/custom_export
+def execute_export():
+# def execute_export(request_body):
+
+    request_body = '{ "SimulationId" : [1], "Parameters" : ["edt", "t20", "t30", "c80", "d50", "ts", "spl_t0_freq"], "EDC" : ["63Hz", "125Hz", "250Hz", "500Hz", "1kHz", "2kHz", "4kHz", "8kHz"], "Auralization" : ["Impulse response .wav", "Auralization output .wav", "Impulse response .csv"]}'
+    export_dict = json.loads(request_body) # export_dict["simulationId"] or export_dict["parameters"]
 
 
-    check if export_request contain define exporttype in key -> parameters, plots, auralization call get_export_types
+    # return export_request
+    # simulation_ids: [1,2,3,4,5]
+    # parse the request_body and collect the type and request into dict
+    # export_request:
+    #      K               Value
+    # "parameters"       ["T20","SPL"] or if nil or [] assume all selected
+    # "plots"           ["1000KHz,200KHz"]  or if nil or [] assume all selected
 
-    throw error if none valid
+    export_factory = ExportFactory()
+    keys = list(export_dict.keys())
+    
+    simulationId = export_dict["SimulationId"]
+    key_parameter = "Parameters"
+    # key_plot = "EDC"
+    # key_auralization = "Auralization"
 
-    zip_buffer = io.BytesIO()
+    param_zip_binary = export_factory.get_exporter(key_parameter, list(export_dict[key_parameter]), simulationId)
+    # export_factory.get_exporter("plot")
+    # export_factory.get_exporter("auralization")
 
-    with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
-        for resource_type in selected_resources:
-            strategy = ExportFactory.get_exporter(resource_type)
-            if strategy:
-                file_names = strategy.export({})
-                iteratively
-                write
-                to
-                zip
-                zip_file.writestr(file_name, f"Dummy content of {file_name}")
+    # check if export_request contain define exporttype in key -> parameters, plots, auralization call get_export_types
 
-    zip_buffer.seek(0)
+    
 
-    cleanup the files
+    # throw error if none valid
 
-    return zip file
+    # zip_buffer = io.BytesIO()
+
+    # with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
+    #     for resource_type in selected_resources:
+    #         strategy = ExportFactory.get_exporter(resource_type)
+    #         if strategy:
+    #             file_names = strategy.export({})
+    #             iteratively
+    #             write
+    #             to
+    #             zip
+    #             zip_file.writestr(file_name, f"Dummy content of {file_name}")
+
+    # zip_buffer.seek(0)
+
+    # cleanup the files
+
+    # return zip file
 
 
 
