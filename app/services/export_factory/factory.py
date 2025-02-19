@@ -1,17 +1,20 @@
 from app.services.export_factory.export_parameters import ExportParameters
+from app.services.export_factory.export_plots import ExportPlots
 
 
 class ExportFactory:
     strategies = {
         "Parameters": ExportParameters(),
-        # "plot": PlotExport(),
+        "EDC": ExportPlots(),
         # "auralization": NewResultsExport(),
     }
 
     @staticmethod
-    def get_exporter(export_type, params, simulationId):
-        parameter_strategy = ExportFactory.strategies.get(export_type, None)
-        return parameter_strategy.export(params, simulationId)
+    def get_exporter(export_type, params, simulationId, zip_buffer):
+        strategy = ExportFactory.strategies.get(export_type, None)
+        return strategy.export(export_type, params, simulationId, zip_buffer)
+    
+    
 
     # def get_export_types -> array of export_type
 

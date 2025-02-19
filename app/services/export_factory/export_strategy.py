@@ -5,29 +5,37 @@ from flask_smorest import abort
 from app.models import Export
 from config import DefaultConfig
 import os
+import io
 
-from app.services.export_helper import ExportHelper
-from app.services.export_factory.export_strategy import ExportStrategy
+import zipfile
 
 
 # Create logger for this module
 logger = logging.getLogger(__name__)
 
 
-    
-class ExportPlots(ExportStrategy):
+class ExportStrategy(ABC):
+    @abstractmethod
     def export(self, export_type, params, simulationId, zip_buffer):
+        pass
+
+class ExportExcel(ExportStrategy):
+    def export(self, simulationId, zip_buff):
 
         xlsx_file_name = Export.query.filter_by(simulationId=simulationId).first().name
 
         if not xlsx_file_name:
-            logger.error("Plots export with simulation is " + str(simulationId) + "does not exists!")
+            logger.error("Export with simulation is " + str(simulationId) + "does not exists!")
             abort(400, message="Excel file doesn't exists!")
         
 
         xlsx_path = os.path.join(DefaultConfig.UPLOAD_FOLDER_NAME, xlsx_file_name)
-        helper = ExportHelper()
-        zip_binary = helper.extract_from_xlsx_to_csv_to_zip_binary(xlsx_path, {export_type : params}, zip_buffer)
-    
 
-        return zip_binary
+        zip_buffer = zip_buff
+
+        with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
+            # Save xlsx file to zip
+            zip_file.write(xlsx_path, arcname=xlsx_file_name)
+
+        return zip_buffer
+    
