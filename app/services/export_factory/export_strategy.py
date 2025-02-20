@@ -2,7 +2,8 @@ import logging
 from abc import ABC, abstractmethod
 
 from flask_smorest import abort
-from app.models import Export
+from app.models.Export import Export
+from app.models.Simulation import Simulation
 from config import DefaultConfig
 import os
 import io
@@ -25,7 +26,17 @@ class ExportExcel(ExportStrategy):
         zip_buffer = zip_buff
 
         for id in simulationIds:
-            xlsx_file_name = Export.query.filter_by(simulationId=id).first().name
+            simulation: Simulation = Simulation.query.filter_by(id=id).first()
+            print("simulation", simulation)
+
+            export: Export = simulation.export
+            print("export", export)
+
+            xlsx_file_name: str = export.name
+            print("xlsx_file_name", xlsx_file_name)
+
+
+            # xlsx_file_name = Export.query.filter_by(simulationId=id).first().name
 
             if not xlsx_file_name:
                 logger.error("Export with simulation is " + str(id) + "does not exists!")

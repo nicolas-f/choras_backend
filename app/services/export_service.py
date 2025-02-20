@@ -35,7 +35,7 @@ def get_zip_path_by_sim_id(simulation_id: int) -> io.BytesIO:
         return None
 
 
-def execute_export():
+def execute_export(export_dict):
 # def execute_export(request_body):
 
     # request_body = '{ "SimulationId" : [1], 
@@ -44,8 +44,8 @@ def execute_export():
     # "Auralization" : ["Impulse response .wav", "Auralization output .wav", "Impulse response .csv"]}'
     # request_body = '{ "SimulationId" : [1], "Parameters" : ["edt", "t20", "t30", "c80", "d50", "ts", "spl_t0_freq"], "EDC" : ["125Hz", "250Hz", "500Hz", "1000Hz"], "Auralization" : ["Impulse response .wav", "Auralization output .wav", "Impulse response .csv"]}'
     # request_body = '{ "SimulationId" : [1], "Parameters" : [], "EDC" : ["125Hz", "250Hz", "500Hz", "1000Hz"], "Auralization" : ["Impulse response .wav", "Auralization output .wav", "Impulse response .csv"]}'
-    request_body = '{ "SimulationId" : [1, 2], "Parameters" : [], "EDC" : [], "Auralization" : ["Impulse response .wav", "Auralization output .wav", "Impulse response .csv"]}'
-    export_dict = json.loads(request_body) # export_dict["simulationId"] or export_dict["parameters"]
+    # request_body = '{ "SimulationId" : [1, 2], "Parameters" : [], "EDC" : [], "Auralization" : ["Impulse response .wav", "Auralization output .wav", "Impulse response .csv"]}'
+    # export_dict = json.loads(request_body) # export_dict["simulationId"] or export_dict["parameters"]
 
 
     # return export_request
@@ -56,10 +56,14 @@ def execute_export():
     # "parameters"       ["T20","SPL"] or if nil or [] assume all selected
     # "plots"           ["1000KHz,200KHz"]  or if nil or [] assume all selected
 
+    print(export_dict)
+
     simulationIds = export_dict["SimulationId"]
     key_parameter = "Parameters"
     key_edc = "EDC"
     key_auralization = "Auralization"
+
+    print("Simulation ids: ", simulationIds)
 
     parameters_values = list(export_dict[key_parameter])
     edc_values = list(export_dict[key_edc])
