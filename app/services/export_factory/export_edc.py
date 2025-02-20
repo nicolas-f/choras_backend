@@ -30,7 +30,7 @@ class ExportEdc(ExportStrategy):
             xlsx_path = os.path.join(DefaultConfig.UPLOAD_FOLDER_NAME, xlsx_file_name)
             helper = ExportHelper()
             zip_binary = helper.extract_from_xlsx_to_csv_to_zip_binary(xlsx_path, {export_type : params}, zip_buffer, id)
-        
+
     
 
         return zip_binary
