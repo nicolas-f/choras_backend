@@ -161,7 +161,7 @@ def run_auralization(auralizationId: int) -> None:
         logger.error(f"Error running this auralization {auralization.id}: {e}")
         abort(400, "Error running this auralization")
 
-
+# TODO: too long code, refactor this function
 def auralization_calculation(
     signal_file_name: Optional[str], pressure_file_name: str, wav_output_file_name: Optional[str] = None
 ) -> Tuple[List[int], int]:
