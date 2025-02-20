@@ -8,7 +8,6 @@ from app.services import export_service
 
 blp = Blueprint("Export", __name__, description="Export API")
 
-
 # TODO: @almasmuhtadi @bbaigalmaa
 @blp.route("/exports/<int:simulation_id>")
 class ExportList(MethodView):
@@ -23,7 +22,6 @@ class CustomExport(MethodView):
     @blp.arguments(CustomExportSchema)
     @blp.response(200, content_type="application/zip")
     def post(self, body_data):
-        print(body_data)
         zip_buffer = export_service.execute_export(body_data)
-        print(zip_buffer)
-        return send_file(zip_buffer, as_attachment=True, download_name="results.zip")
+        zip_buffer.seek(0)  # Ensure buffer is at the start
+        return send_file(zip_buffer, as_attachment=True, download_name="results.zip", mimetype="application/zip")
