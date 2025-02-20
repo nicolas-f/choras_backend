@@ -272,11 +272,11 @@ def auralization_calculation(
             # CONVOLUTION FOR AURALIZATION
             # Create impulse*signal response
             # convolution of the impulse response with the anechoic signal
-            sh_conv = np.convolve(imp_tot, data_signal, mode='full')
+            # sh_conv = np.convolve(imp_tot, data_signal, mode='full')
             # normalized to the maximum value of the convolved signal
-            sh_conv = sh_conv / max(abs(sh_conv))
+            # sh_conv = sh_conv / max(abs(sh_conv))
             # normalize the floating-point data to the range of int16
-            sh_conv_normalized = np.int16(sh_conv * 32767)
+            # sh_conv_normalized = np.int16(sh_conv * 32767)
             # Time vector of the convolved signal
             # t_conv = np.arange(0, (len(sh_conv)) / fs, 1 / fs)
 
