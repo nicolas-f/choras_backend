@@ -15,9 +15,11 @@ class ExportList(MethodView):
         zip_path = export_service.get_zip_path_by_sim_id(simulation_id)
         
         return send_from_directory(zip_path.parent, zip_path.name, as_attachment=True)
+    
+@blp.route("/exports/custom_export")
+class CustomExport(MethodView):
+    @blp.response(200, content_type="application/custom_export")
+    def post(self, request_body):
+        zip_buffer = export_service.execute_export(request_body)
 
-    # @blp.response(200, content_type="application/zip")
-    # def post(self, request_body):
-    #     zip_path = export_service.execute_export(request_body)
-
-    #     return send_from_directory(zip_path.parent, zip_path.name, as_attachment=True)
+        return send_file(zip_buffer, as_attachment=True)

@@ -35,7 +35,7 @@ class ExportHelper:
             return False
 
     def extract_from_xlsx_to_csv_to_zip_binary(
-        self, xlsx_path: str, sheets_columns: Dict[str, List[str]], zip_buff
+        self, xlsx_path: str, sheets_columns: Dict[str, List[str]], zip_buff: io.BytesIO, id: int 
     
     ) -> Optional[io.BytesIO]:
         try:
@@ -55,10 +55,13 @@ class ExportHelper:
                 for sheet, columns in sheets_columns.items():
                     df = pd.read_excel(xlsx, sheet_name=sheet)
                     for col in columns:
-                        df[[col]].to_csv(csv_buffer, header=False, index=False)
-                        csv_buffer.seek(0)
-                        zip_file.writestr(f'{sheet}_{col}.csv', csv_buffer.getvalue())
-                        csv_buffer.truncate(0)
+                        try:
+                            df[[col]].to_csv(csv_buffer, header=False, index=False)
+                            csv_buffer.seek(0)
+                            zip_file.writestr(f'{sheet}_{col}_simulation_{id}.csv', csv_buffer.getvalue())
+                            csv_buffer.truncate(0)
+                        except Exception as e:
+                            logger.error(f'{col} is not in columns: {e}')
 
                 csv_buffer.close()
             
@@ -68,6 +71,8 @@ class ExportHelper:
         except Exception as e:
             logger.error(f'Error saving data to csv: {e}')
             return None
+
+    
 
     def write_file_to_zip_binary(self, zip_buffer: io.BytesIO, file_path: str) -> Optional[io.BytesIO]:
         try:

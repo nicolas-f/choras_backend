@@ -1,11 +1,11 @@
 from app.services.export_factory.export_parameters import ExportParameters
-from app.services.export_factory.export_plots import ExportPlots
+from app.services.export_factory.export_edc import ExportEdc
 
 
 class ExportFactory:
     strategies = {
         "Parameters": ExportParameters(),
-        "EDC": ExportPlots(),
+        "EDC": ExportEdc(),
         # "auralization": NewResultsExport(),
     }
 
