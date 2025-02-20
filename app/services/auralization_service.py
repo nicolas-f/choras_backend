@@ -1,5 +1,5 @@
 from typing import Optional, List, Tuple
-from scipy.signal import butter, sosfilt, resample_poly
+from scipy.signal import butter, sosfilt, resample_poly, convolve
 from scipy.io import wavfile
 from sqlalchemy import asc
 from pathlib import Path
@@ -267,12 +267,28 @@ def auralization_calculation(
         imp_tot = np.array(imp_tot, dtype=float)
 
         if data_signal is not None:
-            # CONVOLUTION FOR AURALIZATION
-            # Create impulse*signal response
-            sh_conv = np.convolve(imp_tot, data_signal)  # convolution of the impulse response with the anechoic signal
-            sh_conv = sh_conv / max(abs(sh_conv))  # normalized to the maximum value of the convolved signal
-            sh_conv_normalized = normalize_to_int16(sh_conv)  # normalize the floating-point data to the range of int16
-            # t_conv = np.arange(0, (len(sh_conv)) / fs, 1 / fs)  # Time vector of the convolved signal
+            logger.info("Convolving processing ...")
+            # # CONVOLUTION FOR AURALIZATION
+            # # Create impulse*signal response
+            # sh_conv = np.convolve(imp_tot, data_signal, mode='full')  # convolution of the impulse response with the anechoic signal
+            # sh_conv = sh_conv / max(abs(sh_conv))  # normalized to the maximum value of the convolved signal
+            # sh_conv_normalized = np.int16(sh_conv * 32767) # normalize the floating-point data to the range of int16
+            # # t_conv = np.arange(0, (len(sh_conv)) / fs, 1 / fs)  # Time vector of the convolved signal
+
+            # The above code can only be used for 1D signal input, so I will use the following code for multi-channel signal input
+            # add a new axis to the impulse response for matching the dimensions of the signal
+            if data_signal.ndim > 1:
+                imp_tot = np.expand_dims(imp_tot, axis=1)
+                
+            # scipy.signal.convolve is faster than numpy.convolve
+            sh_conv = convolve(imp_tot, data_signal, mode='full', method='auto')
+            sh_conv_normalized = normalize_to_int16(sh_conv)
+            
+            # # Validation
+            # sh_conv_np = np.convolve(imp_tot, data_signal, mode='full') 
+            # logger.info(f"test for equivalence: {np.allclose(sh_conv_np, sh_conv)}")
+            # logger.info(f"test for equivalence: {sh_conv[20:30] - sh_conv_np[20:30]}")
+            # logger.info(f"test for equivalence: {sh_conv.shape} {sh_conv_np.shape}")
 
             if wav_output_file_name is not None:
                 # Create a file wav for auralization
@@ -280,7 +296,6 @@ def auralization_calculation(
                 return None, None  # in 16 bit format
 
         else:
-            imp_tot = imp_tot / max(abs(imp_tot))
             imp_tot_normalized = normalize_to_int16(imp_tot)
 
             if wav_output_file_name is not None:
@@ -294,7 +309,7 @@ def auralization_calculation(
 
 
 def normalize_to_int16(sh_conv: np.ndarray) -> np.ndarray:
-    return np.int16(sh_conv / np.max(np.abs(sh_conv)) * 32767)
+    return np.int16(sh_conv / np.max(np.abs(sh_conv), axis=0) * 32767)
 
 
 def get_all_audio_files():
