@@ -161,6 +161,7 @@ def run_auralization(auralizationId: int) -> None:
         logger.error(f"Error running this auralization {auralization.id}: {e}")
         abort(400, "Error running this auralization")
 
+
 # TODO: too long code, refactor this function
 def auralization_calculation(
     signal_file_name: Optional[str], pressure_file_name: str, wav_output_file_name: Optional[str] = None
@@ -268,24 +269,29 @@ def auralization_calculation(
 
         if data_signal is not None:
             logger.info("Convolving processing ...")
-            # # CONVOLUTION FOR AURALIZATION
-            # # Create impulse*signal response
-            # sh_conv = np.convolve(imp_tot, data_signal, mode='full')  # convolution of the impulse response with the anechoic signal
-            # sh_conv = sh_conv / max(abs(sh_conv))  # normalized to the maximum value of the convolved signal
-            # sh_conv_normalized = np.int16(sh_conv * 32767) # normalize the floating-point data to the range of int16
-            # # t_conv = np.arange(0, (len(sh_conv)) / fs, 1 / fs)  # Time vector of the convolved signal
+            # CONVOLUTION FOR AURALIZATION
+            # Create impulse*signal response
+            # convolution of the impulse response with the anechoic signal
+            sh_conv = np.convolve(imp_tot, data_signal, mode='full')
+            # normalized to the maximum value of the convolved signal
+            sh_conv = sh_conv / max(abs(sh_conv))
+            # normalize the floating-point data to the range of int16
+            sh_conv_normalized = np.int16(sh_conv * 32767)
+            # Time vector of the convolved signal
+            # t_conv = np.arange(0, (len(sh_conv)) / fs, 1 / fs)
 
-            # The above code can only be used for 1D signal input, so I will use the following code for multi-channel signal input
+            # The above code can only be used for 1D signal input,
+            # so I will use the following code for multi-channel signal input
             # add a new axis to the impulse response for matching the dimensions of the signal
             if data_signal.ndim > 1:
                 imp_tot = np.expand_dims(imp_tot, axis=1)
-                
+
             # scipy.signal.convolve is faster than numpy.convolve
             sh_conv = convolve(imp_tot, data_signal, mode='full', method='auto')
             sh_conv_normalized = normalize_to_int16(sh_conv)
-            
+
             # # Validation
-            # sh_conv_np = np.convolve(imp_tot, data_signal, mode='full') 
+            # sh_conv_np = np.convolve(imp_tot, data_signal, mode='full')
             # logger.info(f"test for equivalence: {np.allclose(sh_conv_np, sh_conv)}")
             # logger.info(f"test for equivalence: {sh_conv[20:30] - sh_conv_np[20:30]}")
             # logger.info(f"test for equivalence: {sh_conv.shape} {sh_conv_np.shape}")
