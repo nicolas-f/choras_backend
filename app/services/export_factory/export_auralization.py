@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 
 from flask_smorest import abort
 from app.models import Export
+from app.models.Simulation import Simulation
 from config import DefaultConfig
 import os
 
@@ -17,8 +18,16 @@ logger = logging.getLogger(__name__)
     
 class ExportAuralization(ExportStrategy):
     def export(self, export_type, params, simulationId):
+        simulation: Simulation = Simulation.query.filter_by(id=simulationId).first()
+        print("simulation", simulation)
 
-        xlsx_file_name = Export.query.filter_by(simulationId=simulationId).first().name
+        export: Export = simulation.export
+        print("export", export)
+
+        xlsx_file_name: str = export.name
+        print("xlsx_file_name", xlsx_file_name)
+
+        # xlsx_file_name = Export.query.filter_by(simulationId=simulationId).first().name
 
         if not xlsx_file_name:
             logger.error("Auralization export with simulation is " + str(simulationId) + "does not exists!")

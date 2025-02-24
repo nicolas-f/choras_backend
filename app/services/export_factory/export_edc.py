@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 
 from flask_smorest import abort
 from app.models import Export
+from app.models.Simulation import Simulation
 from config import DefaultConfig
 import os
 
@@ -19,8 +20,16 @@ class ExportEdc(ExportStrategy):
     def export(self, export_type, params, simulationIds, zip_buffer):
 
         for id in simulationIds:
+            simulation: Simulation = Simulation.query.filter_by(id=id).first()
+            print("simulation", simulation)
 
-            xlsx_file_name = Export.query.filter_by(simulationId=id).first().name
+            export: Export = simulation.export
+            print("export", export)
+
+            xlsx_file_name: str = export.name
+            print("xlsx_file_name", xlsx_file_name)
+
+            # xlsx_file_name = Export.query.filter_by(simulationId=id).first().name
 
             if not xlsx_file_name:
                 logger.error("Plots export with simulation is " + str(id) + "does not exists!")
