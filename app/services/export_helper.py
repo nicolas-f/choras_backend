@@ -34,15 +34,14 @@ class ExportHelper:
             return False
 
     def extract_from_xlsx_to_csv_to_zip_binary(
-        self, xlsx_path: str, sheets_columns: Dict[str, List[str]], zip_buff: io.BytesIO, id: int 
-    
+        self, xlsx_path: str, sheets_columns: Dict[str, List[str]], zip_buffer: Optional[io.BytesIO] = None, id: int = 0 
     ) -> Optional[io.BytesIO]:
         try:
             xlsx_path: Path = Path(xlsx_path)
             xlsx = pd.ExcelFile(xlsx_path)
 
             # Create a BytesIO object
-            zip_buffer = zip_buff
+            zip_buffer = io.BytesIO() if zip_buffer is None else zip_buffer
             csv_buffer = io.StringIO()
             
 
@@ -53,14 +52,10 @@ class ExportHelper:
                 # Convert selected sheets and columns to csv and save them to zip
                 for sheet, columns in sheets_columns.items():
                     df = pd.read_excel(xlsx, sheet_name=sheet)
-                    for col in columns:
-                        try:
-                            df[[col]].to_csv(csv_buffer, header=False, index=False)
-                            csv_buffer.seek(0)
-                            zip_file.writestr(f'{sheet}_{col}_simulation_{id}.csv', csv_buffer.getvalue())
-                            csv_buffer.truncate(0)
-                        except Exception as e:
-                            logger.error(f'{col} is not in columns: {e}')
+                    csv_buffer.seek(0)
+                    df[columns].to_csv(csv_buffer, header=True, index=False)
+                    zip_file.writestr(f'{sheet}_simulation_{id}.csv', csv_buffer.getvalue())
+                    csv_buffer.truncate(0)
 
                 csv_buffer.close()
             
@@ -134,4 +129,3 @@ class ExportHelper:
             return False
 
         return True
-
