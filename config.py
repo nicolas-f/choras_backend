@@ -60,6 +60,7 @@ class DefaultConfig:
     UPLOAD_FOLDER_NAME = "uploads"
     UPLOAD_FOLDER = os.path.join(basedir, UPLOAD_FOLDER_NAME)
     ALLOWED_EXTENSIONS = {"obj", "geo"}
+    AUDIO_FILE_FOLDER = "example_audios"
 
     # Ensure the upload folder exists
     if not os.path.exists(UPLOAD_FOLDER):
@@ -126,3 +127,16 @@ class ProductionConfig(DefaultConfig):
 
     # # Database configuration
     # SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL")
+
+
+class AuralizationParametersConfig(DefaultConfig):
+    # some hardcode values for the auralization parameters
+    original_fs = 20000
+    visualization_fs = 44100
+    filter_order = 8
+    nth_octave = 1
+    W = 0.01
+    dist_sr = 1.5
+    rho = 1.21
+    c0 = 343
+    random_seed = 215

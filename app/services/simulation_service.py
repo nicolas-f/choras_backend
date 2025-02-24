@@ -14,6 +14,7 @@ from app.db import db
 from app.models import File, Simulation, SimulationRun, Task, Export
 from app.services import file_service, material_service, mesh_service, model_service
 from app.services.export_service import ExportHelper
+from app.services.auralization_service import auralization_calculation
 from app.types import Status, TaskType
 
 # Create logger for this module
@@ -331,23 +332,29 @@ def run_solver(simulation_run_id: int, json_path: str):
                     logger.info("DE method")
                     de_method(json_file_path=json_path)
 
-                    # export edc, parameters, and make them to zip
-                    exportHelper = ExportHelper(
-                        load_path=json_path,
-                        save_path=json_path.replace(".json", ".xlsx"),
-                        export_separate_csvs=True,
-                    )
-                    if not (exportHelper.export() and exportHelper.make_zip()):
-                        logger.error("Error exporting results")
-                        raise IOError("Error exporting results")
+                    # save the simulation result json to xlsx
+                    exportHelper = ExportHelper()
+                    if not exportHelper.parse_json_file_to_xlsx_file(json_path, json_path.replace(".json", ".xlsx")):
+                        logger.error("Error saving the result to xlsx")
+                        raise "Error saving the result to xlsx"
 
-                    # db-write pressure_data for further auralization process ###
+                    # db - save the xlsx file path
                     export = Export(
-                        zipFileName=Path(json_path).name.replace(".json", ".zip"),
-                        preCsvFileName=Path(json_path).name.replace(".json", "_pressure.csv"),
+                        name=Path(json_path).name.replace(".json", ".xlsx"),
                         simulationId=simulation.id,
                     )
                     session.add(export)
+
+                    # auralization: generate impulse response wav file
+                    imp_tot, fs = auralization_calculation(
+                        None, json_path.replace(".json", "_pressure.csv"), json_path.replace(".json", ".wav")
+                    )
+                    # auralization: save the impulse response to xlsx
+                    if not exportHelper.write_data_to_xlsx_file(
+                        json_path.replace(".json", ".xlsx"), "impulse response", {f"{fs}Hz": imp_tot}
+                    ):
+                        logger.error("Error saving the impulse response to xlsx")
+                        raise "Error saving the impulse response to xlsx"
 
                 case TaskType.DG:
                     # DG METHOD

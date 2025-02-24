@@ -2,6 +2,8 @@ import json
 import zipfile
 import pandas as pd
 import logging
+import os
+import io
 from pathlib import Path
 from flask_smorest import abort
 from typing import Dict, List, Optional
@@ -14,7 +16,7 @@ from app.models.Simulation import Simulation
 logger = logging.getLogger(__name__)
 
 
-def get_zip_path_by_sim_id(simulation_id: int) -> Optional[Path]:
+def get_zip_path_by_sim_id(simulation_id: int) -> io.BytesIO:
     simulation: Simulation = Simulation.query.filter_by(id=simulation_id).first()
     if simulation is None:
         abort(404, message="No simulation found with this id.")
@@ -24,65 +26,97 @@ def get_zip_path_by_sim_id(simulation_id: int) -> Optional[Path]:
         abort(404, message="No export found for this simulation.")
 
     try:
-        zipfile_path = config.DefaultConfig.UPLOAD_FOLDER + '\\' + export.zipFileName
-        return Path(zipfile_path)
+        # TODO: @almasmuhtadi @bbaigalmaa
+        ...
     except Exception as ex:
         abort(400, message=f"Error while getting the zip file path: {ex}")
         return None
 
 
 class ExportHelper:
-    def __init__(self, load_path: str, save_path: str, export_separate_csvs: bool = True) -> None:
-        """`ExportHelper` is for converting simulation results to an Excel file, and separately to csv files.
-
-        Args:
-            load_path (str): the path to the JSON file containing the simulation results, extension included.
-            save_path (str): the path to save the Excel file, extension included.
-            export_separate_csvs (bool, optional): whether **also** convert results to
-                csv files separately. Defaults to True.
-        """
-        self.load_path = load_path
-        self.save_path = save_path
-        self.export_separate_csvs = export_separate_csvs
-
-    def export(self) -> bool:
-        """Convert simulation results to an Excel file
-
-        Returns:
-            bool: conversion success or not
-        """
-        data: Optional[Dict] = self.__load_json__()
+    def parse_json_file_to_xlsx_file(self, json_path: str, xlsx_path: str) -> bool:
+        """Convert simulation results to an Excel file"""
+        data: Optional[Dict] = self.__load_json__(json_path)
         if data is None:
             return False
 
-        return self.__save_as_xlsx__(data)
+        return self.__parse_json_data_to_xlsx_file__(data, xlsx_path)
 
-    def make_zip(self) -> bool:
-        """zip the Excel file and the separate csv files
-
-        Returns:
-            bool: zipping success or not
-        """
+    def write_data_to_xlsx_file(self, xlsx_path: str, sheet: str, data: Dict, mode: str = 'a') -> bool:
         try:
-            zip_path = Path(self.save_path.replace('.xlsx', '.zip'))
-            xlsx_path = Path(self.save_path)
-            parameters_path = Path(self.save_path.replace('.xlsx', '_parameters.csv'))
-            edc_path = Path(self.save_path.replace('.xlsx', '_edc.csv'))
+            df = pd.DataFrame(data)
+            with pd.ExcelWriter(xlsx_path, mode=mode) as writer:
+                df.to_excel(writer, sheet_name=sheet, index=False)
+            return True
 
-            with zipfile.ZipFile(zip_path, 'w') as zipf:
-                zipf.write(xlsx_path, xlsx_path.name)
-                if self.export_separate_csvs:
-                    zipf.write(parameters_path, parameters_path.name)
-                    zipf.write(edc_path, edc_path.name)
         except Exception as e:
-            logger.error(f'Error zipping files: {e}')
+            logger.error(f'Error adding data to xlsx: {e}')
             return False
 
-        return True
-
-    def __load_json__(self) -> Optional[Dict]:
+    def extract_from_xlsx_to_csv_to_zip_binary(
+        self, xlsx_path: str, sheets_columns: Dict[str, List[str]]
+    ) -> Optional[io.BytesIO]:
         try:
-            with open(self.load_path, 'r') as file:
+            xlsx_path: Path = Path(xlsx_path)
+            xlsx = pd.ExcelFile(xlsx_path)
+
+            # Create a BytesIO object
+            zip_buffer = io.BytesIO()
+            csv_buffer = io.StringIO()
+
+            with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
+                # Save xlsx file to zip
+                zip_file.write(xlsx_path, arcname=xlsx_path.name)
+
+                # Convert selected sheets and columns to csv and save them to zip
+                for sheet, columns in sheets_columns.items():
+                    df = pd.read_excel(xlsx, sheet_name=sheet)
+                    for col in columns:
+                        df[[col]].to_csv(csv_buffer, header=False, index=False)
+                        csv_buffer.seek(0)
+                        zip_file.writestr(f'{sheet}_{col}.csv', csv_buffer.getvalue())
+                        csv_buffer.truncate(0)
+
+                csv_buffer.close()
+
+            return zip_buffer
+
+        except Exception as e:
+            logger.error(f'Error saving data to csv: {e}')
+            return None
+
+    def write_file_to_zip_binary(self, zip_buffer: io.BytesIO, file_path: str, mode: str = 'a') -> Optional[io.BytesIO]:
+        try:
+            file_path: Path = Path(file_path)
+            zip_file = zipfile.ZipFile(zip_buffer, mode=mode)
+            zip_file.write(file_path, arcname=file_path.name)
+            return zip_buffer
+
+        except Exception as e:
+            logger.error(f'Error saving file to zip: {e}')
+            return None
+
+    def extract_from_xlsx_to_dict(self, xlsx_path: str, sheets_columns: Dict[str, List[str]]) -> Optional[pd.DataFrame]:
+        try:
+            xlsx_path: Path = Path(xlsx_path)
+            xlsx = pd.ExcelFile(xlsx_path)
+
+            data: Dict[str, Dict[str, List]] = {}
+            for sheet, columns in sheets_columns.items():
+                df = pd.read_excel(xlsx, sheet_name=sheet)
+                data[sheet] = {}
+                for col in columns:
+                    data[sheet][col] = df[col].tolist()
+
+            return data
+
+        except Exception as e:
+            logger.error(f'Error extracting data from xlsx: {e}')
+            return None
+
+    def __load_json__(self, json_path) -> Optional[Dict]:
+        try:
+            with open(json_path, 'r') as file:
                 data: Dict = json.load(file)
         except FileNotFoundError as e:
             logger.error(f'File not found: {e}')
@@ -90,7 +124,7 @@ class ExportHelper:
 
         return data
 
-    def __save_as_xlsx__(self, data: Dict) -> bool:
+    def __parse_json_data_to_xlsx_file__(self, data: Dict, xlsx_path: str) -> bool:
         try:
             # TODO: Multiple sources and multiple receivers
             receiver_results: List[Dict[str, List[int]]] = data['results'][0]['responses'][0]['receiverResults']
@@ -105,13 +139,9 @@ class ExportHelper:
             for result in receiver_results:
                 edc_sheet[str(result['frequency']) + 'Hz'] = result['data']
 
-            with pd.ExcelWriter(self.save_path) as writer:
+            with pd.ExcelWriter(xlsx_path) as writer:
                 parameter_sheet.to_excel(writer, sheet_name='Parameters', index=False)
                 edc_sheet.to_excel(writer, sheet_name='EDC', index=False)
-
-            if self.export_separate_csvs:
-                parameter_sheet.to_csv(self.save_path.replace('.xlsx', '_parameters.csv'), index=False)
-                edc_sheet.to_csv(self.save_path.replace('.xlsx', '_edc.csv'), index=False)
 
         except Exception as e:
             logger.error(f'Error saving data to xlsx: {e}')
