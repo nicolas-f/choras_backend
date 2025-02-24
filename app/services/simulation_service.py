@@ -13,7 +13,8 @@ import config
 from app.db import db
 from app.models import File, Simulation, SimulationRun, Task, Export
 from app.services import file_service, material_service, mesh_service, model_service
-from app.services.export_helper import ExportHelper
+from app.services.export_service import ExportHelper
+from app.services.auralization_service import auralization_calculation
 from app.types import Status, TaskType
 
 # Create logger for this module
@@ -337,12 +338,23 @@ def run_solver(simulation_run_id: int, json_path: str):
                         logger.error("Error saving the result to xlsx")
                         raise "Error saving the result to xlsx"
 
-                    # db - save the xlsx file
+                    # db - save the xlsx file path
                     export = Export(
                         name=Path(json_path).name.replace(".json", ".xlsx"),
                         simulationId=simulation.id,
                     )
                     session.add(export)
+
+                    # auralization: generate impulse response wav file
+                    imp_tot, fs = auralization_calculation(
+                        None, json_path.replace(".json", "_pressure.csv"), json_path.replace(".json", ".wav")
+                    )
+                    # auralization: save the impulse response to xlsx
+                    if not exportHelper.write_data_to_xlsx_file(
+                        json_path.replace(".json", ".xlsx"), "impulse response", {f"{fs}Hz": imp_tot}
+                    ):
+                        logger.error("Error saving the impulse response to xlsx")
+                        raise "Error saving the impulse response to xlsx"
 
                 case TaskType.DG:
                     # DG METHOD

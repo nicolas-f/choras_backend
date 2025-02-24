@@ -1,5 +1,5 @@
-from typing import Optional, List
-from scipy.signal import butter, sosfilt, resample_poly
+from typing import Optional, List, Tuple
+from scipy.signal import butter, sosfilt, resample_poly, convolve
 from scipy.io import wavfile
 from sqlalchemy import asc
 from pathlib import Path
@@ -21,6 +21,8 @@ from app.types import Status
 from app.models.AudioFile import AudioFile
 from app.models.Auralization import Auralization
 from app.models.Export import Export
+from app.models.Simulation import Simulation
+from app.services.export_service import ExportHelper
 from app.db import db
 
 # Create Logger for this module
@@ -53,6 +55,46 @@ def get_auralization_wav_path(auralization_id: int) -> Optional[Path]:
             return Path(wav_file_path)
         except Exception as e:
             abort(400, message=f"Error while getting the wav file path: {e}")
+            return None
+
+
+def get_impulse_response_wav_path(simulation_id: int) -> Optional[Path]:
+    simulation: Optional[Simulation] = Simulation.query.filter_by(id=simulation_id).first()
+    if simulation is None:
+        abort(404, message="No simulation found with this id.")
+    elif simulation.status != Status.Completed:
+        abort(400, message="Simulation is not completed yet.")
+    else:
+        try:
+            wav_file_path = os.path.join(
+                DefaultConfig.UPLOAD_FOLDER_NAME, f"{simulation.export.name.replace('.xlsx', '.wav')}"
+            )
+            return Path(wav_file_path)
+        except Exception as e:
+            abort(400, message=f"Error while getting the impulse response wav file path: {e}")
+            return None
+
+
+def get_impulse_response_plot(simulation_id: int) -> Optional[dict]:
+    simulation: Optional[Simulation] = Simulation.query.filter_by(id=simulation_id).first()
+    if simulation is None:
+        abort(404, message="No simulation found with this id.")
+    elif simulation.status != Status.Completed:
+        abort(400, message="Simulation is not completed yet.")
+    else:
+        try:
+            xlsx_file_path = os.path.join(DefaultConfig.UPLOAD_FOLDER_NAME, simulation.export.name)
+            exportHelper = ExportHelper()
+            plot_data = exportHelper.extract_from_xlsx_to_dict(
+                xlsx_file_path, {"impulse response": [f"{AuralizationParameters.visualization_fs}Hz"]}
+            )
+            return {
+                "impulseResponse": plot_data["impulse response"][f"{AuralizationParameters.visualization_fs}Hz"],
+                "fs": AuralizationParameters.visualization_fs,
+                "simulationId": simulation.id,
+            }
+        except Exception as e:
+            abort(400, message=f"Error while getting the impulse response plot: {e}")
             return None
 
 
@@ -93,17 +135,20 @@ def run_auralization(auralizationId: int) -> None:
         input_audio_file: AudioFile = auralization.audioFile
         signal_file_name = os.path.join(input_audio_file.path, input_audio_file.name)
 
-        export: Export = auralization.simulation.export
-        pressure_file_name = os.path.join(DefaultConfig.UPLOAD_FOLDER_NAME, export.preCsvFileName)
+        simulation: Simulation = auralization.simulation
+        export: Export = simulation.export
+        pressure_file_name = os.path.join(
+            DefaultConfig.UPLOAD_FOLDER_NAME, export.name.replace(".xlsx", "_pressure.csv")
+        )
 
-        auralization.wavFileName = export.preCsvFileName.replace("_pressure.csv", ".wav")
+        auralization.wavFileName = export.name.replace(".xlsx", f"_{input_audio_file.name}.wav")
         wav_output_file_name = os.path.join(DefaultConfig.UPLOAD_FOLDER_NAME, auralization.wavFileName)
 
         logger.debug("signal_file_name: %s", signal_file_name)
         logger.debug("pressure_file_name: %s", pressure_file_name)
         logger.debug("wav_output_file_name: %s", wav_output_file_name)
 
-        _, _, _ = auralization_calculation(signal_file_name, pressure_file_name, wav_output_file_name)
+        _, _ = auralization_calculation(signal_file_name, pressure_file_name, wav_output_file_name)
 
         auralization.status = Status.Completed
 
@@ -117,15 +162,20 @@ def run_auralization(auralizationId: int) -> None:
         abort(400, "Error running this auralization")
 
 
+# TODO: too long code, refactor this function
 def auralization_calculation(
-    signal_file_name: str, pressure_file_name: str, wav_output_file_name: Optional[str] = None
-) -> Optional[List]:
+    signal_file_name: Optional[str], pressure_file_name: str, wav_output_file_name: Optional[str] = None
+) -> Tuple[List[int], int]:
     # Load the signal and pressure data
     try:
-        # Extract data and sampling rate from file
-        data_signal, fs = sf.read(signal_file_name)  # this returns "data_signal", which is the
-        # audiodata (one_dimentional array) of the anechoic signal. It returns also the
-        # "fs" sample frequency of the signal
+
+        if signal_file_name is not None:
+            # Extract data and sampling rate from file
+            data_signal, fs = sf.read(signal_file_name)  # this returns "data_signal", which is the
+            # audiodata (one_dimentional array) of the anechoic signal. It returns also the
+            # "fs" sample frequency of the signal
+        else:
+            data_signal, fs = None, AuralizationParameters.visualization_fs
 
         data_pressure = np.loadtxt(
             pressure_file_name, skiprows=1, usecols=range(1, 6), delimiter=','
@@ -145,7 +195,7 @@ def auralization_calculation(
 
     except Exception as e:
         logger.error(f'Error loading files: {e}')
-        return None
+        return None, None
 
     # Auralization Calculation
     try:
@@ -217,27 +267,55 @@ def auralization_calculation(
         imp_tot = [sum(imp_filt_band[i][j] for i in range(len(imp_filt_band))) for j in range(len(imp_filt_band[0]))]
         imp_tot = np.array(imp_tot, dtype=float)
 
-        # CONVOLUTION FOR AURALIZATION
-        # Create impulse response
-        sh_conv = np.convolve(imp_tot, data_signal)  # convolution of the impulse response with the anechoic signal
-        sh_conv = sh_conv / max(abs(sh_conv))  # normalized to the maximum value of the convolved signal
-        sh_conv_normalized = normalize_to_int16(sh_conv)  # normalize the floating-point data to the range of int16
-        t_conv = np.arange(0, (len(sh_conv)) / fs, 1 / fs)  # Time vector of the convolved signal
+        if data_signal is not None:
+            logger.info("Convolving processing ...")
+            # CONVOLUTION FOR AURALIZATION
+            # Create impulse*signal response
+            # convolution of the impulse response with the anechoic signal
+            # sh_conv = np.convolve(imp_tot, data_signal, mode='full')
+            # normalized to the maximum value of the convolved signal
+            # sh_conv = sh_conv / max(abs(sh_conv))
+            # normalize the floating-point data to the range of int16
+            # sh_conv_normalized = np.int16(sh_conv * 32767)
+            # Time vector of the convolved signal
+            # t_conv = np.arange(0, (len(sh_conv)) / fs, 1 / fs)
 
-        if wav_output_file_name is not None:
-            # Create a file wav for auralization
-            wavfile.write(wav_output_file_name, fs, sh_conv_normalized)
-            return sh_conv_normalized, fs, t_conv  # in 16 bit format
+            # The above code can only be used for 1D signal input,
+            # so I will use the following code for multi-channel signal input
+            # add a new axis to the impulse response for matching the dimensions of the signal
+            if data_signal.ndim > 1:
+                imp_tot = np.expand_dims(imp_tot, axis=1)
 
-        return sh_conv, fs, t_conv
+            # scipy.signal.convolve is faster than numpy.convolve
+            sh_conv = convolve(imp_tot, data_signal, mode='full', method='auto')
+            sh_conv_normalized = normalize_to_int16(sh_conv)
+
+            # # Validation
+            # sh_conv_np = np.convolve(imp_tot, data_signal, mode='full')
+            # logger.info(f"test for equivalence: {np.allclose(sh_conv_np, sh_conv)}")
+            # logger.info(f"test for equivalence: {sh_conv[20:30] - sh_conv_np[20:30]}")
+            # logger.info(f"test for equivalence: {sh_conv.shape} {sh_conv_np.shape}")
+
+            if wav_output_file_name is not None:
+                # Create a file wav for auralization
+                wavfile.write(wav_output_file_name, fs, sh_conv_normalized)
+                return None, None  # in 16 bit format
+
+        else:
+            imp_tot_normalized = normalize_to_int16(imp_tot)
+
+            if wav_output_file_name is not None:
+                # Create a file wav for impulse response
+                wavfile.write(wav_output_file_name, fs, imp_tot_normalized)
+            return (imp_tot_normalized.tolist(), fs)  # fs = 44100 Hz if no signal file is provided
 
     except Exception as e:
         logger.error(f'Error during auralization calculation: {e}')
-        return None
+        return None, None
 
 
 def normalize_to_int16(sh_conv: np.ndarray) -> np.ndarray:
-    return np.int16(sh_conv / np.max(np.abs(sh_conv)) * 32767)
+    return np.int16(sh_conv / np.max(np.abs(sh_conv), axis=0) * 32767)
 
 
 def get_all_audio_files():

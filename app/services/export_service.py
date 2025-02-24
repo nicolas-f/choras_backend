@@ -13,6 +13,7 @@ from app.models.Simulation import Simulation
 from app.services.export_factory.factory import ExportFactory
 from app.services.export_helper import ExportHelper
 from app.services.export_factory.export_strategy import ExportExcel
+from config import CustomExportParametersConfig as CustomExportParameters
 
 # Create Logger for this module
 logger = logging.getLogger(__name__)
@@ -59,15 +60,12 @@ def execute_export(export_dict):
     print(export_dict)
 
     simulationIds = export_dict["SimulationId"]
-    key_parameter = "Parameters"
-    key_edc = "EDC"
-    key_auralization = "Auralization"
 
     print("Simulation ids: ", simulationIds)
 
-    parameters_values = list(export_dict[key_parameter])
-    edc_values = list(export_dict[key_edc])
-    auralization_values = list(export_dict[key_auralization])
+    parameters_values = list(export_dict[CustomExportParameters.key_parameter])
+    edc_values = list(export_dict[CustomExportParameters.key_edc])
+    auralization_values = list(export_dict[CustomExportParameters.key_auralization])
 
     parameters_all = list(["edt", "t20", "t30", "c80", "d50", "ts", "spl_t0_freq"])
     edc_all = list(["63Hz", "125Hz", "250Hz", "500Hz", "1000Hz", "2000Hz", "4000Hz", "8000Hz"])
@@ -98,8 +96,8 @@ def execute_export(export_dict):
         zip_buffer = io.BytesIO()
 
         zip_buffer = exportExcel.export(simulationIds, zip_buffer)
-        zip_buffer = exportFactory.get_exporter(key_parameter, parameters_values, simulationIds, zip_buffer)
-        zip_buffer = exportFactory.get_exporter(key_edc, edc_values, simulationIds, zip_buffer)
+        zip_buffer = exportFactory.get_exporter(CustomExportParameters.key_parameter, parameters_values, simulationIds, zip_buffer)
+        zip_buffer = exportFactory.get_exporter(CustomExportParameters.key_edc, edc_values, simulationIds, zip_buffer)
 
     except Exception as e:
             logger.error(f'Error when extrating zip: {e}')
