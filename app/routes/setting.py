@@ -12,6 +12,6 @@ class AudioFileList(MethodView):
     def get(self, simulation_type):
         setting_json = setting_service.get_setting_by_type(simulation_type)
         return setting_json
-    
+
 
 # TODO: frontend requests for all simulation methods and display them on UI, rather than hardcoding

@@ -13,25 +13,29 @@ from config import app_dir, DefaultConfig
 # Create logger for this module
 logger = logging.getLogger(__name__)
 
+
 def get_setting_by_type(simulation_type: str) -> Optional[Dict]:
     try:
-        setting: Optional[SimulationSetting] = SimulationSetting.query.filter_by(simulation_type=simulation_type).first()
+        setting: Optional[SimulationSetting] = SimulationSetting.query.filter_by(
+            simulation_type=simulation_type
+        ).first()
         if setting is None:
             logger.error(f"Setting not found by type: {simulation_type}")
             abort(404, f"Setting not found by type: {simulation_type}")
-        
+
         setting_path = os.path.join(DefaultConfig.SETTINGS_FILE_FOLDER, setting.name)
         with open(setting_path) as json_setting_file:
             setting_json: Dict = json.load(json_setting_file)
             return setting_json
-        
+
     except Exception as ex:
         logger.error(f"Can not get setting file by type! Error: {ex}")
         abort(400, message=f"Can not get setting file by type: {simulation_type}!")
-    
+
 
 def get_all_setting_files():
     return SimulationSetting.query.order_by(SimulationSetting.simulation_type).all()
+
 
 def insert_initial_settings():
     setting_files = get_all_setting_files()
@@ -45,11 +49,11 @@ def insert_initial_settings():
             for setting_file in initial_setting_files:
                 new_setting_files.append(
                     SimulationSetting(
-                        name=setting_file["name"], 
-                        simulation_type=setting_file["simulation_type"], 
-                        description=setting_file["description"]
-                        )
+                        name=setting_file["name"],
+                        simulation_type=setting_file["simulation_type"],
+                        description=setting_file["description"],
                     )
+                )
 
             db.session.add_all(new_setting_files)
             db.session.commit()
