@@ -1,0 +1,50 @@
+[
+    {
+        "name": "Text Box Integer With Min Max",
+        "type": "integer",
+        "display": "text",
+        "min": 0,
+        "max": 100
+    },
+    {
+        "name": "Text Box Integer Without Min Max",
+        "type": "integer",
+        "display": "text",
+        "min": null,
+        "max": null
+    },
+    {
+        "name": "Text Box Float",
+        "type": "float",
+        "display": "text",
+        "min": 0,
+        "max": 100
+    },
+    {
+        "name": "Slider Float",
+        "type": "float",
+        "display": "slider",
+        "min": 0,
+        "max": 100,
+        "step": 0.1
+    },
+    {
+        "name": "Slider Integer",
+        "type": "integer",
+        "min": 0,
+        "max": 100,
+        "step": 1
+    },
+    {
+        "name": "Checkbox",
+        "type": "list",
+        "display": "checkbox",
+        "options": [{"label": "option 1", "value": "value 1"}, {"label": "option 2", "value": 0}, {"label": "option 3", "value": true}]
+    },
+    {
+        "name": "Radio",
+        "type": "string",
+        "display": "radio",
+        "options": [{"label": "option 1", "value": "value 1"}, {"label": "option 2", "value": 0}, {"label": "option 3", "value": true}]
+    }
+]

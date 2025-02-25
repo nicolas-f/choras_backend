@@ -61,6 +61,7 @@ class DefaultConfig:
     UPLOAD_FOLDER = os.path.join(basedir, UPLOAD_FOLDER_NAME)
     ALLOWED_EXTENSIONS = {"obj", "geo"}
     AUDIO_FILE_FOLDER = "example_audios"
+    SETTINGS_FILE_FOLDER = "example_settings"
 
     # Ensure the upload folder exists
     if not os.path.exists(UPLOAD_FOLDER):

@@ -1,0 +1,12 @@
+[
+    {
+      "name": "de_setting.json",
+      "simulation_type": "de",
+      "description": "parameter settings for de method"
+    },
+    {
+      "name": "dg_setting.json",
+      "simulation_type": "dg",
+      "description": "parameter settings for dg method"
+    }
+]
