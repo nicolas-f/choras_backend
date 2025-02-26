@@ -3,9 +3,11 @@ import unittest
 import click
 import coverage
 from passlib.hash import pbkdf2_sha256
+from pathlib import Path
 
 from app.db import db
 from app.services import material_service, auralization_service, setting_service
+from config import DefaultConfig
 
 
 @click.option("--pattern", default="test*.py", help="Test search pattern", required=False)
@@ -106,14 +108,25 @@ def drop_db():
     db.session.commit()
 
 
+def clean_cache():
+    """
+    Clean cache in the folder.
+    """
+    cache_folder = Path(DefaultConfig.UPLOAD_FOLDER_NAME)
+    if cache_folder.exists() and cache_folder.is_dir():
+        for file in cache_folder.iterdir():
+            file.unlink()
+
+
 def init_app(app):
     if app.config["APP_ENV"] == "production":
-        commands = [create_db, reset_db, drop_db]
+        commands = [create_db, reset_db, drop_db, clean_cache]
     else:
         commands = [
             create_db,
             reset_db,
             drop_db,
+            clean_cache,
             tests,
             cov_html,
             cov,
