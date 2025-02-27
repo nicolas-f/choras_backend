@@ -33,13 +33,13 @@ def get_setting_by_type(simulation_type: str) -> Optional[Dict]:
         abort(400, message=f"Can not get setting file by type: {simulation_type}!")
 
 
-def get_all_setting_files():
+def get_all_simulation_settings():
     return SimulationSetting.query.order_by(SimulationSetting.simulation_type).all()
 
 
 def insert_initial_settings():
-    setting_files = get_all_setting_files()
-    if len(setting_files):
+    simulation_settings = get_all_simulation_settings()
+    if len(simulation_settings):
         return
     logger.info("Inserting initial setting files...")
     with open(os.path.join(app_dir, "models", "data", "simulation_settings.json")) as json_setting_files:
