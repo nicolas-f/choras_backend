@@ -2,6 +2,7 @@ from flask.views import MethodView
 from flask_smorest import Blueprint
 
 from app.services import setting_service
+from app.schemas.setting_schema import SettingSchema
 
 blp = Blueprint("Setting", __name__, description="Simulation Settings API")
 
@@ -14,4 +15,9 @@ class AudioFileList(MethodView):
         return setting_json
 
 
-# TODO: frontend requests for all simulation methods and display them on UI, rather than hardcoding
+@blp.route("/simulation_settings")
+class AudioFileList(MethodView):
+    @blp.response(200, SettingSchema(many=True))
+    def get(self):
+        settings = setting_service.get_all_simulation_settings()
+        return settings

@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 def get_setting_by_type(simulation_type: str) -> Optional[Dict]:
     try:
         setting: Optional[SimulationSetting] = SimulationSetting.query.filter_by(
-            simulation_type=simulation_type
+            simulationType=simulation_type
         ).first()
         if setting is None:
             logger.error(f"Setting not found by type: {simulation_type}")
@@ -34,7 +34,7 @@ def get_setting_by_type(simulation_type: str) -> Optional[Dict]:
 
 
 def get_all_simulation_settings():
-    return SimulationSetting.query.order_by(SimulationSetting.simulation_type).all()
+    return SimulationSetting.query.order_by(SimulationSetting.simulationType).all()
 
 
 def insert_initial_settings():
@@ -50,7 +50,7 @@ def insert_initial_settings():
                 new_setting_files.append(
                     SimulationSetting(
                         name=setting_file["name"],
-                        simulation_type=setting_file["simulation_type"],
+                        simulationType=setting_file["simulationType"],
                         description=setting_file["description"],
                     )
                 )
