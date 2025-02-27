@@ -4,8 +4,8 @@ from flask_smorest import abort
 
 from app.models.Export import Export
 from app.models.Simulation import Simulation
-from app.factory.export_factory.factory import ExportFactory
-from app.factory.export_factory.export_strategy import ExportExcel
+from app.factory.export_factory import ExportFactory
+from app.factory.export_factory import ExportExcel
 from config import CustomExportParametersConfig as CustomExportParameters
 
 # Create Logger for this module
