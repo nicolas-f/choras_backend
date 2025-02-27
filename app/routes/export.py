@@ -5,6 +5,11 @@ from flask import send_from_directory, send_file
 from app.schemas.export_schema import CustomExportSchema
 from app.services import export_service
 
+import logging
+
+# Create Logger for this module
+logger = logging.getLogger(__name__)
+
 
 blp = Blueprint("Export", __name__, description="Export API")
 

@@ -22,7 +22,7 @@ from app.models.AudioFile import AudioFile
 from app.models.Auralization import Auralization
 from app.models.Export import Export
 from app.models.Simulation import Simulation
-from app.services.export_service import ExportHelper
+from app.factory.export_helper import ExportHelper
 from app.db import db
 
 # Create Logger for this module
