@@ -5,7 +5,6 @@ from virtualenv.config.convert import ListType
 from app.factory.export_factory.export_parameters import ExportParameters
 from app.factory.export_factory.export_edc import ExportEdc
 from app.factory.export_factory.export_auralization import ExportAuralization
-from app.factory.export_factory.export_impulse_response import ExportImpulseResponse
 
 
 class ExportFactory:
@@ -13,7 +12,6 @@ class ExportFactory:
         "Parameters": ExportParameters(),
         "EDC": ExportEdc(),
         "Auralization": ExportAuralization(),
-        "ImpulseResponse": ExportImpulseResponse(),
     }
 
     @staticmethod

@@ -143,12 +143,13 @@ class AuralizationParametersConfig(DefaultConfig):
 
 class CustomExportParametersConfig(DefaultConfig):
     # some hardcode values for the custom export
-    keys = ["xlsx", "EDC", "Parameters", "Auralization", "ImpulseResponse"]
+    keys = ["xlsx", "EDC", "Parameters", "Auralization"]
     key_simulationId = "SimulationId"
     impulse_response_fs = ["44100Hz"]
     impulse_response = "impulse response"
-    value_wav_file = "wav"
-    value_csv_file = "csv"
+    value_wav_file_auralization = "wav"
+    value_wav_file_IR = "wavIR"
+    value_csv_file_IR = "csvIR"
     key_xlsx = "xlsx"
 
 
