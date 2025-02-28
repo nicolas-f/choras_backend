@@ -10,5 +10,11 @@
         "label": "Discontinuous Galerkin method (DG)",
         "name": "dg_setting.json",
         "simulationType": "DG"
+    },
+    {
+        "description": "",
+        "label": "Both methods (DE & DG)",
+        "name": "both_setting.json",
+        "simulationType": "BOTH"
     }
 ]
