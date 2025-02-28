@@ -49,8 +49,9 @@ def insert_initial_settings():
             for setting_file in initial_setting_files:
                 new_setting_files.append(
                     SimulationSetting(
-                        name=setting_file["name"],
                         simulationType=setting_file["simulationType"],
+                        name=setting_file["name"],
+                        label=setting_file["label"],
                         description=setting_file["description"],
                     )
                 )

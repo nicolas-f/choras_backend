@@ -10,6 +10,7 @@ class SimulationSetting(db.Model):
     simulationType = db.Column(db.String(), primary_key=True)
     path = db.Column(db.String(), nullable=False, default=DefaultConfig.SETTINGS_FILE_FOLDER)
     name = db.Column(db.String(), nullable=False)
+    label = db.Column(db.String(), nullable=False)
     description = db.Column(db.String(), nullable=False)
 
     createdAt = db.Column(db.String(), default=datetime.now())
