@@ -15,5 +15,6 @@ class Export(db.Model):
         "Simulation", backref=db.backref("export", uselist=False), cascade="all, delete", foreign_keys=[simulationId]
     )
 
+
     createdAt = db.Column(db.String(), default=datetime.now())
     updatedAt = db.Column(db.String(), default=datetime.now())
