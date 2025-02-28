@@ -11,7 +11,7 @@ class SimulationSetting(db.Model):
     path = db.Column(db.String(), nullable=False, default=DefaultConfig.SETTINGS_FILE_FOLDER)
     name = db.Column(db.String(), nullable=False)
     label = db.Column(db.String(), nullable=False)
-    description = db.Column(db.String(), nullable=False)
+    description = db.Column(db.String)
 
     createdAt = db.Column(db.String(), default=datetime.now())
     updatedAt = db.Column(db.String(), default=datetime.now())
