@@ -38,12 +38,15 @@ class ExportExcel(ExportStrategy):
         
     	
             xlsx_path = os.path.join(DefaultConfig.UPLOAD_FOLDER_NAME, xlsx_file_name)
-
             xlsx_file_name = xlsx_file_name.split('.')[0] + '_simulation_' + str(id) + '.' + xlsx_file_name.split('.')[1]
 
-            with zipfile.ZipFile(zip_buffer, 'a') as zip_file:
-                # Save xlsx file to zip
-                zip_file.write(xlsx_path, arcname=xlsx_file_name)
+            try:
+                with zipfile.ZipFile(zip_buffer, 'a') as zip_file:
+                    # Save xlsx file to zip
+                    zip_file.write(xlsx_path, arcname=xlsx_file_name)
+            except Exception as e:
+                logger.error("Error while writing excel file to zip buffer: " + str(e))
+                abort(400, message="Error while writing excel file to zip buffer: " + str(e))
 
         return zip_buffer
     

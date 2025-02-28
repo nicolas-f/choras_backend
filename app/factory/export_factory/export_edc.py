@@ -33,6 +33,9 @@ class ExportEdc(ExportStrategy):
 
             xlsx_path = os.path.join(DefaultConfig.UPLOAD_FOLDER_NAME, xlsx_file_name)
             helper = ExportHelper()
-            zip_buffer = helper.extract_from_xlsx_to_csv_to_zip_binary(xlsx_path, {export_type : params}, zip_buffer, id)
-
+            try:
+                zip_buffer = helper.extract_from_xlsx_to_csv_to_zip_binary(xlsx_path, {export_type : params}, zip_buffer, id)
+            except Exception as e:
+                logger.error("Error while writing energy decay curve(edc) csv file to zip buffer: " + str(e))
+                abort(400, message="Error while writing energy decay curve(edc) csv file to zip buffer: " + str(e))
         return zip_buffer
