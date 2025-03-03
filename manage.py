@@ -123,11 +123,18 @@ def update_audio():
     Update audio files based on Json file.
     """
     auralization_service.update_audios_examples()
+    
+    
+def update_setting():
+    """
+    Update setting files based on Json file.
+    """
+    setting_service.update_settings()
 
 
 def init_app(app):
     if app.config["APP_ENV"] == "production":
-        commands = [create_db, reset_db, drop_db, clean_cache, update_audio]
+        commands = [create_db, reset_db, drop_db, clean_cache, update_audio, update_setting]
     else:
         commands = [
             create_db,
@@ -135,6 +142,7 @@ def init_app(app):
             drop_db,
             clean_cache,
             update_audio,
+            update_setting,
             tests,
             cov_html,
             cov,
