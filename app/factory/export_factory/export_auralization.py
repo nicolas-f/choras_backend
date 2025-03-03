@@ -37,7 +37,7 @@ class ExportAuralization(ExportStrategy):
 
                         zip_buffer = ExportHelper.write_file_to_zip_binary(zip_buffer, auralization_wav_file_path)
 
-                    else:
+                    if CustomExportParameters.value_wav_file_IR in params or CustomExportParameters.value_csv_file_IR in params:
                         export: Export = simulation.export
                         xlsx_file_name: str = export.name
                         impulse_wav_file_name = xlsx_file_name.split('.')[0] + ".wav"
