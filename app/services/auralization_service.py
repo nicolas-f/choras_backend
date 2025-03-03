@@ -348,7 +348,9 @@ def insert_initial_audios_examples():
 
 def update_audios_examples():
     with open(os.path.join(app_dir, "models", "data", "audio_files.json")) as json_audio_files:
-        audio_file_json_dict: Dict[str, Dict[str, Any]] = {audio_file["name"]: audio_file for audio_file in json.load(json_audio_files)}
+        audio_file_json_dict: Dict[str, Dict[str, Any]] = {
+            audio_file["name"]: audio_file for audio_file in json.load(json_audio_files)
+        }
         audio_file_db_list: List[AudioFile] = AudioFile.query.all()
         try:
             for audio_file in audio_file_db_list:

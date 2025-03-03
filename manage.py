@@ -123,8 +123,8 @@ def update_audio():
     Update audio files based on Json file.
     """
     auralization_service.update_audios_examples()
-    
-    
+
+
 def update_setting():
     """
     Update setting files based on Json file.

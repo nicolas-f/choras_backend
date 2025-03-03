@@ -68,7 +68,9 @@ def insert_initial_settings():
 
 def update_settings():
     with open(os.path.join(app_dir, "models", "data", "simulation_settings.json")) as json_setting_files:
-        setting_json_dict: Dict[str, Dict[str, Any]] = {setting["simulationType"]: setting for setting in json.load(json_setting_files)}
+        setting_json_dict: Dict[str, Dict[str, Any]] = {
+            setting["simulationType"]: setting for setting in json.load(json_setting_files)
+        }
         setting_db_list: List[SimulationSetting] = SimulationSetting.query.all()
         try:
             for setting in setting_db_list:
