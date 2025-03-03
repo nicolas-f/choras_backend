@@ -10,8 +10,8 @@ from app.models.Auralization import Auralization
 from config import DefaultConfig, CustomExportParametersConfig as CustomExportParameters
 import os
 
-from app.factory.export_helper import ExportHelper
-from app.factory.export_factory.export_strategy import ExportStrategy
+from app.factory.export_factory.export_helper import ExportHelper
+from app.factory.export_factory.strategy import ExportStrategy
 
 # Create logger for this module
 logger = logging.getLogger(__name__)
@@ -22,7 +22,6 @@ class ExportAuralization(ExportStrategy):
         if params:
             for id in simulationIds:
                 simulation: Simulation = Simulation.query.filter_by(id=id).first()
-                helper = ExportHelper()
 
                 try:
                     if CustomExportParameters.value_wav_file_auralization in params:
@@ -36,7 +35,7 @@ class ExportAuralization(ExportStrategy):
                             logger.error("Auralization export with simulation is " + str(id) + "does not exists!")
                             abort(400, message="Wav file doesn't exists!")
 
-                        zip_buffer = helper.write_file_to_zip_binary(zip_buffer, auralization_wav_file_path)
+                        zip_buffer = ExportHelper.write_file_to_zip_binary(zip_buffer, auralization_wav_file_path)
 
                     else:
                         export: Export = simulation.export
@@ -59,10 +58,12 @@ class ExportAuralization(ExportStrategy):
                             abort(400, message="Excel file doesn't exists!")
 
                         if CustomExportParameters.value_wav_file_IR in params:
-                            zip_buffer = helper.write_file_to_zip_binary(zip_buffer, impulse_wav_file_path)
+                            zip_buffer = ExportHelper.write_file_to_zip_binary(
+                                zip_buffer=zip_buffer, file_path=impulse_wav_file_path
+                            )
 
                         if CustomExportParameters.value_csv_file_IR in params:
-                            zip_buffer = helper.extract_from_xlsx_to_csv_to_zip_binary(
+                            zip_buffer = ExportHelper.extract_from_xlsx_to_csv_to_zip_binary(
                                 xlsx_file_path,
                                 {CustomExportParameters.impulse_response: CustomExportParameters.impulse_response_fs},
                                 zip_buffer,

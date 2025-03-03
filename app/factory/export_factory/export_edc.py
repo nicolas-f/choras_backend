@@ -9,8 +9,8 @@ from app.models.Simulation import Simulation
 from config import DefaultConfig
 import os
 
-from app.factory.export_helper import ExportHelper
-from app.factory.export_factory.export_strategy import ExportStrategy
+from app.factory.export_factory.export_helper import ExportHelper
+from app.factory.export_factory.strategy import ExportStrategy
 
 
 # Create logger for this module
@@ -31,9 +31,8 @@ class ExportEdc(ExportStrategy):
                     abort(400, message="Excel file doesn't exists!")
 
                 xlsx_path = os.path.join(DefaultConfig.UPLOAD_FOLDER_NAME, xlsx_file_name)
-                helper = ExportHelper()
                 try:
-                    zip_buffer = helper.extract_from_xlsx_to_csv_to_zip_binary(
+                    zip_buffer = ExportHelper.extract_from_xlsx_to_csv_to_zip_binary(
                         xlsx_path, {export_type: params}, zip_buffer, id
                     )
                 except Exception as e:

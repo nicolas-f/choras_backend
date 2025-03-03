@@ -1,11 +1,11 @@
-import json
+import io
+
+from virtualenv.config.convert import ListType
 import zipfile
 import pandas as pd
 import logging
-import os
-import io
 from pathlib import Path
-from flask_smorest import abort
+import json
 from typing import Dict, List, Optional
 
 
@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 class ExportHelper:
+
     def parse_json_file_to_xlsx_file(self, json_path: str, xlsx_path: str) -> bool:
         """Convert simulation results to an Excel file"""
         data: Optional[Dict] = self.__load_json__(json_path)
@@ -22,7 +23,8 @@ class ExportHelper:
 
         return self.__parse_json_data_to_xlsx_file__(data, xlsx_path)
 
-    def write_data_to_xlsx_file(self, xlsx_path: str, sheet: str, data: Dict, mode: str = 'a') -> bool:
+    @staticmethod
+    def write_data_to_xlsx_file(xlsx_path: str, sheet: str, data: Dict, mode: str = 'a') -> bool:
         try:
             df = pd.DataFrame(data)
             with pd.ExcelWriter(xlsx_path, mode=mode) as writer:
@@ -33,8 +35,9 @@ class ExportHelper:
             logger.error(f'Error adding data to xlsx: {e}')
             return False
 
+    @staticmethod
     def extract_from_xlsx_to_csv_to_zip_binary(
-        self, xlsx_path: str, sheets_columns: Dict[str, List[str]], zip_buffer: Optional[io.BytesIO] = None, id: int = 0
+        xlsx_path: str, sheets_columns: Dict[str, List[str]], zip_buffer: Optional[io.BytesIO] = None, id: int = 0
     ) -> Optional[io.BytesIO]:
         try:
             xlsx_path: Path = Path(xlsx_path)
@@ -64,7 +67,8 @@ class ExportHelper:
             logger.error(f'Error saving data to csv: {e}')
             return None
 
-    def write_file_to_zip_binary(self, zip_buffer: io.BytesIO, file_path: str, mode: str = 'a') -> Optional[io.BytesIO]:
+    @staticmethod
+    def write_file_to_zip_binary(zip_buffer: io.BytesIO, file_path: str, mode: str = 'a') -> Optional[io.BytesIO]:
         try:
             file_path: Path = Path(file_path)
             zip_file = zipfile.ZipFile(zip_buffer, mode=mode)
@@ -75,7 +79,8 @@ class ExportHelper:
             logger.error(f'Error saving file to zip: {e}')
             return None
 
-    def extract_from_xlsx_to_dict(self, xlsx_path: str, sheets_columns: Dict[str, List[str]]) -> Optional[pd.DataFrame]:
+    @staticmethod
+    def extract_from_xlsx_to_dict(xlsx_path: str, sheets_columns: Dict[str, List[str]]) -> Optional[pd.DataFrame]:
         try:
             xlsx_path: Path = Path(xlsx_path)
             xlsx = pd.ExcelFile(xlsx_path)
@@ -93,7 +98,8 @@ class ExportHelper:
             logger.error(f'Error extracting data from xlsx: {e}')
             return None
 
-    def __load_json__(self, json_path) -> Optional[Dict]:
+    @staticmethod
+    def __load_json__(json_path) -> Optional[Dict]:
         try:
             with open(json_path, 'r') as file:
                 data: Dict = json.load(file)
@@ -103,7 +109,8 @@ class ExportHelper:
 
         return data
 
-    def __parse_json_data_to_xlsx_file__(self, data: Dict, xlsx_path: str) -> bool:
+    @staticmethod
+    def __parse_json_data_to_xlsx_file__(data: Dict, xlsx_path: str) -> bool:
         try:
             # TODO: Multiple sources and multiple receivers
             receiver_results: List[Dict[str, List[int]]] = data['results'][0]['responses'][0]['receiverResults']

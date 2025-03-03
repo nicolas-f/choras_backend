@@ -2,6 +2,7 @@ import io
 
 from virtualenv.config.convert import ListType
 
+from app.factory.export_factory.export_xlsx import ExportExcel
 from app.factory.export_factory.export_parameters import ExportParameters
 from app.factory.export_factory.export_edc import ExportEdc
 from app.factory.export_factory.export_auralization import ExportAuralization
@@ -9,6 +10,7 @@ from app.factory.export_factory.export_auralization import ExportAuralization
 
 class ExportFactory:
     strategies = {
+        "xlsx": ExportExcel(),
         "Parameters": ExportParameters(),
         "EDC": ExportEdc(),
         "Auralization": ExportAuralization(),

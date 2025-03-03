@@ -4,8 +4,8 @@ from flask_smorest import abort
 
 from app.models.Export import Export
 from app.models.Simulation import Simulation
+
 from app.factory.export_factory.factory import ExportFactory
-from app.factory.export_factory.export_strategy import ExportExcel
 from config import CustomExportParametersConfig as CustomExportParameters
 
 # Create Logger for this module
@@ -26,21 +26,15 @@ def execute_export(export_dict) -> io.BytesIO:
     try:
         zip_buffer = io.BytesIO()
         exportFactory = ExportFactory()
-        exportExcel = ExportExcel()
 
         simulationIds = export_dict[CustomExportParameters.key_simulationId]
 
         for key in CustomExportParameters.keys:
             params = export_dict[key]
             if params is None:
-                abort(400, message=f"{key} is missing.")
+                abort(400, message=f"Parameters for {key} is missing.")
 
-            if key == CustomExportParameters.key_xlsx:
-                param = bool(export_dict[key][0])
-                if param:
-                    zip_buffer = exportExcel.export(simulationIds, zip_buffer)
-            else:
-                zip_buffer = exportFactory.get_exporter(key, params, simulationIds, zip_buffer)
+            zip_buffer = exportFactory.get_exporter(key, params, simulationIds, zip_buffer)
 
         return zip_buffer
 
