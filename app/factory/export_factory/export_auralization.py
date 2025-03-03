@@ -36,7 +36,6 @@ class ExportAuralization(ExportStrategy):
 
                         zip_buffer = helper.write_file_to_zip_binary(zip_buffer, auralization_wav_file_path)
 
-
                     else:
                         export: Export = simulation.export
                         xlsx_file_name: str = export.name
