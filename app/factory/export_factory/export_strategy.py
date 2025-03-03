@@ -22,8 +22,9 @@ class ExportStrategy(ABC):
     def export(self, export_type, params, simulationIds, zip_buffer):
         pass
 
+
 class ExportExcel(ExportStrategy):
-    def export(self, simulationIds:ListType, zip_buff:io.BytesIO) -> io.BytesIO:
+    def export(self, simulationIds: ListType, zip_buff: io.BytesIO) -> io.BytesIO:
 
         zip_buffer = zip_buff
 
@@ -35,10 +36,11 @@ class ExportExcel(ExportStrategy):
             if not xlsx_file_name:
                 logger.error("Export with simulation is " + str(id) + "does not exists!")
                 abort(400, message="Excel file doesn't exists!")
-        
-    	
+
             xlsx_path = os.path.join(DefaultConfig.UPLOAD_FOLDER_NAME, xlsx_file_name)
-            xlsx_file_name = xlsx_file_name.split('.')[0] + '_simulation_' + str(id) + '.' + xlsx_file_name.split('.')[1]
+            xlsx_file_name = (
+                xlsx_file_name.split('.')[0] + '_simulation_' + str(id) + '.' + xlsx_file_name.split('.')[1]
+            )
 
             try:
                 with zipfile.ZipFile(zip_buffer, 'a') as zip_file:
@@ -49,4 +51,3 @@ class ExportExcel(ExportStrategy):
                 abort(400, message="Error while writing excel file to zip buffer: " + str(e))
 
         return zip_buffer
-    

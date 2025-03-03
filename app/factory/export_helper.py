@@ -9,9 +9,9 @@ from flask_smorest import abort
 from typing import Dict, List, Optional
 
 
-
 # Create Logger for this module
 logger = logging.getLogger(__name__)
+
 
 class ExportHelper:
     def parse_json_file_to_xlsx_file(self, json_path: str, xlsx_path: str) -> bool:
@@ -34,7 +34,7 @@ class ExportHelper:
             return False
 
     def extract_from_xlsx_to_csv_to_zip_binary(
-        self, xlsx_path: str, sheets_columns: Dict[str, List[str]], zip_buffer: Optional[io.BytesIO] = None, id: int = 0 
+        self, xlsx_path: str, sheets_columns: Dict[str, List[str]], zip_buffer: Optional[io.BytesIO] = None, id: int = 0
     ) -> Optional[io.BytesIO]:
         try:
             xlsx_path: Path = Path(xlsx_path)
@@ -43,7 +43,6 @@ class ExportHelper:
             # Create a BytesIO object
             zip_buffer = io.BytesIO() if zip_buffer is None else zip_buffer
             csv_buffer = io.StringIO()
-            
 
             with zipfile.ZipFile(zip_buffer, 'a') as zip_file:
                 # Save xlsx file to zip
@@ -58,7 +57,6 @@ class ExportHelper:
                     csv_buffer.truncate(0)
 
                 csv_buffer.close()
-            
 
             return zip_buffer
 

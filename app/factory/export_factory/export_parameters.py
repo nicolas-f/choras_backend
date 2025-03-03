@@ -15,6 +15,7 @@ from app.factory.export_factory.export_strategy import ExportStrategy
 # Create logger for this module
 logger = logging.getLogger(__name__)
 
+
 class ExportParameters(ExportStrategy):
     def export(self, export_type: str, params: ListType, simulationIds: ListType, zip_buffer: io.BytesIO) -> io.BytesIO:
         if params:
@@ -30,7 +31,9 @@ class ExportParameters(ExportStrategy):
                 xlsx_path = os.path.join(DefaultConfig.UPLOAD_FOLDER_NAME, xlsx_file_name)
                 helper = ExportHelper()
                 try:
-                    zip_buffer = helper.extract_from_xlsx_to_csv_to_zip_binary(xlsx_path, {export_type : params}, zip_buffer, id)
+                    zip_buffer = helper.extract_from_xlsx_to_csv_to_zip_binary(
+                        xlsx_path, {export_type: params}, zip_buffer, id
+                    )
                 except Exception as e:
                     logger.error("Error while writing parameters csv file to zip buffer: " + str(e))
                     abort(400, message="Error while writing parameters csv file to zip buffer: " + str(e))

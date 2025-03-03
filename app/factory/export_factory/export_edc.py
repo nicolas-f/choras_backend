@@ -17,9 +17,8 @@ from app.factory.export_factory.export_strategy import ExportStrategy
 logger = logging.getLogger(__name__)
 
 
-    
 class ExportEdc(ExportStrategy):
-    def export(self, export_type:str, params:ListType, simulationIds:ListType, zip_buffer:io.BytesIO) -> io.BytesIO:
+    def export(self, export_type: str, params: ListType, simulationIds: ListType, zip_buffer: io.BytesIO) -> io.BytesIO:
 
         if params:
             for id in simulationIds:
@@ -31,11 +30,12 @@ class ExportEdc(ExportStrategy):
                     logger.error("Plots export with simulation is " + str(id) + "does not exists!")
                     abort(400, message="Excel file doesn't exists!")
 
-
                 xlsx_path = os.path.join(DefaultConfig.UPLOAD_FOLDER_NAME, xlsx_file_name)
                 helper = ExportHelper()
                 try:
-                    zip_buffer = helper.extract_from_xlsx_to_csv_to_zip_binary(xlsx_path, {export_type : params}, zip_buffer, id)
+                    zip_buffer = helper.extract_from_xlsx_to_csv_to_zip_binary(
+                        xlsx_path, {export_type: params}, zip_buffer, id
+                    )
                 except Exception as e:
                     logger.error("Error while writing energy decay curve(edc) csv file to zip buffer: " + str(e))
                     abort(400, message="Error while writing energy decay curve(edc) csv file to zip buffer: " + str(e))

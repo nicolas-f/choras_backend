@@ -47,7 +47,3 @@ def execute_export(export_dict) -> io.BytesIO:
     except Exception as ex:
         abort(400, message=f"Error while getting the zip file path: {ex}")
         return None
-
-
-
-

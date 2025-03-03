@@ -15,9 +15,6 @@ class ExportFactory:
     }
 
     @staticmethod
-    def get_exporter(export_type:str, params:ListType, simulationId:ListType, zip_buffer:io.BytesIO)->io.BytesIO:
+    def get_exporter(export_type: str, params: ListType, simulationId: ListType, zip_buffer: io.BytesIO) -> io.BytesIO:
         strategy = ExportFactory.strategies.get(export_type, None)
         return strategy.export(export_type, params, simulationId, zip_buffer)
-
-
-
