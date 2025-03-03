@@ -118,15 +118,23 @@ def clean_cache():
             file.unlink()
 
 
+def update_audio():
+    """
+    Update audio files based on Json file.
+    """
+    auralization_service.update_audios_examples()
+
+
 def init_app(app):
     if app.config["APP_ENV"] == "production":
-        commands = [create_db, reset_db, drop_db, clean_cache]
+        commands = [create_db, reset_db, drop_db, clean_cache, update_audio]
     else:
         commands = [
             create_db,
             reset_db,
             drop_db,
             clean_cache,
+            update_audio,
             tests,
             cov_html,
             cov,
