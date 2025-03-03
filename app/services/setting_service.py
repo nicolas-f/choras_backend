@@ -16,9 +16,7 @@ logger = logging.getLogger(__name__)
 
 def get_setting_by_type(simulation_type: str) -> Optional[Dict]:
     try:
-        setting: Optional[SimulationSetting] = SimulationSetting.query.filter_by(
-            simulationType=simulation_type
-        ).first()
+        setting: Optional[SimulationSetting] = SimulationSetting.query.filter_by(simulationType=simulation_type).first()
         if setting is None:
             logger.error(f"Setting not found by type: {simulation_type}")
             abort(404, f"Setting not found by type: {simulation_type}")
