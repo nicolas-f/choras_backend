@@ -1,7 +1,9 @@
 import unittest
 
 from app.models.AudioFile import AudioFile
+from app.models.Auralization import Auralization
 from app.services import auralization_service
+from app.types import Status
 from tests.unit import BaseTestCase
 
 
@@ -16,17 +18,30 @@ class UsersUnitTests(BaseTestCase):
         """
         Test that initial audio_files are correctly inserted into the database.
         """
-        # When
         with self.app.app_context():
-            # Call the function to insert initial audio_files
             auralization_service.insert_initial_audios_examples()
-
-            # Fetch audio_files from the database
             audio_files = auralization_service.get_all_audio_files()
 
-        # Then
-        # Ensure that audio_files are inserted correctly
         self.assertTrue(len(audio_files) > 0)
+
+    def test_get_auralization_by_id(self):
+        """
+        Test that auralization is correctly retrieved by araulization_id.
+        """
+        with self.app.app_context():
+            arulization: Auralization = Auralization(simulationId=1, audioFileId=1, wavFileName="test.wav")
+            self.db.session.add(arulization)
+            self.db.session.commit()
+            araulization_id = arulization.id
+
+            arulization_db = auralization_service.get_auralization_by_id(araulization_id)
+            self.assertEqual(arulization_db.status, Status.Created)
+
+            self.db.session.delete(arulization)
+            self.db.session.commit()
+            arulization_db = auralization_service.get_auralization_by_id(araulization_id)
+
+            self.assertEqual(arulization_db.status, Status.Uncreated)
 
 
 if __name__ == "__main__":
