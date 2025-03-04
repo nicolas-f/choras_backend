@@ -1,10 +1,11 @@
-from typing import Optional, List, Tuple
+from typing import Optional, List, Tuple, Dict, Any
 from scipy.signal import butter, sosfilt, resample_poly, convolve
 from scipy.io import wavfile
 from sqlalchemy import asc
 from pathlib import Path
 import numpy as np
 import soundfile as sf
+from datetime import datetime
 import logging
 import json
 import gc
@@ -340,5 +341,33 @@ def insert_initial_audios_examples():
             db.session.rollback()
             logger.error(f"Can not insert initial audio files! Error: {ex}")
             abort(400, f"Can not insert initial audio files! Error: {ex}")
+
+    return {"message": "Initial audio files added successfully!"}
+
+
+def update_audios_examples():
+    with open(os.path.join(app_dir, "models", "data", "audio_files.json")) as json_audio_files:
+        audio_file_json_dict: Dict[str, Dict[str, Any]] = {
+            audio_file["name"]: audio_file for audio_file in json.load(json_audio_files)
+        }
+        audio_file_db_list: List[AudioFile] = AudioFile.query.all()
+        try:
+            for audio_file in audio_file_db_list:
+                if audio_file.name not in audio_file_json_dict:
+                    db.session.delete(audio_file)
+                else:
+                    for key, value in audio_file_json_dict[audio_file.name].items():
+                        audio_file.__setattr__(key, value)
+                    audio_file.updatedAt = datetime.now()
+                    del audio_file_json_dict[audio_file.name]
+
+            for audio_file in audio_file_json_dict.values():
+                db.session.add(AudioFile(**audio_file))
+
+            db.session.commit()
+
+        except Exception as ex:
+            db.session.rollback()
+            logger.error(f"Can not update audio files! Error: {ex}")
 
     return {"message": "Initial audio files added successfully!"}

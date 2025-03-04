@@ -3,9 +3,11 @@ import unittest
 import click
 import coverage
 from passlib.hash import pbkdf2_sha256
+from pathlib import Path
 
 from app.db import db
-from app.services import material_service, auralization_service
+from app.services import material_service, auralization_service, setting_service
+from config import DefaultConfig
 
 
 @click.option("--pattern", default="test*.py", help="Test search pattern", required=False)
@@ -82,6 +84,7 @@ def create_db():
     db.create_all()
     material_service.insert_initial_materials()
     auralization_service.insert_initial_audios_examples()
+    setting_service.insert_initial_settings()
     db.session.commit()
 
 
@@ -93,6 +96,7 @@ def reset_db():
     db.create_all()
     material_service.insert_initial_materials()
     auralization_service.insert_initial_audios_examples()
+    setting_service.insert_initial_settings()
     db.session.commit()
 
 
@@ -104,14 +108,41 @@ def drop_db():
     db.session.commit()
 
 
+def clean_cache():
+    """
+    Clean cache in the folder.
+    """
+    cache_folder = Path(DefaultConfig.UPLOAD_FOLDER_NAME)
+    if cache_folder.exists() and cache_folder.is_dir():
+        for file in cache_folder.iterdir():
+            file.unlink()
+
+
+def update_audio():
+    """
+    Update audio files based on Json file.
+    """
+    auralization_service.update_audios_examples()
+
+
+def update_setting():
+    """
+    Update setting files based on Json file.
+    """
+    setting_service.update_settings()
+
+
 def init_app(app):
     if app.config["APP_ENV"] == "production":
-        commands = [create_db, reset_db, drop_db]
+        commands = [create_db, reset_db, drop_db, clean_cache, update_audio, update_setting]
     else:
         commands = [
             create_db,
             reset_db,
             drop_db,
+            clean_cache,
+            update_audio,
+            update_setting,
             tests,
             cov_html,
             cov,
