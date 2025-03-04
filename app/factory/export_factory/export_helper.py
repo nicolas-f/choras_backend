@@ -93,9 +93,11 @@ class ExportHelper:
                 for col in columns:
                     data[sheet][col] = df[col].tolist()
 
+            xlsx.close()
             return data
 
         except Exception as e:
+            xlsx.close()
             logger.error(f'Error extracting data from xlsx: {e}')
             return None
 
