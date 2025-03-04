@@ -1,4 +1,5 @@
-from typing import Optional, Dict
+from typing import Optional, Dict, List, Any
+from datetime import datetime
 import logging
 import os
 import json
@@ -16,9 +17,7 @@ logger = logging.getLogger(__name__)
 
 def get_setting_by_type(simulation_type: str) -> Optional[Dict]:
     try:
-        setting: Optional[SimulationSetting] = SimulationSetting.query.filter_by(
-            simulationType=simulation_type
-        ).first()
+        setting: Optional[SimulationSetting] = SimulationSetting.query.filter_by(simulationType=simulation_type).first()
         if setting is None:
             logger.error(f"Setting not found by type: {simulation_type}")
             abort(404, f"Setting not found by type: {simulation_type}")
@@ -63,5 +62,33 @@ def insert_initial_settings():
             db.session.rollback()
             logger.error(f"Can not insert initial audio files! Error: {ex}")
             abort(400, f"Can not insert initial audio files! Error: {ex}")
+
+    return {"message": "Initial audio files added successfully!"}
+
+
+def update_settings():
+    with open(os.path.join(app_dir, "models", "data", "simulation_settings.json")) as json_setting_files:
+        setting_json_dict: Dict[str, Dict[str, Any]] = {
+            setting["simulationType"]: setting for setting in json.load(json_setting_files)
+        }
+        setting_db_list: List[SimulationSetting] = SimulationSetting.query.all()
+        try:
+            for setting in setting_db_list:
+                if setting.simulationType not in setting_json_dict:
+                    db.session.delete(setting)
+                else:
+                    for key, value in setting_json_dict[setting.simulationType].items():
+                        setting.__setattr__(key, value)
+                    setting.updatedAt = datetime.now()
+                    del setting_json_dict[setting.simulationType]
+
+            for setting in setting_json_dict.values():
+                db.session.add(SimulationSetting(**setting))
+
+            db.session.commit()
+
+        except Exception as ex:
+            db.session.rollback()
+            logger.error(f"Can not update audio files! Error: {ex}")
 
     return {"message": "Initial audio files added successfully!"}

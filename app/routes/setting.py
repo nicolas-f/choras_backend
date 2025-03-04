@@ -8,7 +8,7 @@ blp = Blueprint("Setting", __name__, description="Simulation Settings API")
 
 
 @blp.route("/simulation_settings/<string:simulation_type>")
-class AudioFileList(MethodView):
+class SettingParameter(MethodView):
     @blp.response(200)
     def get(self, simulation_type):
         setting_json = setting_service.get_setting_by_type(simulation_type)
@@ -16,7 +16,7 @@ class AudioFileList(MethodView):
 
 
 @blp.route("/simulation_settings")
-class AudioFileList(MethodView):
+class SimulationSetting(MethodView):
     @blp.response(200, SettingSchema(many=True))
     def get(self):
         settings = setting_service.get_all_simulation_settings()
