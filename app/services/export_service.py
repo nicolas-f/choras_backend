@@ -12,16 +12,6 @@ from config import CustomExportParametersConfig as CustomExportParameters
 logger = logging.getLogger(__name__)
 
 
-def get_zip_path_by_sim_id(simulation_id: int) -> io.BytesIO:
-    simulation: Simulation = Simulation.query.filter_by(id=simulation_id).first()
-    if simulation is None:
-        abort(404, message="No simulation found with this id.")
-
-    export: Export = simulation.export
-    if export is None:
-        abort(404, message="No export found for this simulation.")
-
-
 def execute_export(export_dict) -> io.BytesIO:
     try:
         zip_buffer = io.BytesIO()
