@@ -62,6 +62,7 @@ class ExportHelper:
 
                 csv_buffer.close()
 
+            xlsx.close()
             return zip_buffer
 
         except Exception as e:
