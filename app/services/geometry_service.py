@@ -1,20 +1,21 @@
 import logging
 import os
 import zipfile
+from datetime import datetime
+from typing import re
 
-import numpy as np
 import rhino3dm
-import trimesh
 from flask_smorest import abort
 
 import config
 from app.db import db
 from app.models import File, Geometry, Task
+from app.services import model_service
+from app.services.geometry_converter_factory.GeometryConversionFactory import GeometryConversionFactory
 from app.types import Status, TaskType
 
 # Create logger for this module
 logger = logging.getLogger(__name__)
-
 
 def get_geometry_by_id(geometry_id):
     results = Geometry.query.filter_by(id=geometry_id).first()
@@ -38,7 +39,7 @@ def start_geometry_check_task(file_upload_id):
         db.session.add(geometry)
         db.session.commit()
 
-        result = map_to_3dm(geometry.id)
+        result = map_to_3dm_and_geo(geometry.id)
         if not result:
             task.status = Status.Error
             task.message = "An error is encountered during the geometry processing!"
@@ -46,6 +47,7 @@ def start_geometry_check_task(file_upload_id):
             abort(500, task.message)
 
         task.status = Status.Completed
+
         db.session.commit()
 
     except Exception as ex:
@@ -63,7 +65,7 @@ def get_geometry_result(task_id):
     return Geometry.query.filter_by(taskId=task_id).first()
 
 
-def map_to_3dm(geometry_id):
+def map_to_3dm_and_geo(geometry_id):
     geometry = Geometry.query.filter_by(id=geometry_id).first()
     file = File.query.filter_by(id=geometry.inputModelUploadId).first()
     task = Task.query.filter_by(id=geometry.taskId).first()
@@ -72,10 +74,10 @@ def map_to_3dm(geometry_id):
     file_name, file_extension = os.path.splitext(os.path.basename(file.fileName))
 
     obj_path = os.path.join(directory, file.fileName)
-    obj_clean_path = os.path.join(directory, f"{file_name}_clean{file_extension}")
     rhino3dm_path = os.path.join(directory, f"{file_name}.3dm")
-    png_path = os.path.join(directory, f"{file_name}.png")
     zip_file_path = os.path.join(directory, f"{file_name}.zip")
+    geo_path = os.path.join(directory, f"{file_name}.geo")
+
     try:
         task.status = Status.InProgress
         db.session.commit()
@@ -83,9 +85,13 @@ def map_to_3dm(geometry_id):
         db.session.rollback()
         logger.error(f"Can not update task status! Error: {ex}")
 
-    clean_obj_file(obj_path, obj_clean_path)
+    # Use the new process method to handle both cleaning and conversion
+    conversion_factory = GeometryConversionFactory()
 
-    convert_obj_to_3dm(obj_clean_path, rhino3dm_path, png_path)
+    conversion_strategy = conversion_factory.create_strategy(file_extension)
+
+    if not conversion_strategy.generate_3dm(obj_path, rhino3dm_path):
+        return False
 
     if not os.path.exists(rhino3dm_path):
         return False
@@ -93,12 +99,22 @@ def map_to_3dm(geometry_id):
     try:
         file3dm = File(fileName=f"{file_name}.3dm")
         db.session.add(file3dm)
-        db.session.commit()
         geometry.outputModelId = file3dm.id
 
         # Create a zip file from 3dm
         with zipfile.ZipFile(zip_file_path, "w") as zipf:
             zipf.write(rhino3dm_path, arcname=f"{file_name}.3dm")
+
+        try:
+            if not generate_geo_file(rhino3dm_path, geo_path):
+                return False
+
+            file_geo = File(fileName=f"{file_name}.geo")
+            db.session.add(file_geo)
+            attach_geo_file(rhino3dm_path, geo_path)
+        except Exception as ex:
+            logger.error(f"Can not create a geo file: {ex}")
+            return False
 
         db.session.commit()
     except Exception as ex:
@@ -107,89 +123,157 @@ def map_to_3dm(geometry_id):
 
     return True
 
+def generate_geo_file(rhino_file_path, geo_file_path):
+    file3dm = rhino3dm.File3dm()
+    model = file3dm.Read(rhino_file_path)
 
-def clean_obj_file(obj_file_path, obj_clean_path):
-    with open(obj_file_path, "r") as infile, open(obj_clean_path, "w") as outfile:
-        lines = infile.readlines()
-        current_material = None
-        custom_material_counter = 1
+    # Collect points, lines, line loops, and physical surfaces
+    points = {}
+    lines = {}
+    line_loops = {}
+    plane_surfaces = {}
+    physical_surfaces = {}
 
-        for line in lines:
-            if line.startswith("usemtl"):
-                current_material = line.strip()
-            elif line.startswith("f"):
-                if current_material:
-                    outfile.write(current_material + "\n")
+    point_index = 1
+    line_index = 1
+    surface_index = 1
+    physical_surface_counter = 1
+
+    # Iterate over the objects in the 3dm model
+    for obj in model.Objects:
+        if isinstance(obj.Geometry, rhino3dm.Mesh):
+            faces = obj.Geometry.Faces
+            faces.ConvertTrianglesToQuads(0.5, 0)
+            vertices = obj.Geometry.Vertices
+            vertices.CombineIdentical(True, True)
+
+            # Create a mapping from vertex index to Gmsh point index
+            vertex_map = {}
+
+            # Write points to .geo file
+            for i, vertex in enumerate(vertices):
+                print(vertex)
+                points[point_index] = f"Point({point_index}) = {{{vertex.X}, {vertex.Y}, {vertex.Z}, 1.0}};\n"
+                vertex_map[i] = point_index
+                point_index += 1
+
+            # Write line loops and plane surfaces for each face
+            for i in range(faces.Count):
+                face = faces[i]
+
+                if len(face) == 4:  # Quad face
+                    face_indices = [face[0], face[1], face[2], face[3]]
+                elif len(face) == 3:  # Triangle face
+                    face_indices = [face[0], face[1], face[2]]
                 else:
-                    custom_material = f"usemtl M_{custom_material_counter}\n"
-                    outfile.write(custom_material)
-                    current_material = custom_material.strip()
-                    custom_material_counter += 1
-                outfile.write(line)
+                    continue
+
+                # Create line loops for the face
+                line_loop_indices = []
+                for j in range(len(face_indices)):
+                    start_point = vertex_map[face_indices[j]]
+                    end_point = vertex_map[face_indices[(j + 1) % len(face_indices)]]
+                    lines[line_index] = f"Line({line_index}) = {{{start_point}, {end_point}}};\n"
+                    line_loop_indices.append(line_index)
+                    line_index += 1
+
+                line_loops[surface_index] = (
+                    f"Line Loop({surface_index}) = {{{', '.join(map(str, line_loop_indices))}}};\n"
+                )
+                plane_surfaces[surface_index] = f"Plane Surface({surface_index}) = {{{surface_index}}};\n"
+                surface_index += 1
+
+            # Write physical surface group
+            physical_surfaces[obj.Attributes.Id] = (
+                f"Physical Surface(\"{obj.Attributes.Id}\") = {{{', '.join(map(str, range(1, surface_index)))}}};\n"
+            )
+            physical_surface_counter += 1
+
+    with open(geo_file_path, "w") as geo_file:
+        # Write sorted points
+        for point_index in sorted(points.keys()):
+            geo_file.write(points[point_index])
+
+        # Write sorted lines
+        for line_index in sorted(lines.keys()):
+            geo_file.write(lines[line_index])
+
+        # Write sorted line loops
+        for line_loop_index in sorted(line_loops.keys()):
+            geo_file.write(line_loops[line_loop_index])
+
+        # Write sorted plane surfaces
+        for surface_index in sorted(plane_surfaces.keys()):
+            geo_file.write(plane_surfaces[surface_index])
+
+        # Write sorted plane surfaces
+        for pysical_index in sorted(physical_surfaces.keys()):
+            geo_file.write(physical_surfaces[pysical_index])
+
+    print(f"Converted {rhino_file_path} to {geo_file_path}")
+    return os.path.exists(geo_file_path)
+
+def attach_geo_file(rhino_file_path, geo_file_path):
+    model = rhino3dm.File3dm.Read(rhino_file_path)
+
+    if not os.path.exists(geo_file_path):
+        raise FileNotFoundError(f"File not found: {geo_file_path}")
+
+    with open(geo_file_path, "r") as file:
+        geo_content = file.readlines()
+
+    # Create a mapping of material_name to obj.Attributes.Id
+    material_to_id = {}
+    for obj in model.Objects:
+        if isinstance(obj.Geometry, rhino3dm.Mesh):
+            material_name = obj.Geometry.GetUserString("material_name")
+            if material_name:
+                material_to_id[f"{obj.Attributes.Id}"] = material_name
+
+    # Reverse the mapping to be from material name to list of IDs
+    material_name_to_ids = {}
+    for id, material_name in material_to_id.items():
+        if material_name not in material_name_to_ids:
+            material_name_to_ids[material_name] = []
+        material_name_to_ids[material_name].append(id)
+
+    def pop_and_update_braces(content):
+        pattern = re.compile(r"{\s*(\d+(?:\s*,\s*\d+)*)\s*}")
+        match = pattern.search(content)
+        if match:
+            numbers = match.group(1).split(",")
+            numbers = [num.strip() for num in numbers]
+            if numbers:
+                return numbers
+        return []
+
+    # Replace physical surface keys in the geo file content
+    new_geo_content = []
+    for line in geo_content:
+        if line.strip().startswith("Physical Surface"):
+            parts = line.split('"')
+            if len(parts) > 1:
+                material_name = parts[1].strip()
+                if material_name in material_name_to_ids:
+                    ids = material_name_to_ids[material_name]
+                    numbers = pop_and_update_braces(line)
+                    for i, number in enumerate(numbers):
+                        new_geo_content.append(f'Physical Surface("{ids.pop(0)}") = {{ {number} }};\n')
+                else:
+                    return False
             else:
-                outfile.write(line)
+                new_geo_content.append(line)
+        else:
+            new_geo_content.append(line)
 
+    with open(geo_file_path, "w") as file:
+        file.writelines(new_geo_content)
 
-def parse_obj_materials(obj_path):
-    material_map = {}
-    face_index = 0
+    try:
+        db.session.commit()
+    except Exception as ex:
+        db.session.rollback()
+        logger.error(f"Can not attach the geo file to the model! Error: {ex}")
+        return False
 
-    with open(obj_path, "r") as f:
-        for line in f:
-            line = line.strip()
-            if line.startswith("usemtl"):
-                material_map[face_index] = line.split()[1]
-                face_index += 1
-    return material_map
-
-
-def convert_obj_to_3dm(obj_clean_path, rhino_path, png_path):
-    # Load the OBJ file using trimesh
-    scene = trimesh.load(
-        obj_clean_path,
-        group_material=False,
-        skip_materials=False,
-        maintain_order=True,
-        Process=False,
-    )
-
-    # Create a new 3dm file
-    model = rhino3dm.File3dm()
-
-    # Parse OBJ materials
-    material_map = parse_obj_materials(obj_clean_path)
-
-    # Check if the loaded object is a scene with multiple geometries
-    if isinstance(scene, trimesh.Scene):
-        meshes = scene.dump(False)
-        meshes.reverse()
-    else:
-        meshes = [scene]
-    print("_____________________")
-    print(meshes)
-    # Define a 90-degree rotation matrix around the X-axis
-    rotation_matrix = np.array([[1, 0, 0], [0, 0, -1], [0, 1, 0]])
-
-    for mesh_index, mesh in enumerate(meshes):
-        vertices = mesh.vertices
-        faces = mesh.faces
-
-        rhino_mesh = rhino3dm.Mesh()
-
-        for vertex in vertices:
-            rotated_vertex = np.dot(rotation_matrix, vertex)
-            rhino_mesh.Vertices.Add(rotated_vertex[0], rotated_vertex[1], rotated_vertex[2])
-
-        for face_index, face in enumerate(faces):
-            if len(face) == 3:  # Triangular face
-                rhino_mesh.Faces.AddFace(face[0], face[1], face[2])
-            elif len(face) == 4:  # Quad face
-                rhino_mesh.Faces.AddFace(face[0], face[1], face[2], face[3])
-
-        rhino_mesh.SetUserString("material_name", str(material_map[mesh_index]))
-        model.Objects.AddMesh(rhino_mesh)
-        # rhino_mesh.Attributes
-
-    # Save the 3dm file
-    model.Write(rhino_path)
-    return rhino_path
+    return True
