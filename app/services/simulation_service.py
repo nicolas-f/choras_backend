@@ -9,11 +9,12 @@ from celery import shared_task  # , current_task
 from flask_smorest import abort
 from sqlalchemy.orm import joinedload, scoped_session, sessionmaker
 
+
 import config
 from app.db import db
 from app.models import File, Simulation, SimulationRun, Task, Export
 from app.services import file_service, material_service, mesh_service, model_service
-from app.services.export_service import ExportHelper
+from app.factory.export_factory.export_helper import ExportHelper
 from app.services.auralization_service import auralization_calculation
 from app.types import Status, TaskType
 
@@ -333,8 +334,7 @@ def run_solver(simulation_run_id: int, json_path: str):
                     de_method(json_file_path=json_path)
 
                     # save the simulation result json to xlsx
-                    exportHelper = ExportHelper()
-                    if not exportHelper.parse_json_file_to_xlsx_file(json_path, json_path.replace(".json", ".xlsx")):
+                    if not ExportHelper.parse_json_file_to_xlsx_file(json_path, json_path.replace(".json", ".xlsx")):
                         logger.error("Error saving the result to xlsx")
                         raise "Error saving the result to xlsx"
 
@@ -350,7 +350,7 @@ def run_solver(simulation_run_id: int, json_path: str):
                         None, json_path.replace(".json", "_pressure.csv"), json_path.replace(".json", ".wav")
                     )
                     # auralization: save the impulse response to xlsx
-                    if not exportHelper.write_data_to_xlsx_file(
+                    if not ExportHelper.write_data_to_xlsx_file(
                         json_path.replace(".json", ".xlsx"), "impulse response", {f"{fs}Hz": imp_tot}
                     ):
                         logger.error("Error saving the impulse response to xlsx")

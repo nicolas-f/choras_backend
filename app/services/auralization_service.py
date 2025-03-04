@@ -23,7 +23,7 @@ from app.models.AudioFile import AudioFile
 from app.models.Auralization import Auralization
 from app.models.Export import Export
 from app.models.Simulation import Simulation
-from app.services.export_service import ExportHelper
+from app.factory.export_factory.export_helper import ExportHelper
 from app.db import db
 
 # Create Logger for this module
@@ -85,8 +85,7 @@ def get_impulse_response_plot(simulation_id: int) -> Optional[dict]:
     else:
         try:
             xlsx_file_path = os.path.join(DefaultConfig.UPLOAD_FOLDER_NAME, simulation.export.name)
-            exportHelper = ExportHelper()
-            plot_data = exportHelper.extract_from_xlsx_to_dict(
+            plot_data = ExportHelper.extract_from_xlsx_to_dict(
                 xlsx_file_path, {"impulse response": [f"{AuralizationParameters.visualization_fs}Hz"]}
             )
             return {

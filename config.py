@@ -141,3 +141,15 @@ class AuralizationParametersConfig(DefaultConfig):
     rho = 1.21
     c0 = 343
     random_seed = 215
+
+
+class CustomExportParametersConfig(DefaultConfig):
+    # some hardcode values for the custom export
+    keys = ["xlsx", "EDC", "Parameters", "Auralization"]
+    key_simulationId = "SimulationId"
+    impulse_response_fs = ["44100Hz"]
+    impulse_response = "impulse response"
+    value_wav_file_auralization = "wav"
+    value_wav_file_IR = "wavIR"
+    value_csv_file_IR = "csvIR"
+    key_xlsx = "xlsx"
