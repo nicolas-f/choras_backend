@@ -278,11 +278,4 @@ def attach_geo_file(rhino_file_path, geo_file_path):
     with open(geo_file_path, "w") as file:
         file.writelines(new_geo_content)
 
-    try:
-        db.session.commit()
-    except Exception as ex:
-        db.session.rollback()
-        logger.error(f"Can not attach the geo file to the model! Error: {ex}")
-        return False
-
     return True
