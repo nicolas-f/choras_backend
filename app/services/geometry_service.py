@@ -190,16 +190,16 @@ def generate_geo_file(rhino_file_path, geo_file_path):
                     line_loop_indices.append(line_index)
                     line_index += 1
 
-                line_loops[
-                    surface_index
-                ] = f"Line Loop({surface_index}) = {{{', '.join(map(str, line_loop_indices))}}};\n"
+                line_loops[surface_index] = (
+                    f"Line Loop({surface_index}) = {{{', '.join(map(str, line_loop_indices))}}};\n"
+                )
                 plane_surfaces[surface_index] = f"Plane Surface({surface_index}) = {{{surface_index}}};\n"
                 surface_index += 1
 
             # Write physical surface group
-            physical_surfaces[
-                obj.Attributes.Id
-            ] = f"Physical Surface(\"{obj.Attributes.Id}\") = {{{', '.join(map(str, range(1, surface_index)))}}};\n"
+            physical_surfaces[obj.Attributes.Id] = (
+                f"Physical Surface(\"{obj.Attributes.Id}\") = {{{', '.join(map(str, range(1, surface_index)))}}};\n"
+            )
             physical_surface_counter += 1
 
     with open(geo_file_path, "w") as geo_file:
