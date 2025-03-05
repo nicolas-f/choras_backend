@@ -11,7 +11,9 @@ import config
 from app.db import db
 from app.models import File, Geometry, Task
 from app.services import model_service
-from app.services.geometry_converter_factory.GeometryConversionFactory import GeometryConversionFactory
+from app.services.geometry_converter_factory.GeometryConversionFactory import (
+    GeometryConversionFactory,
+)
 from app.types import Status, TaskType
 
 # Create logger for this module
@@ -164,7 +166,9 @@ def generate_geo_file(rhino_file_path, geo_file_path):
             # Write points to .geo file
             for i, vertex in enumerate(vertices):
                 print(vertex)
-                points[point_index] = f"Point({point_index}) = {{{vertex.X}, {vertex.Y}, {vertex.Z}, 1.0}};\n"
+                points[
+                    point_index
+                ] = f"Point({point_index}) = {{{vertex.X}, {vertex.Y}, {vertex.Z}, 1.0}};\n"
                 vertex_map[i] = point_index
                 point_index += 1
 
@@ -184,14 +188,18 @@ def generate_geo_file(rhino_file_path, geo_file_path):
                 for j in range(len(face_indices)):
                     start_point = vertex_map[face_indices[j]]
                     end_point = vertex_map[face_indices[(j + 1) % len(face_indices)]]
-                    lines[line_index] = f"Line({line_index}) = {{{start_point}, {end_point}}};\n"
+                    lines[
+                        line_index
+                    ] = f"Line({line_index}) = {{{start_point}, {end_point}}};\n"
                     line_loop_indices.append(line_index)
                     line_index += 1
 
                 line_loops[
                     surface_index
                 ] = f"Line Loop({surface_index}) = {{{', '.join(map(str, line_loop_indices))}}};\n"
-                plane_surfaces[surface_index] = f"Plane Surface({surface_index}) = {{{surface_index}}};\n"
+                plane_surfaces[
+                    surface_index
+                ] = f"Plane Surface({surface_index}) = {{{surface_index}}};\n"
                 surface_index += 1
 
             # Write physical surface group
@@ -270,7 +278,9 @@ def attach_geo_file(rhino_file_path, geo_file_path):
                     ids = material_name_to_ids[material_name]
                     numbers = pop_and_update_braces(line)
                     for i, number in enumerate(numbers):
-                        new_geo_content.append(f'Physical Surface("{ids.pop(0)}") = {{ {number} }};\n')
+                        new_geo_content.append(
+                            f'Physical Surface("{ids.pop(0)}") = {{ {number} }};\n'
+                        )
                 else:
                     return False
             else:
