@@ -1,6 +1,8 @@
 import os
 import unittest
 
+from sqlalchemy import event
+
 from app import create_app, db
 
 
@@ -11,8 +13,15 @@ class BaseTestCase(unittest.TestCase):
         It sets up the application context and creates the necessary database tables.
         """
         self.app, _ = create_app(settings_module=os.environ.get("APP_TEST_SETTINGS_MODULE"))
-        self.db = db
         with self.app.app_context():
+            self.db = db
+
+            @event.listens_for(self.db.engine, "connect")  # execute the function when every connection is made
+            def set_sqlite_pragma(dbapi_connection, connection_record):
+                cursor = dbapi_connection.cursor()
+                cursor.execute("PRAGMA foreign_keys=OFF")
+                cursor.close()
+
             self.db.create_all()
 
     def tearDown(self):

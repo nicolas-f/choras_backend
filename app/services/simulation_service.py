@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+from pathlib import Path
 from datetime import datetime
 
 import gmsh
@@ -8,10 +9,13 @@ from celery import shared_task  # , current_task
 from flask_smorest import abort
 from sqlalchemy.orm import joinedload, scoped_session, sessionmaker
 
+
 import config
 from app.db import db
-from app.models import File, Simulation, SimulationRun, Task
+from app.models import File, Simulation, SimulationRun, Task, Export
 from app.services import file_service, material_service, mesh_service, model_service
+from app.factory.export_factory.export_helper import ExportHelper
+from app.services.auralization_service import auralization_calculation
 from app.types import Status, TaskType
 
 # Create logger for this module
@@ -276,7 +280,7 @@ def start_solver_task(simulation_id):
 
 
 @shared_task
-def run_solver(simulation_run_id, json_path):
+def run_solver(simulation_run_id: int, json_path: str):
     from simulation_backend.FVMinterface import de_method
     from simulation_backend.DGinterface import dg_method
 
@@ -328,6 +332,29 @@ def run_solver(simulation_run_id, json_path):
                 case TaskType.DE:
                     logger.info("DE method")
                     de_method(json_file_path=json_path)
+
+                    # save the simulation result json to xlsx
+                    if not ExportHelper.parse_json_file_to_xlsx_file(json_path, json_path.replace(".json", ".xlsx")):
+                        logger.error("Error saving the result to xlsx")
+                        raise "Error saving the result to xlsx"
+
+                    # db - save the xlsx file path
+                    export = Export(
+                        name=Path(json_path).name.replace(".json", ".xlsx"),
+                        simulationId=simulation.id,
+                    )
+                    session.add(export)
+
+                    # auralization: generate impulse response wav file
+                    imp_tot, fs = auralization_calculation(
+                        None, json_path.replace(".json", "_pressure.csv"), json_path.replace(".json", ".wav")
+                    )
+                    # auralization: save the impulse response to xlsx
+                    if not ExportHelper.write_data_to_xlsx_file(
+                        json_path.replace(".json", ".xlsx"), "impulse response", {f"{fs}Hz": imp_tot}
+                    ):
+                        logger.error("Error saving the impulse response to xlsx")
+                        raise "Error saving the impulse response to xlsx"
 
                 case TaskType.DG:
                     # DG METHOD
