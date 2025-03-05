@@ -97,7 +97,7 @@ def map_to_3dm_and_geo(geometry_id):
         return False
 
     if not os.path.exists(rhino3dm_path):
-        logger.error(f"Can not find created a rhino file: {ex}")
+        logger.error("Can not find created a rhino file")
         return False
 
     try:
@@ -119,7 +119,7 @@ def map_to_3dm_and_geo(geometry_id):
 
     try:
         if not generate_geo_file(rhino3dm_path, geo_path):
-            logger.error(f"Can not generate a geo file: {ex}")
+            logger.error("Can not generate a geo file")
             return False
 
         file_geo = File(fileName=f"{file_name}.geo")
