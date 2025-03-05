@@ -94,32 +94,41 @@ def map_to_3dm_and_geo(geometry_id):
         return False
 
     if not os.path.exists(rhino3dm_path):
+        logger.error(f"Can not find created a rhino file: {ex}")
         return False
 
     try:
         file3dm = File(fileName=f"{file_name}.3dm")
         db.session.add(file3dm)
+        db.session.commit()
+
         geometry.outputModelId = file3dm.id
 
         # Create a zip file from 3dm
         with zipfile.ZipFile(zip_file_path, "w") as zipf:
             zipf.write(rhino3dm_path, arcname=f"{file_name}.3dm")
 
-        try:
-            if not generate_geo_file(rhino3dm_path, geo_path):
-                return False
-
-            file_geo = File(fileName=f"{file_name}.geo")
-            db.session.add(file_geo)
-            attach_geo_file(rhino3dm_path, geo_path)
-        except Exception as ex:
-            logger.error(f"Can not create a geo file: {ex}")
-            return False
-
         db.session.commit()
     except Exception as ex:
         db.session.rollback()
         logger.error(f"Can not create a rhino file: {ex}")
+        return False
+
+    try:
+        if not generate_geo_file(rhino3dm_path, geo_path):
+            logger.error(f"Can not generate a geo file: {ex}")
+            return False
+
+        file_geo = File(fileName=f"{file_name}.geo")
+        db.session.add(file_geo)
+        db.session.commit()
+
+        attach_geo_file(rhino3dm_path, geo_path)
+
+    except Exception as ex:
+        db.session.rollback()
+        logger.error(f"Can not attach a geo file: {ex}")
+        return False
 
     return True
 

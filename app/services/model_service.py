@@ -15,6 +15,7 @@ def create_new_model(model_data):
         projectId=model_data["projectId"],
         sourceFileId=model_data["sourceFileId"],
         outputFileId=model_data["sourceFileId"],
+        hasGeo=True,
     )
 
     try:
