@@ -17,6 +17,7 @@ from app.types import Status, TaskType
 # Create logger for this module
 logger = logging.getLogger(__name__)
 
+
 def get_geometry_by_id(geometry_id):
     results = Geometry.query.filter_by(id=geometry_id).first()
     return results
@@ -132,6 +133,7 @@ def map_to_3dm_and_geo(geometry_id):
 
     return True
 
+
 def generate_geo_file(rhino_file_path, geo_file_path):
     file3dm = rhino3dm.File3dm()
     model = file3dm.Read(rhino_file_path)
@@ -186,16 +188,16 @@ def generate_geo_file(rhino_file_path, geo_file_path):
                     line_loop_indices.append(line_index)
                     line_index += 1
 
-                line_loops[surface_index] = (
-                    f"Line Loop({surface_index}) = {{{', '.join(map(str, line_loop_indices))}}};\n"
-                )
+                line_loops[
+                    surface_index
+                ] = f"Line Loop({surface_index}) = {{{', '.join(map(str, line_loop_indices))}}};\n"
                 plane_surfaces[surface_index] = f"Plane Surface({surface_index}) = {{{surface_index}}};\n"
                 surface_index += 1
 
             # Write physical surface group
-            physical_surfaces[obj.Attributes.Id] = (
-                f"Physical Surface(\"{obj.Attributes.Id}\") = {{{', '.join(map(str, range(1, surface_index)))}}};\n"
-            )
+            physical_surfaces[
+                obj.Attributes.Id
+            ] = f"Physical Surface(\"{obj.Attributes.Id}\") = {{{', '.join(map(str, range(1, surface_index)))}}};\n"
             physical_surface_counter += 1
 
     with open(geo_file_path, "w") as geo_file:
@@ -221,6 +223,7 @@ def generate_geo_file(rhino_file_path, geo_file_path):
 
     print(f"Converted {rhino_file_path} to {geo_file_path}")
     return os.path.exists(geo_file_path)
+
 
 def attach_geo_file(rhino_file_path, geo_file_path):
     model = rhino3dm.File3dm.Read(rhino_file_path)

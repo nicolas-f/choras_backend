@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+
 class GeometryConversionStrategy(ABC):
     @abstractmethod
     def generate_mesh(self):

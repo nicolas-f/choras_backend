@@ -105,7 +105,9 @@ def attach_geo_file(model_id, file_input_id):
 
     return {"status": True, "message": "geo file added to the model successfully!"}
 
+
 gmsh.initialize()
+
 
 def start_mesh_task(model_id):
     model_db = model_service.get_model(model_id)

@@ -1,6 +1,7 @@
 from app.services.geometry_converter_factory.GeometryConversionStrategy import GeometryConversionStrategy
 from app.services.geometry_converter_factory.ObjConversion import ObjConversion
 
+
 class GeometryConversionFactory:
     @staticmethod
     def create_strategy(extension: str) -> GeometryConversionStrategy:

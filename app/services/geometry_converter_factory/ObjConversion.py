@@ -7,6 +7,7 @@ import numpy as np
 
 from app.services.geometry_converter_factory.GeometryConversionStrategy import GeometryConversionStrategy
 
+
 def _parse_obj_materials(obj_path):
     material_map = {}
     face_index = 0

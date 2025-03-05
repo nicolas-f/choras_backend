@@ -19,7 +19,6 @@ logger = logging.getLogger(__name__)
 
 class ExportEdc(ExportStrategy):
     def export(self, export_type: str, params: ListType, simulationIds: ListType, zip_buffer: io.BytesIO) -> io.BytesIO:
-
         if params:
             for id in simulationIds:
                 simulation: Simulation = Simulation.query.filter_by(id=id).first()
