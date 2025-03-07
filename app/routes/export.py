@@ -1,3 +1,5 @@
+from io import BytesIO
+
 from flask.views import MethodView
 from flask_smorest import Blueprint
 from flask import send_from_directory, send_file
@@ -20,5 +22,6 @@ class CustomExport(MethodView):
     @blp.response(200, content_type="application/zip")
     def post(self, body_data):
         zip_buffer = export_service.execute_export(body_data)
-        zip_buffer.seek(0)  # Ensure buffer is at the start
+        if isinstance(zip_buffer, BytesIO):
+            zip_buffer.seek(0)  # Ensure buffer is at the start
         return send_file(zip_buffer, as_attachment=True, download_name="results.zip", mimetype="application/zip")
