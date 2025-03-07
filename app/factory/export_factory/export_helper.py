@@ -1,6 +1,5 @@
 import io
 
-from virtualenv.config.convert import ListType
 import zipfile
 import pandas as pd
 import logging

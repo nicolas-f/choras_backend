@@ -3,7 +3,6 @@ import logging
 from typing import List
 
 from flask_smorest import abort
-from virtualenv.config.convert import ListType
 
 from app.models import Export
 from app.models.Simulation import Simulation
@@ -19,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 class ExportAuralization(ExportStrategy):
-    def export(self, export_type: str, params: ListType, simulationIds: ListType, zip_buffer: io.BytesIO) -> io.BytesIO:
+    def export(self, export_type: str, params: List, simulationIds: List, zip_buffer: io.BytesIO) -> io.BytesIO:
         try:
             if params:
                 for id in simulationIds:
