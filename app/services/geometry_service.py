@@ -1,7 +1,6 @@
 import logging
 import os
 import zipfile
-from datetime import datetime
 from typing import re
 
 import rhino3dm
@@ -135,97 +134,113 @@ def map_to_3dm_and_geo(geometry_id):
 
     return True
 
-
 def generate_geo_file(rhino_file_path, geo_file_path):
-    file3dm = rhino3dm.File3dm()
-    model = file3dm.Read(rhino_file_path)
+    model = rhino3dm.File3dm.Read(rhino_file_path)
 
-    # Collect points, lines, line loops, and physical surfaces
+    # Structures to hold .geo elements
     points = {}
     lines = {}
     line_loops = {}
     plane_surfaces = {}
     physical_surfaces = {}
 
+    # Helper tracking
+    coord_to_point_index = {}
+    edge_to_line_index = {}
+
     point_index = 1
     line_index = 1
     surface_index = 1
-    physical_surface_counter = 1
 
-    # Iterate over the objects in the 3dm model
     for obj in model.Objects:
-        if isinstance(obj.Geometry, rhino3dm.Mesh):
-            faces = obj.Geometry.Faces
-            faces.ConvertTrianglesToQuads(0.5, 0)
-            vertices = obj.Geometry.Vertices
-            vertices.CombineIdentical(True, True)
+        if not isinstance(obj.Geometry, rhino3dm.Mesh):
+            continue
 
-            # Create a mapping from vertex index to Gmsh point index
-            vertex_map = {}
+        mesh = obj.Geometry
+        mesh.Faces.ConvertTrianglesToQuads(0.5, 0)
+        mesh.Vertices.CombineIdentical(True, True)
+        vertices = mesh.Vertices
+        faces = mesh.Faces
 
-            # Write points to .geo file
-            for i, vertex in enumerate(vertices):
-                print(vertex)
+        vertex_map = {}  # Maps mesh vertex index to Gmsh point index
+
+        for i, vertex in enumerate(vertices):
+            coord = (round(vertex.X, 6), round(vertex.Y, 6), round(vertex.Z, 6))
+            if coord not in coord_to_point_index:
                 points[point_index] = f"Point({point_index}) = {{{vertex.X}, {vertex.Y}, {vertex.Z}, 1.0}};\n"
-                vertex_map[i] = point_index
+                coord_to_point_index[coord] = point_index
                 point_index += 1
+            vertex_map[i] = coord_to_point_index[coord]
 
-            # Write line loops and plane surfaces for each face
-            for i in range(faces.Count):
-                face = faces[i]
+        # Collect surfaces per object
+        object_surface_indices = []
 
-                if len(face) == 4:  # Quad face
-                    face_indices = [face[0], face[1], face[2], face[3]]
-                elif len(face) == 3:  # Triangle face
-                    face_indices = [face[0], face[1], face[2]]
-                else:
-                    continue
+        for i in range(faces.Count):
+            face = faces[i]
 
-                # Create line loops for the face
-                line_loop_indices = []
-                for j in range(len(face_indices)):
-                    start_point = vertex_map[face_indices[j]]
-                    end_point = vertex_map[face_indices[(j + 1) % len(face_indices)]]
-                    lines[line_index] = f"Line({line_index}) = {{{start_point}, {end_point}}};\n"
-                    line_loop_indices.append(line_index)
+            face_indices = (
+                [face[0], face[1], face[2], face[3]]
+                if len(face) == 4
+                else [face[0], face[1], face[2]]
+                if len(face) == 3
+                else None
+            )
+            if not face_indices:
+                continue
+
+            line_loop_indices = []
+            for j in range(len(face_indices)):
+                a = vertex_map[face_indices[j]]
+                b = vertex_map[face_indices[(j + 1) % len(face_indices)]]
+                edge = tuple(sorted((a, b)))
+                if edge not in edge_to_line_index:
+                    lines[line_index] = f"Line({line_index}) = {{{a}, {b}}};\n"
+                    edge_to_line_index[edge] = line_index
+                    current_line_index = line_index
                     line_index += 1
+                else:
+                    current_line_index = edge_to_line_index[edge]
 
-                line_loops[
-                    surface_index
-                ] = f"Line Loop({surface_index}) = {{{', '.join(map(str, line_loop_indices))}}};\n"
-                plane_surfaces[surface_index] = f"Plane Surface({surface_index}) = {{{surface_index}}};\n"
-                surface_index += 1
+                line_loop_indices.append(current_line_index)
 
-            # Write physical surface group
-            physical_surfaces[
-                obj.Attributes.Id
-            ] = f"Physical Surface(\"{obj.Attributes.Id}\") = {{{', '.join(map(str, range(1, surface_index)))}}};\n"
-            physical_surface_counter += 1
+            line_loops[surface_index] = f"Line Loop({surface_index}) = {{{', '.join(map(str, line_loop_indices))}}};\n"
+            plane_surfaces[surface_index] = f"Plane Surface({surface_index}) = {{{surface_index}}};\n"
+            object_surface_indices.append(surface_index)
+            surface_index += 1
 
+        # Group surfaces under the object's physical surface ID
+        if object_surface_indices:
+            physical_surfaces[obj.Attributes.Id] = (
+                f"Physical Surface(\"{obj.Attributes.Id}\") = {{{', '.join(map(str, object_surface_indices))}}};\n"
+            )
+
+    # Write to .geo file
     with open(geo_file_path, "w") as geo_file:
-        # Write sorted points
-        for point_index in sorted(points.keys()):
-            geo_file.write(points[point_index])
+        geo_file.write("// Generated from Rhino .3dm file\n")
+        geo_file.write("// Mesh Parameters\n")
+        geo_file.write("Mesh.Algorithm = 6;\n")
+        geo_file.write("Mesh.Algorithm3D = 1;\n")
+        geo_file.write("Mesh.Optimize = 1;\n")
+        geo_file.write("Mesh.CharacteristicLengthFromPoints = 1;\n\n")
 
-        # Write sorted lines
-        for line_index in sorted(lines.keys()):
-            geo_file.write(lines[line_index])
+        # Write ordered blocks
+        for idx in sorted(points): geo_file.write(points[idx])
+        geo_file.write("\n")
+        for idx in sorted(lines): geo_file.write(lines[idx])
+        geo_file.write("\n")
+        for idx in sorted(line_loops): geo_file.write(line_loops[idx])
+        for idx in sorted(plane_surfaces): geo_file.write(plane_surfaces[idx])
+        geo_file.write("\n")
+        for ps in physical_surfaces.values(): geo_file.write(ps)
 
-        # Write sorted line loops
-        for line_loop_index in sorted(line_loops.keys()):
-            geo_file.write(line_loops[line_loop_index])
-
-        # Write sorted plane surfaces
-        for surface_index in sorted(plane_surfaces.keys()):
-            geo_file.write(plane_surfaces[surface_index])
-
-        # Write sorted plane surfaces
-        for pysical_index in sorted(physical_surfaces.keys()):
-            geo_file.write(physical_surfaces[pysical_index])
+        # Write Surface Loop and Volume for enclosing geometry
+        surface_ids = sorted(plane_surfaces.keys())
+        geo_file.write(f"Surface Loop(1) = {{{', '.join(map(str, surface_ids))}}};\n")
+        geo_file.write("Volume(1) = {1};\n")
+        geo_file.write('Physical Volume("solid") = {1};\n\n')
 
     print(f"Converted {rhino_file_path} to {geo_file_path}")
     return os.path.exists(geo_file_path)
-
 
 def attach_geo_file(rhino_file_path, geo_file_path):
     model = rhino3dm.File3dm.Read(rhino_file_path)
