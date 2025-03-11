@@ -141,6 +141,9 @@ class AuralizationParametersConfig(DefaultConfig):
     rho = 1.21
     c0 = 343
     random_seed = 215
+    
+    allowedextensions = {'wav'}
+    maxSize = 10 * 1024 * 1024  # 10MB
 
 
 class CustomExportParametersConfig(DefaultConfig):

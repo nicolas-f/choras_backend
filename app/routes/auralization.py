@@ -2,7 +2,7 @@ from typing import Dict
 
 from flask.views import MethodView
 from flask_smorest import Blueprint
-from flask import send_from_directory, send_file
+from flask import send_from_directory, send_file, request
 
 from app.services import auralization_service
 from app.schemas.auralization_schema import AudioFileSchema, AuralizationSchema, AuralizationResponsePlotSchema
@@ -57,3 +57,10 @@ class AuralizationImpulseReponsePlot(MethodView):
     def get(self, simulation_id):
         plot_data = auralization_service.get_impulse_response_plot(simulation_id)
         return plot_data
+    
+@blp.route("/auralizations/upload/audiofile")
+# FIXME: this api does not follow the Swagger format
+class AuralizationUploadAudioFile(MethodView):
+    @blp.response(200, AudioFileSchema)
+    def post(self):
+        return auralization_service.upload_audio_file(request.form, request.files)
