@@ -22,7 +22,10 @@ class ExportEdc(Strategy):
     def export(self, export_type: str, params: List, simulationIds: List, zip_buffer: io.BytesIO) -> io.BytesIO:
 
         if params:
+
+            # Setting default "t" column in csv, if edc parameters(params) have a list of value in it
             params.insert(0, CustomExportParameters.key_t_column)
+
             for id in simulationIds:
                 simulation: Simulation = Simulation.query.filter_by(id=id).first()
                 export: Export = simulation.export
