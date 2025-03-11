@@ -1,8 +1,8 @@
 import io
 import logging
+from typing import List
 
 from flask_smorest import abort
-from virtualenv.config.convert import ListType
 
 from app.models import Export
 from app.models.Simulation import Simulation
@@ -18,24 +18,26 @@ logger = logging.getLogger(__name__)
 
 
 class ExportAuralization(ExportStrategy):
-    def export(self, export_type: str, params: ListType, simulationIds: ListType, zip_buffer: io.BytesIO) -> io.BytesIO:
-        if params:
-            for id in simulationIds:
-                simulation: Simulation = Simulation.query.filter_by(id=id).first()
+    def export(self, export_type: str, params: List, simulationIds: List, zip_buffer: io.BytesIO) -> io.BytesIO:
+        try:
+            if params:
+                for id in simulationIds:
+                    simulation: Simulation = Simulation.query.filter_by(id=id).first()
 
-                try:
                     if CustomExportParameters.value_wav_file_auralization in params:
-                        auralization: Auralization = simulation.auralizations
-                        auralization_wav_file_name: str = auralization.wavFileName
-                        auralization_wav_file_path = os.path.join(
-                            DefaultConfig.UPLOAD_FOLDER_NAME, auralization_wav_file_name
-                        )
+                        auralizations: List[Auralization] = simulation.auralizations
 
-                        if not auralization_wav_file_name:
-                            logger.error("Auralization export with simulation is " + str(id) + "does not exists!")
-                            abort(400, message="Wav file doesn't exists!")
+                        for auralization in auralizations:
+                            auralization_wav_file_name: str = auralization.wavFileName
+                            auralization_wav_file_path = os.path.join(
+                                DefaultConfig.UPLOAD_FOLDER_NAME, auralization_wav_file_name
+                            )
 
-                        zip_buffer = ExportHelper.write_file_to_zip_binary(zip_buffer, auralization_wav_file_path)
+                            if not auralization_wav_file_name:
+                                logger.error("Auralization export with simulation is " + str(id) + "does not exists!")
+                                abort(400, message="Wav file doesn't exists!")
+
+                            zip_buffer = ExportHelper.write_file_to_zip_binary(zip_buffer, auralization_wav_file_path)
 
                     if CustomExportParameters.value_wav_file_IR or CustomExportParameters.value_csv_file_IR in params:
                         export: Export = simulation.export
@@ -69,8 +71,9 @@ class ExportAuralization(ExportStrategy):
                                 zip_buffer,
                                 id,
                             )
-                except Exception as e:
-                    logger.error("Error while writing wav or csv file to zip buffer: " + str(e))
-                    abort(400, message="Error while writing wav file to zip buffer: " + str(e))
 
-        return zip_buffer
+            return zip_buffer
+
+        except Exception as e:
+            logger.error("Error while writing wav or csv file to zip buffer: " + str(e))
+            abort(400, message="Error while writing wav file to zip buffer: " + str(e))

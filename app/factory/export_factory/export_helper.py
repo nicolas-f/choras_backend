@@ -1,6 +1,5 @@
 import io
 
-from virtualenv.config.convert import ListType
 import zipfile
 import pandas as pd
 import logging
@@ -61,6 +60,7 @@ class ExportHelper:
 
                 csv_buffer.close()
 
+            xlsx.close()
             return zip_buffer
 
         except Exception as e:
