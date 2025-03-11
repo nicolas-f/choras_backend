@@ -112,10 +112,18 @@ def clean_cache():
     """
     Clean cache in the folder.
     """
+
+    def remove_file(directory: Path):
+        for item in directory.iterdir():
+            if item.is_file():
+                item.unlink()
+            else:
+                remove_file(item)
+                item.rmdir()
+
     cache_folder = Path(DefaultConfig.UPLOAD_FOLDER_NAME)
     if cache_folder.exists() and cache_folder.is_dir():
-        for file in cache_folder.iterdir():
-            file.unlink()
+        remove_file(cache_folder)
 
 
 def update_audio():

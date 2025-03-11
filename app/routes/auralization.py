@@ -18,6 +18,14 @@ class AudioFileList(MethodView):
         return audio_files
 
 
+@blp.route("/auralizations/<int:simulation_id>/audiofiles")
+class AudioFileBySimulationIdList(MethodView):
+    @blp.response(200, AudioFileSchema(many=True))
+    def get(self, simulation_id):
+        audio_files = auralization_service.get_audio_files_by_simulation_id(simulation_id)
+        return audio_files
+
+
 @blp.route("/auralizations")
 class AuralizationTask(MethodView):
     @blp.arguments(AuralizationSchema)
@@ -57,7 +65,8 @@ class AuralizationImpulseReponsePlot(MethodView):
     def get(self, simulation_id):
         plot_data = auralization_service.get_impulse_response_plot(simulation_id)
         return plot_data
-    
+
+
 @blp.route("/auralizations/upload/audiofile")
 # FIXME: this api does not follow the Swagger format
 class AuralizationUploadAudioFile(MethodView):
