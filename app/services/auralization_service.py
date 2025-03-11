@@ -3,7 +3,7 @@ from werkzeug.datastructures import ImmutableDict, FileStorage
 
 from scipy.signal import butter, sosfilt, resample_poly, convolve
 from scipy.io import wavfile
-from sqlalchemy import asc, desc, or_
+from sqlalchemy import asc, desc, or_, and_
 from pathlib import Path
 import numpy as np
 import soundfile as sf
@@ -167,7 +167,7 @@ def upload_audio_file(
 def __update_audio_file__(
     name: str, description: str, path: Path, fileExtension: str, projectId: int, isUserFile: bool
 ) -> AudioFile:
-    audio_file: Optional[AudioFile] = AudioFile.query.filter_by(name=name).first()
+    audio_file: Optional[AudioFile] = AudioFile.query.filter(and_(AudioFile.name==name, AudioFile.projectId==projectId)).first()
     if audio_file is None:
         audio_file = AudioFile(
             name=path.name,
