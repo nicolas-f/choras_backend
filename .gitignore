@@ -212,4 +212,4 @@ migrations/
 
 uploads
 
-*.sqlite
+celerydb.sqlite
