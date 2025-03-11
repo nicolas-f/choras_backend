@@ -1,7 +1,7 @@
 import logging
 import os
 import zipfile
-from typing import re
+import re
 
 import rhino3dm
 from flask_smorest import abort
@@ -117,15 +117,13 @@ def map_to_3dm_and_geo(geometry_id):
         return False
 
     try:
-        if not generate_geo_file(rhino3dm_path, geo_path):
+        if not convert_3dm_to_geo(rhino3dm_path, geo_path):
             logger.error("Can not generate a geo file")
             return False
 
         file_geo = File(fileName=f"{file_name}.geo")
         db.session.add(file_geo)
         db.session.commit()
-
-        attach_geo_file(rhino3dm_path, geo_path)
 
     except Exception as ex:
         db.session.rollback()
@@ -134,24 +132,94 @@ def map_to_3dm_and_geo(geometry_id):
 
     return True
 
-def generate_geo_file(rhino_file_path, geo_file_path):
+
+def convert_3dm_to_geo(rhino_file_path, geo_file_path, volume_name="RoomVolume", map_materials=True):
+    """
+    Converts a Rhino 3DM file to a Gmsh GEO file with proper material mapping.
+
+    Args:
+        rhino_file_path: Path to the Rhino 3dm file
+        geo_file_path: Path to output the geo file
+        volume_name: Name for the Physical Volume (default: "RoomVolume")
+        map_materials: Whether to map materials from the 3dm file (default: True)
+
+    Returns:
+        bool: True if successful, False otherwise
+    """
+    """
+    Converts a Rhino 3DM file to a Gmsh GEO file with proper material mapping.
+
+    Args:
+        rhino_file_path: Path to the Rhino 3dm file
+        geo_file_path: Path to output the geo file
+        volume_name: Name for the Physical Volume (default: "RoomVolume")
+        map_materials: Whether to map materials from the 3dm file (default: True)
+
+    Returns:
+        bool: True if successful, False otherwise
+    """
     model = rhino3dm.File3dm.Read(rhino_file_path)
 
     # Structures to hold .geo elements
     points = {}
-    lines = {}
+    edges = set()  # Just collect unique edges first
     line_loops = {}
     plane_surfaces = {}
     physical_surfaces = {}
 
     # Helper tracking
     coord_to_point_index = {}
-    edge_to_line_index = {}
+    face_to_edges = {}  # Maps face index to its edges
+
+    # Material mapping for later use if map_materials is True
+    material_name_to_ids = {}
+    if map_materials:
+        material_to_id = {}
+        for obj in model.Objects:
+            if isinstance(obj.Geometry, rhino3dm.Mesh):
+                material_name = obj.Geometry.GetUserString("material_name")
+                if material_name:
+                    material_to_id[f"{obj.Attributes.Id}"] = material_name
+
+        # Reverse the mapping to be from material name to list of IDs
+        for id, material_name in material_to_id.items():
+            if material_name not in material_name_to_ids:
+                material_name_to_ids[material_name] = []
+            material_name_to_ids[material_name].append(id)
 
     point_index = 1
-    line_index = 1
     surface_index = 1
 
+    # Maps to store material/layer assignments
+    object_to_material = {}
+    material_to_surfaces = {}
+    obj_id_to_surfaces = {}  # Track surfaces by object ID for material mapping
+
+    # First pass: Identify materials/layers
+    for obj in model.Objects:
+        if not isinstance(obj.Geometry, rhino3dm.Mesh):
+            continue
+
+        # Material assignment logic - try to use these strategies in order:
+        # 1. Material index (if available)
+        # 2. Layer index (if available)
+        # 3. Default to M_1
+        if obj.Attributes.MaterialIndex > 0:
+            material_id = f"M_{obj.Attributes.MaterialIndex}"
+        elif obj.Attributes.LayerIndex > 0:
+            material_id = f"M_{obj.Attributes.LayerIndex}"
+        else:
+            material_id = "M_1"
+
+        object_to_material[obj.Attributes.Id] = material_id
+
+        if material_id not in material_to_surfaces:
+            material_to_surfaces[material_id] = []
+
+        # Initialize tracking for this object's surfaces
+        obj_id_to_surfaces[obj.Attributes.Id] = []
+
+    # Second pass: Process geometry
     for obj in model.Objects:
         if not isinstance(obj.Geometry, rhino3dm.Mesh):
             continue
@@ -165,19 +233,30 @@ def generate_geo_file(rhino_file_path, geo_file_path):
         vertex_map = {}  # Maps mesh vertex index to Gmsh point index
 
         for i, vertex in enumerate(vertices):
-            coord = (round(vertex.X, 6), round(vertex.Y, 6), round(vertex.Z, 6))
+            # Format coordinates to match the correct file style
+            # (If value is whole number, use integer format, otherwise use 1 decimal place)
+            def format_coord(value):
+                rounded = round(value, 1)
+                return int(rounded) if rounded.is_integer() else rounded
+
+            rounded_x = format_coord(vertex.X)
+            rounded_y = format_coord(vertex.Y)
+            rounded_z = format_coord(vertex.Z)
+
+            coord = (rounded_x, rounded_y, rounded_z)
             if coord not in coord_to_point_index:
-                points[point_index] = f"Point({point_index}) = {{{vertex.X}, {vertex.Y}, {vertex.Z}, 1.0}};\n"
+                points[point_index] = f"Point({point_index}) = {{ {rounded_x}, {rounded_y}, {rounded_z}, 1.0 }};\n"
                 coord_to_point_index[coord] = point_index
                 point_index += 1
             vertex_map[i] = coord_to_point_index[coord]
 
-        # Collect surfaces per object
+        # Collect surfaces and edges per object
         object_surface_indices = []
 
         for i in range(faces.Count):
             face = faces[i]
 
+            # Get face indices based on face type (triangle or quad)
             face_indices = (
                 [face[0], face[1], face[2], face[3]]
                 if len(face) == 4
@@ -186,116 +265,155 @@ def generate_geo_file(rhino_file_path, geo_file_path):
                 else None
             )
             if not face_indices:
-                continue
+                continue  # Skip non-triangle/quad faces
 
-            line_loop_indices = []
+            # Collect the edges for this face
+            face_edges = []
+            face_vertices = []
+
+            # First collect all vertices in order
             for j in range(len(face_indices)):
-                a = vertex_map[face_indices[j]]
-                b = vertex_map[face_indices[(j + 1) % len(face_indices)]]
-                edge = tuple(sorted((a, b)))
-                if edge not in edge_to_line_index:
-                    lines[line_index] = f"Line({line_index}) = {{{a}, {b}}};\n"
-                    edge_to_line_index[edge] = line_index
-                    current_line_index = line_index
-                    line_index += 1
-                else:
-                    current_line_index = edge_to_line_index[edge]
+                vertex_idx = vertex_map[face_indices[j]]
+                face_vertices.append(vertex_idx)
 
-                line_loop_indices.append(current_line_index)
+            # Then create edges from consecutive vertices
+            for j in range(len(face_vertices)):
+                a = face_vertices[j]
+                b = face_vertices[(j + 1) % len(face_vertices)]
 
-            line_loops[surface_index] = f"Line Loop({surface_index}) = {{{', '.join(map(str, line_loop_indices))}}};\n"
-            plane_surfaces[surface_index] = f"Plane Surface({surface_index}) = {{{surface_index}}};\n"
+                # Store the edge with direction for line loops
+                face_edges.append((a, b))
+
+                # Also store unique edges for line creation
+                edge = tuple(sorted([a, b]))
+                edges.add(edge)
+
+            # Store the face edges for later line loop creation
+            face_to_edges[surface_index] = face_edges
+
+            # Add to material surface list
+            material_id = object_to_material[obj.Attributes.Id]
+            material_to_surfaces[material_id].append(surface_index)
+
+            # Also track by object ID for material mapping
+            obj_id_to_surfaces[obj.Attributes.Id].append(surface_index)
+
             object_surface_indices.append(surface_index)
             surface_index += 1
 
-        # Group surfaces under the object's physical surface ID
-        if object_surface_indices:
-            physical_surfaces[obj.Attributes.Id] = (
-                f"Physical Surface(\"{obj.Attributes.Id}\") = {{{', '.join(map(str, object_surface_indices))}}};\n"
-            )
+    # Create lines in a predictable order after collecting all edges
+    lines = {}
+    edge_to_line_index = {}
+    physical_lines = []
+
+    line_index = 1
+    for edge in sorted(edges):  # Sort edges for consistent ordering
+        a, b = edge
+        lines[line_index] = f"Line({line_index}) = {{ {a}, {b} }};\n"
+        edge_to_line_index[edge] = line_index
+        physical_lines.append(line_index)
+        line_index += 1
+
+    # Now create line loops using the line indices
+    for face_idx, face_edges in face_to_edges.items():
+        # Extract ordered vertices from face edges
+        edge_vertices = []
+        for a, b in face_edges:
+            if not edge_vertices:
+                edge_vertices.extend([a, b])
+            else:
+                # Ensure the next edge continues from the last vertex
+                if edge_vertices[-1] == a:
+                    edge_vertices.append(b)
+                elif edge_vertices[-1] == b:
+                    edge_vertices.append(a)
+                else:
+                    # If not connected, try to insert at the beginning
+                    if edge_vertices[0] == a:
+                        edge_vertices.insert(0, b)
+                    elif edge_vertices[0] == b:
+                        edge_vertices.insert(0, a)
+                    else:
+                        print(f"Warning: Disconnected edge ({a},{b}) in face {face_idx}")
+
+        # Ensure the loop is closed
+        if edge_vertices[0] != edge_vertices[-1]:
+            face_edges.append((edge_vertices[-1], edge_vertices[0]))
+
+        # Create line loop with correct line directions
+        line_loop_indices = []
+        for i in range(len(edge_vertices) - 1):
+            a = edge_vertices[i]
+            b = edge_vertices[i + 1]
+
+            sorted_edge = tuple(sorted([a, b]))
+            line_idx = edge_to_line_index[sorted_edge]
+
+            # Check if direction matches
+            if (a, b) != sorted_edge:
+                line_idx = -line_idx  # Negative for reverse direction
+
+            line_loop_indices.append(line_idx)
+
+        # Format line loop with correct spacing to match example
+        line_loops[face_idx] = f"Line Loop({face_idx}) = {{ {', '.join(map(str, line_loop_indices))} }};\n"
+        plane_surfaces[face_idx] = f"Plane Surface({face_idx}) = {{ {face_idx} }};\n"
+
+    # Create physical surfaces groups
+    if map_materials and material_name_to_ids:
+        # If mapping materials, create physical surfaces based on material names
+        for obj_id, surfaces in obj_id_to_surfaces.items():
+            if surfaces:
+                physical_surfaces[obj_id] = f"Physical Surface(\"{obj_id}\") = {{ {', '.join(map(str, surfaces))} }};\n"
+    else:
+        # Otherwise use the material/layer based groups
+        for material_id, surface_list in material_to_surfaces.items():
+            if surface_list:
+                physical_surfaces[
+                    material_id
+                ] = f"Physical Surface(\"{material_id}\") = {{ {', '.join(map(str, surface_list))} }};\n"
 
     # Write to .geo file
     with open(geo_file_path, "w") as geo_file:
-        geo_file.write("// Generated from Rhino .3dm file\n")
-        geo_file.write("// Mesh Parameters\n")
-        geo_file.write("Mesh.Algorithm = 6;\n")
-        geo_file.write("Mesh.Algorithm3D = 1;\n")
-        geo_file.write("Mesh.Optimize = 1;\n")
-        geo_file.write("Mesh.CharacteristicLengthFromPoints = 1;\n\n")
+        # Write points first
+        for idx in sorted(points):
+            geo_file.write(points[idx])
+        geo_file.write("\n")
 
-        # Write ordered blocks
-        for idx in sorted(points): geo_file.write(points[idx])
+        # Write lines
+        for idx in sorted(lines):
+            geo_file.write(lines[idx])
         geo_file.write("\n")
-        for idx in sorted(lines): geo_file.write(lines[idx])
-        geo_file.write("\n")
-        for idx in sorted(line_loops): geo_file.write(line_loops[idx])
-        for idx in sorted(plane_surfaces): geo_file.write(plane_surfaces[idx])
-        geo_file.write("\n")
-        for ps in physical_surfaces.values(): geo_file.write(ps)
 
-        # Write Surface Loop and Volume for enclosing geometry
+        # Write line loops
+        for idx in sorted(line_loops):
+            geo_file.write(line_loops[idx])
+        geo_file.write("\n")
+
+        # Write plane surfaces
+        for idx in sorted(plane_surfaces):
+            geo_file.write(plane_surfaces[idx])
+        geo_file.write("\n")
+
+        # Write Surface Loop and Volume with custom volume name
         surface_ids = sorted(plane_surfaces.keys())
-        geo_file.write(f"Surface Loop(1) = {{{', '.join(map(str, surface_ids))}}};\n")
-        geo_file.write("Volume(1) = {1};\n")
-        geo_file.write('Physical Volume("solid") = {1};\n\n')
+        geo_file.write(f"Surface Loop(1) = {{ {', '.join(map(str, surface_ids))} }};\n")
+        geo_file.write("Volume( 1 ) = { 1 };\n")
+        geo_file.write(f'Physical Volume("{volume_name}") = {{ 1 }};\n')
+
+        # Write Physical Surface definitions
+        for ps in physical_surfaces.values():
+            geo_file.write(ps)
+
+        # Add Physical Line group
+        geo_file.write(f'Physical Line ("default") = {{{", ".join(map(str, physical_lines))}}};\n')
+
+        # Write mesh parameters at the end
+        geo_file.write("Mesh.Algorithm = 6;\n")
+        geo_file.write("Mesh.Algorithm3D = 1; // Delaunay3D, works for boundary layer insertion.\n")
+        geo_file.write("Mesh.Optimize = 1; // Gmsh smoother, works with boundary layers (netgen version does not).\n")
+        geo_file.write("Mesh.CharacteristicLengthFromPoints = 1;\n")
+        geo_file.write("// Recombine Surface \"*\";\n")
 
     print(f"Converted {rhino_file_path} to {geo_file_path}")
     return os.path.exists(geo_file_path)
-
-def attach_geo_file(rhino_file_path, geo_file_path):
-    model = rhino3dm.File3dm.Read(rhino_file_path)
-
-    if not os.path.exists(geo_file_path):
-        raise FileNotFoundError(f"File not found: {geo_file_path}")
-
-    with open(geo_file_path, "r") as file:
-        geo_content = file.readlines()
-
-    # Create a mapping of material_name to obj.Attributes.Id
-    material_to_id = {}
-    for obj in model.Objects:
-        if isinstance(obj.Geometry, rhino3dm.Mesh):
-            material_name = obj.Geometry.GetUserString("material_name")
-            if material_name:
-                material_to_id[f"{obj.Attributes.Id}"] = material_name
-
-    # Reverse the mapping to be from material name to list of IDs
-    material_name_to_ids = {}
-    for id, material_name in material_to_id.items():
-        if material_name not in material_name_to_ids:
-            material_name_to_ids[material_name] = []
-        material_name_to_ids[material_name].append(id)
-
-    def pop_and_update_braces(content):
-        pattern = re.compile(r"{\s*(\d+(?:\s*,\s*\d+)*)\s*}")
-        match = pattern.search(content)
-        if match:
-            numbers = match.group(1).split(",")
-            numbers = [num.strip() for num in numbers]
-            if numbers:
-                return numbers
-        return []
-
-    # Replace physical surface keys in the geo file content
-    new_geo_content = []
-    for line in geo_content:
-        if line.strip().startswith("Physical Surface"):
-            parts = line.split('"')
-            if len(parts) > 1:
-                material_name = parts[1].strip()
-                if material_name in material_name_to_ids:
-                    ids = material_name_to_ids[material_name]
-                    numbers = pop_and_update_braces(line)
-                    for i, number in enumerate(numbers):
-                        new_geo_content.append(f'Physical Surface("{ids.pop(0)}") = {{ {number} }};\n')
-                else:
-                    return False
-            else:
-                new_geo_content.append(line)
-        else:
-            new_geo_content.append(line)
-
-    with open(geo_file_path, "w") as file:
-        file.writelines(new_geo_content)
-
-    return True
