@@ -142,9 +142,6 @@ def upload_audio_file(
             abort(400, message=f"Audio file size is larger than {AuralizationParameters.maxSize}")
 
     except KeyError as e:
-        import traceback
-
-        traceback.print_exc()
         logger.error(f"Error parsing audio file data: {e}")
         abort(400, message="Error parsing audio file data")
 
@@ -156,7 +153,7 @@ def upload_audio_file(
             auido_file_data.save(save_file)
 
         audio_file = __update_audio_file__(
-            audio_file_name, audio_file_description, audio_file_path, audio_file_extension, project_id, True
+            audio_file_path.name, audio_file_description, audio_file_path, audio_file_extension, project_id, True
         )
 
     except Exception as e:
