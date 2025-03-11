@@ -258,9 +258,7 @@ def convert_3dm_to_geo(rhino_file_path, geo_file_path, volume_name="RoomVolume",
             face_indices = (
                 [face[0], face[1], face[2], face[3]]
                 if len(face) == 4
-                else [face[0], face[1], face[2]]
-                if len(face) == 3
-                else None
+                else [face[0], face[1], face[2]] if len(face) == 3 else None
             )
             if not face_indices:
                 continue  # Skip non-triangle/quad faces
@@ -367,9 +365,9 @@ def convert_3dm_to_geo(rhino_file_path, geo_file_path, volume_name="RoomVolume",
         # Otherwise use the material/layer based groups
         for material_id, surface_list in material_to_surfaces.items():
             if surface_list:
-                physical_surfaces[
-                    material_id
-                ] = f"Physical Surface(\"{material_id}\") = {{ {', '.join(map(str, surface_list))} }};\n"
+                physical_surfaces[material_id] = (
+                    f"Physical Surface(\"{material_id}\") = {{ {', '.join(map(str, surface_list))} }};\n"
+                )
 
     # Write to .geo file
     with open(geo_file_path, "w") as geo_file:
