@@ -5,7 +5,7 @@ import trimesh
 import rhino3dm
 import numpy as np
 
-from app.services.geometry_converter_factory.GeometryConversionStrategy import GeometryConversionStrategy
+from app.factory.geometry_converter_factory.GeometryConversionStrategy import GeometryConversionStrategy
 
 
 def _parse_obj_materials(obj_path):

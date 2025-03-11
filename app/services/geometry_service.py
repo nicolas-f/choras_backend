@@ -1,7 +1,6 @@
 import logging
 import os
 import zipfile
-from typing import Dict, List, Set, Tuple, Union, Optional
 
 import rhino3dm
 from flask_smorest import abort
@@ -9,7 +8,7 @@ from flask_smorest import abort
 import config
 from app.db import db
 from app.models import File, Geometry, Task
-from app.services.geometry_converter_factory.GeometryConversionFactory import (
+from app.factory.geometry_converter_factory.GeometryConversionFactory import (
     GeometryConversionFactory,
 )
 from app.types import Status, TaskType
@@ -412,7 +411,7 @@ def convert_3dm_to_geo(rhino_file_path, geo_file_path, volume_name="RoomVolume",
         geo_file.write("Mesh.Algorithm3D = 1; // Delaunay3D, works for boundary layer insertion.\n")
         geo_file.write("Mesh.Optimize = 1; // Gmsh smoother, works with boundary layers (netgen version does not).\n")
         geo_file.write("Mesh.CharacteristicLengthFromPoints = 1;\n")
-        geo_file.write("// Recombine Surface \"*\";\n")
+        geo_file.write('// Recombine Surface "*";\n')
 
     print(f"Converted {rhino_file_path} to {geo_file_path}")
     return os.path.exists(geo_file_path)
