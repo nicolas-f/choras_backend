@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 logger = logging.getLogger(__name__)
 
 
-class ExportStrategy(ABC):
+class Strategy(ABC):
     @abstractmethod
     def export(self, export_type, params, simulationIds, zip_buffer):
         pass

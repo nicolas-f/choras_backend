@@ -9,17 +9,18 @@ from app.models.Simulation import Simulation
 from config import DefaultConfig
 import os
 
-from app.factory.export_factory.export_helper import ExportHelper
-from app.factory.export_factory.strategy import ExportStrategy
+from app.factory.export_factory.ExportHelper import ExportHelper
+from app.factory.export_factory.Strategy import Strategy
 
 # Create logger for this module
 logger = logging.getLogger(__name__)
 
 
-class ExportParameters(ExportStrategy):
+class ExportParameters(Strategy):
     def export(self, export_type: str, params: List, simulationIds: List, zip_buffer: io.BytesIO) -> io.BytesIO:
         try:
             if params:
+                print(params)
                 for id in simulationIds:
                     simulation: Simulation = Simulation.query.filter_by(id=id).first()
                     export: Export = simulation.export

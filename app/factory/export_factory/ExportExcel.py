@@ -6,7 +6,7 @@ from app.models.Simulation import Simulation
 from config import DefaultConfig
 import os
 import io
-from app.factory.export_factory.strategy import ExportStrategy
+from app.factory.export_factory.Strategy import Strategy
 import logging
 
 import zipfile
@@ -15,7 +15,7 @@ import zipfile
 logger = logging.getLogger(__name__)
 
 
-class ExportExcel(ExportStrategy):
+class ExportExcel(Strategy):
     def export(self, export_type: str, params: List, simulationIds: List, zip_buffer: io.BytesIO) -> io.BytesIO:
         param = bool(params[0])
         if param:
