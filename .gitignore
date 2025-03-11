@@ -211,3 +211,5 @@ migrations/
 *.db
 
 uploads
+
+*.sqlite
