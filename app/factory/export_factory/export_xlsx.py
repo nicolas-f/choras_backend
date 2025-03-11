@@ -1,5 +1,5 @@
 from flask_smorest import abort
-from virtualenv.config.convert import ListType
+from typing import List
 
 from app.models.Export import Export
 from app.models.Simulation import Simulation
@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 class ExportExcel(ExportStrategy):
-    def export(self, export_type: str, params: ListType, simulationIds: ListType, zip_buffer: io.BytesIO) -> io.BytesIO:
+    def export(self, export_type: str, params: List, simulationIds: List, zip_buffer: io.BytesIO) -> io.BytesIO:
         param = bool(params[0])
         if param:
             for id in simulationIds:
