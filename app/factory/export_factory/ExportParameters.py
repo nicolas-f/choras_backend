@@ -20,7 +20,6 @@ class ExportParameters(Strategy):
     def export(self, export_type: str, params: List, simulationIds: List, zip_buffer: io.BytesIO) -> io.BytesIO:
         try:
             if params:
-                print(params)
                 for id in simulationIds:
                     simulation: Simulation = Simulation.query.filter_by(id=id).first()
                     export: Export = simulation.export
