@@ -76,7 +76,9 @@ networkx==3.3
 nodeenv==1.9.1
 numpy==1.26.4
 numpy-stl==3.1.1
+openpyxl==3.1.5
 packaging==22.0
+pandas==2.2.3
 parso==0.8.3
 passlib==1.7.4
 pathspec==0.12.1
@@ -112,6 +114,7 @@ rpds-py==0.18.1
 scipy==1.14.0
 six==1.16.0
 snowballstemmer==2.2.0
+soundfile==0.13.1
 Sphinx==7.3.7
 sphinxcontrib-applehelp==1.0.8
 sphinxcontrib-devhelp==1.0.6
