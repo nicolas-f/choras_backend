@@ -167,7 +167,9 @@ def upload_audio_file(
 def __update_audio_file__(
     name: str, description: str, path: Path, fileExtension: str, projectId: int, isUserFile: bool
 ) -> AudioFile:
-    audio_file: Optional[AudioFile] = AudioFile.query.filter(and_(AudioFile.name==name, AudioFile.projectId==projectId)).first()
+    audio_file: Optional[AudioFile] = AudioFile.query.filter(
+        and_(AudioFile.name == name, AudioFile.projectId == projectId)
+    ).first()
     if audio_file is None:
         audio_file = AudioFile(
             name=path.name,
