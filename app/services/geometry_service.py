@@ -114,19 +114,20 @@ def map_to_3dm_and_geo(geometry_id):
         logger.error(f"Can not create a rhino file: {ex}")
         return False
 
-    try:
-        if not convert_3dm_to_geo(rhino3dm_path, geo_path):
-            logger.error("Can not generate a geo file")
+    if config.FeatureToggle.is_enabled("enable_geo_conversion"):
+        try:
+            if not convert_3dm_to_geo(rhino3dm_path, geo_path):
+                logger.error("Can not generate a geo file")
+                return False
+
+            file_geo = File(fileName=f"{file_name}.geo")
+            db.session.add(file_geo)
+            db.session.commit()
+
+        except Exception as ex:
+            db.session.rollback()
+            logger.error(f"Can not attach a geo file: {ex}")
             return False
-
-        file_geo = File(fileName=f"{file_name}.geo")
-        db.session.add(file_geo)
-        db.session.commit()
-
-    except Exception as ex:
-        db.session.rollback()
-        logger.error(f"Can not attach a geo file: {ex}")
-        return False
 
     return True
 

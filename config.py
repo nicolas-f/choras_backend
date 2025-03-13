@@ -153,3 +153,11 @@ class CustomExportParametersConfig(DefaultConfig):
     value_wav_file_IR = "wavIR"
     value_csv_file_IR = "csvIR"
     key_xlsx = "xlsx"
+
+
+class FeatureToggle(DefaultConfig):
+    # enable_geo_conversion = True
+
+    @classmethod
+    def is_enabled(cls, feature_name: str) -> bool:
+        return getattr(cls, feature_name, False)
