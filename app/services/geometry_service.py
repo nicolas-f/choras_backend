@@ -231,6 +231,7 @@ def convert_3dm_to_geo(rhino_file_path, geo_file_path, volume_name="RoomVolume",
         vertex_map = {}  # Maps mesh vertex index to Gmsh point index
 
         for i, vertex in enumerate(vertices):
+
             def format_coord(value):
                 rounded_1 = round(value, 1)
                 if rounded_1 == round(value, 2):  # If 1 decimal place is sufficient
