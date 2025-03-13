@@ -178,10 +178,12 @@ class UsersUnitTests(BaseTestCase):
             self.db.session.rollback()
 
             # test for large file
+            large_file = BytesIO()
             with open(test_file_path, 'rb') as file:
-                test_file = FileStorage(
-                    file, filename='test_piano.wav', content_length=AuralizationParametersConfig.maxSize + 1
-                )
+                for _ in range(10):
+                    large_file.write(file.read())
+                    file.seek(0)
+                test_file = FileStorage(large_file, filename='test_piano.wav')
                 files_data = ImmutableDict({"file": test_file})
                 self.assertRaises(HTTPException, auralization_service.upload_audio_file, form_data, files_data)
 

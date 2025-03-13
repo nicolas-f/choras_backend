@@ -137,8 +137,9 @@ def upload_audio_file(
             logger.error(f"Invalid audio file type: {audio_file_extension}")
             abort(400, message=f"file not match in {AuralizationParameters.allowedextensions}")
 
-        if auido_file_data.content_length > AuralizationParameters.maxSize:  # unsafe check, relying to frontend
-            logger.error(f"Audio file size is too large: {auido_file_data.content_length}")
+        # if auido_file_data.content_length > AuralizationParameters.maxSize:
+        if (file_size := __get_file_size__(auido_file_data)) > AuralizationParameters.maxSize:
+            logger.error(f"Audio file size is too large: {file_size}")
             abort(400, message=f"Audio file size is larger than {AuralizationParameters.maxSize}")
 
     except KeyError as e:
@@ -186,6 +187,13 @@ def __update_audio_file__(
 
     db.session.commit()
     return audio_file
+
+
+def __get_file_size__(file_storage: FileStorage) -> int:
+    file_storage.seek(0, os.SEEK_END)
+    fie_size = file_storage.tell()
+    file_storage.seek(0)
+    return fie_size
 
 
 def create_new_auralization(simulation_id: int, audiofile_id: int) -> Optional[Auralization]:
