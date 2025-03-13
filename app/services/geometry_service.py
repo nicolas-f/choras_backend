@@ -231,11 +231,11 @@ def convert_3dm_to_geo(rhino_file_path, geo_file_path, volume_name="RoomVolume",
         vertex_map = {}  # Maps mesh vertex index to Gmsh point index
 
         for i, vertex in enumerate(vertices):
-            # Format coordinates to match the correct file style
-            # (If value is whole number, use integer format, otherwise use 1 decimal place)
             def format_coord(value):
-                rounded = round(value, 1)
-                return int(rounded) if rounded.is_integer() else rounded
+                rounded_1 = round(value, 1)
+                if rounded_1 == round(value, 2):  # If 1 decimal place is sufficient
+                    return f"{rounded_1:.1f}"
+                return f"{round(value, 2):.2f}"  # Otherwise, use 2 decimal places
 
             rounded_x = format_coord(vertex.X)
             rounded_y = format_coord(vertex.Y)
