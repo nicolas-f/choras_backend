@@ -266,7 +266,6 @@ def auralization_calculation(
 ) -> Tuple[List[int], int]:
     # Load the signal and pressure data
     try:
-
         if signal_file_name is not None:
             # Extract data and sampling rate from file
             data_signal, fs = sf.read(signal_file_name)  # this returns "data_signal", which is the

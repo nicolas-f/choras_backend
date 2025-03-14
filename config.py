@@ -159,4 +159,14 @@ class CustomExportParametersConfig(DefaultConfig):
     value_wav_file_auralization = "wav"
     value_wav_file_IR = "wavIR"
     value_csv_file_IR = "csvIR"
+    key_xlsx = "xlsx"
     key_t_column = "t"
+
+
+class FeatureToggle(DefaultConfig):
+    # Uncomment this line to enable geo conversion from input geometry
+    # enable_geo_conversion = True
+
+    @classmethod
+    def is_enabled(cls, feature_name: str) -> bool:
+        return getattr(cls, feature_name, False)

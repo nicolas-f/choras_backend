@@ -20,7 +20,6 @@ logger = logging.getLogger(__name__)
 
 class ExportEdc(Strategy):
     def export(self, export_type: str, params: List, simulationIds: List, zip_buffer: io.BytesIO) -> io.BytesIO:
-
         if params:
 
             # Setting default "t" column in csv, if edc parameters(params) have a list of value in it

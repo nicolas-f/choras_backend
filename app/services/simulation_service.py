@@ -416,7 +416,6 @@ def update_simulation_run_status(simulation_run, simulation):
     model = model_service.get_model(simulation.modelId)
     json_path = file_service.get_file_related_path(model.outputFileId, simulation.id, extension="json")
     with open(json_path, "r") as json_file:
-
         try:
             result_container = json.load(json_file)
             simulation_run.percentage = result_container["results"][0]["percentage"]
@@ -443,7 +442,6 @@ def get_simulation_run_status_by_id(simulation_run_id):
 
 
 def cancel_solver_task(simulation_id):
-
     simulation = get_simulation_by_id(simulation_id)
 
     if not simulation:
