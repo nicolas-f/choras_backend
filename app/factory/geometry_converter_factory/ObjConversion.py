@@ -8,25 +8,9 @@ import numpy as np
 from app.factory.geometry_converter_factory.GeometryConversionStrategy import GeometryConversionStrategy
 
 
-def _parse_obj_materials(obj_path):
-    material_map = {}
-    face_index = 0
-
-    with open(obj_path, "r") as f:
-        for line in f:
-            line = line.strip()
-            if line.startswith("usemtl"):
-                material_map[face_index] = line.split()[1]
-                face_index += 1
-    return material_map
-
-
 class ObjConversion(GeometryConversionStrategy):
     # Create logger for this module
     logger = logging.getLogger(__name__)
-
-    def generate_mesh(self):
-        raise ValueError("Unsupported geo to 3dm conversion")
 
     def generate_3dm(self, obj_file_path, rhino_path):
         """
@@ -124,3 +108,15 @@ class ObjConversion(GeometryConversionStrategy):
         # Save the 3dm file
         model.Write(rhino_path)
         return rhino_path
+
+def _parse_obj_materials(obj_path):
+    material_map = {}
+    face_index = 0
+
+    with open(obj_path, "r") as f:
+        for line in f:
+            line = line.strip()
+            if line.startswith("usemtl"):
+                material_map[face_index] = line.split()[1]
+                face_index += 1
+    return material_map
