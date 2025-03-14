@@ -127,9 +127,9 @@ def upload_audio_file(
         audio_file_name = audio_data["name"]
         audio_file_description = audio_data["description"]
         audio_file_extension = audio_data["extension"]
-        auido_file_data = audio_file["file"]
+        audio_file_data = audio_file["file"]
 
-        if auido_file_data is None:
+        if audio_file_data is None:
             logger.error("No audio file uploaded.")
             abort(400, message="No audio file uploaded.")
 
@@ -137,8 +137,8 @@ def upload_audio_file(
             logger.error(f"Invalid audio file type: {audio_file_extension}")
             abort(400, message=f"file not match in {AuralizationParameters.allowedextensions}")
 
-        # if auido_file_data.content_length > AuralizationParameters.maxSize:
-        if (file_size := __get_file_size__(auido_file_data)) > AuralizationParameters.maxSize:
+        # if audio_file_data.content_length > AuralizationParameters.maxSize:
+        if (file_size := __get_file_size__(audio_file_data)) > AuralizationParameters.maxSize:
             logger.error(f"Audio file size is too large: {file_size}")
             abort(400, message=f"Audio file size is larger than {AuralizationParameters.maxSize}")
 
@@ -151,7 +151,7 @@ def upload_audio_file(
             os.path.join(DefaultConfig.USER_AUDIO_FILE_FOLDER_NAME, audio_file_name + '.' + audio_file_extension)
         )
         with open(audio_file_path, "wb") as save_file:
-            auido_file_data.save(save_file)
+            audio_file_data.save(save_file)
 
         audio_file = __update_audio_file__(
             audio_file_path.name, audio_file_description, audio_file_path, audio_file_extension, project_id, True
