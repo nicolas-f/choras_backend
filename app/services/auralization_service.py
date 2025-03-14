@@ -26,7 +26,7 @@ from app.models.Auralization import Auralization
 from app.models.Export import Export
 from app.models.Simulation import Simulation
 from app.models.Model import Model
-from app.factory.export_factory.export_helper import ExportHelper
+from app.factory.export_factory.ExportHelper import ExportHelper
 from app.db import db
 
 # Create Logger for this module

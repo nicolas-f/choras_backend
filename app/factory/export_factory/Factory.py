@@ -2,13 +2,13 @@ import io
 
 from typing import List
 
-from app.factory.export_factory.export_xlsx import ExportExcel
-from app.factory.export_factory.export_parameters import ExportParameters
-from app.factory.export_factory.export_edc import ExportEdc
-from app.factory.export_factory.export_auralization import ExportAuralization
+from app.factory.export_factory.ExportExcel import ExportExcel
+from app.factory.export_factory.ExportParameters import ExportParameters
+from app.factory.export_factory.ExportEdc import ExportEdc
+from app.factory.export_factory.ExportAuralization import ExportAuralization
 
 
-class ExportFactory:
+class Factory:
     strategies = {
         "xlsx": ExportExcel(),
         "Parameters": ExportParameters(),
@@ -18,5 +18,5 @@ class ExportFactory:
 
     @staticmethod
     def get_exporter(export_type: str, params: List, simulationId: List, zip_buffer: io.BytesIO) -> io.BytesIO:
-        strategy = ExportFactory.strategies.get(export_type, None)
+        strategy = Factory.strategies.get(export_type, None)
         return strategy.export(export_type, params, simulationId, zip_buffer)

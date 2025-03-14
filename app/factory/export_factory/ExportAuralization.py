@@ -10,14 +10,14 @@ from app.models.Auralization import Auralization
 from config import DefaultConfig, CustomExportParametersConfig as CustomExportParameters
 import os
 
-from app.factory.export_factory.export_helper import ExportHelper
-from app.factory.export_factory.strategy import ExportStrategy
+from app.factory.export_factory.ExportHelper import ExportHelper
+from app.factory.export_factory.Strategy import Strategy
 
 # Create logger for this module
 logger = logging.getLogger(__name__)
 
 
-class ExportAuralization(ExportStrategy):
+class ExportAuralization(Strategy):
     def export(self, export_type: str, params: List, simulationIds: List, zip_buffer: io.BytesIO) -> io.BytesIO:
         try:
             if params:
