@@ -61,11 +61,15 @@ class DefaultConfig:
     UPLOAD_FOLDER = os.path.join(basedir, UPLOAD_FOLDER_NAME)
     ALLOWED_EXTENSIONS = {"obj", "geo"}
     AUDIO_FILE_FOLDER = "example_audios"
+    USER_AUDIO_FILE_FOLDER_NAME = os.path.join(UPLOAD_FOLDER_NAME, "audiofiles")
+    USER_AUDIO_FILE_FOLDER = os.path.join(basedir, USER_AUDIO_FILE_FOLDER_NAME)
     SETTINGS_FILE_FOLDER = "example_settings"
 
     # Ensure the upload folder exists
     if not os.path.exists(UPLOAD_FOLDER):
         os.makedirs(UPLOAD_FOLDER)
+    if not os.path.exists(USER_AUDIO_FILE_FOLDER):
+        os.makedirs(USER_AUDIO_FILE_FOLDER)
 
     SQLALCHEMY_DATABASE_URI = "sqlite:///" + os.path.join(basedir, "develop.db")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
@@ -141,6 +145,9 @@ class AuralizationParametersConfig(DefaultConfig):
     rho = 1.21
     c0 = 343
     random_seed = 215
+
+    allowedextensions = {'wav'}
+    maxSize = 10 * 1024 * 1024  # 10MB
 
 
 class CustomExportParametersConfig(DefaultConfig):
