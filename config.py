@@ -153,6 +153,7 @@ class CustomExportParametersConfig(DefaultConfig):
     value_wav_file_IR = "wavIR"
     value_csv_file_IR = "csvIR"
     key_xlsx = "xlsx"
+    key_t_column = "t"
 
 
 class FeatureToggle(DefaultConfig):
