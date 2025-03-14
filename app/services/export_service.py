@@ -5,7 +5,7 @@ from flask_smorest import abort
 from app.models.Export import Export
 from app.models.Simulation import Simulation
 
-from app.factory.export_factory.factory import ExportFactory
+from app.factory.export_factory.Factory import Factory
 from config import CustomExportParametersConfig as CustomExportParameters
 
 # Create Logger for this module
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 def execute_export(export_dict) -> io.BytesIO:
     try:
         zip_buffer = io.BytesIO()
-        exportFactory = ExportFactory()
+        exportFactory = Factory()
 
         simulationIds = export_dict[CustomExportParameters.key_simulationId]
 
