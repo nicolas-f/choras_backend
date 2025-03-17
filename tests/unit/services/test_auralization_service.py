@@ -159,7 +159,6 @@ class UsersUnitTests(BaseTestCase):
                     "name": "piano",
                     "description": "Aerith's theme piano version",
                     "extension": "wav",
-                    "simulation_id": simulation_id,
                 }
             )
 
@@ -169,11 +168,45 @@ class UsersUnitTests(BaseTestCase):
                 files_data = ImmutableDict({"file": test_file})
                 audio_file: AudioFile = auralization_service.upload_audio_file(form_data, files_data)
 
-            test_file_destination = Path(DefaultConfig.USER_AUDIO_FILE_FOLDER_NAME, "piano.wav")
+            test_file_destination = Path(DefaultConfig.USER_AUDIO_FILE_FOLDER_NAME, audio_file.filename)
 
-            self.assertEqual(audio_file.name, "piano.wav")
+            # test for successful upload
             self.assertTrue(test_file_destination.exists())
+            test_file_destination.unlink()
 
+            # test for the uploading file with the identical name in one project
+            previous_test_file_id = audio_file.id
+            previous_test_file_name = audio_file.name
+            previous_test_file_filename = audio_file.filename
+            with open(test_file_path, 'rb') as file:
+                test_file = FileStorage(file, filename='test_piano.wav')
+                files_data = ImmutableDict({"file": test_file})
+                audio_file: AudioFile = auralization_service.upload_audio_file(form_data, files_data)
+            test_file_destination = Path(DefaultConfig.USER_AUDIO_FILE_FOLDER_NAME, audio_file.filename)
+            self.assertEqual(previous_test_file_id, audio_file.id)
+            self.assertEqual(previous_test_file_name, audio_file.name)
+            self.assertNotEqual(previous_test_file_filename, audio_file.filename)
+            test_file_destination.unlink()
+
+            # test for the uploading file with the identical name in different projects
+            another_simulation_id = self.helper_create_simulation()
+            form_data = ImmutableDict(
+                {
+                    "simulation_id": another_simulation_id,
+                    "name": "piano",
+                    "description": "Aerith's theme piano version",
+                    "extension": "wav",
+                }
+            )
+            test_file_path = Path('tests', 'unit', 'services', 'data', 'test_piano.wav')
+            with open(test_file_path, 'rb') as file:
+                test_file = FileStorage(file, filename='test_piano.wav')
+                files_data = ImmutableDict({"file": test_file})
+                audio_file: AudioFile = auralization_service.upload_audio_file(form_data, files_data)
+            test_file_destination = Path(DefaultConfig.USER_AUDIO_FILE_FOLDER_NAME, audio_file.filename)
+            self.assertNotEqual(previous_test_file_id, audio_file.id)
+            self.assertEqual(previous_test_file_name, audio_file.name)
+            self.assertNotEqual(previous_test_file_filename, audio_file.filename)
             test_file_destination.unlink()
             self.db.session.rollback()
 
@@ -239,12 +272,12 @@ class UsersUnitTests(BaseTestCase):
             # test that audio files are project-isolated
             self.assertEqual(len(audio_files), 1)
             self.assertEqual(len(another_audio_files), 1)
-            self.assertEqual(audio_files[0].name, f"piano_{simulation_id}.wav")
-            self.assertEqual(another_audio_files[0].name, f"piano_{another_simulation_id}.wav")
+            self.assertEqual(audio_files[0].name, f"piano_{simulation_id}")
+            self.assertEqual(another_audio_files[0].name, f"piano_{another_simulation_id}")
 
-            test_file_destination = Path(DefaultConfig.USER_AUDIO_FILE_FOLDER_NAME, f"piano_{simulation_id}.wav")
+            test_file_destination = Path(DefaultConfig.USER_AUDIO_FILE_FOLDER_NAME, audio_files[0].filename)
             another_test_file_destination = Path(
-                DefaultConfig.USER_AUDIO_FILE_FOLDER_NAME, f"piano_{another_simulation_id}.wav"
+                DefaultConfig.USER_AUDIO_FILE_FOLDER_NAME, another_audio_files[0].filename
             )
             test_file_destination.unlink()
             another_test_file_destination.unlink()
