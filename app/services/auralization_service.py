@@ -404,7 +404,7 @@ def auralization_calculation(
             if wav_output_file_name is not None:
                 # Create a file wav for impulse response
                 wavfile.write(wav_output_file_name, fs, imp_tot_normalized)
-            return (imp_tot_normalized.tolist(), fs)  # fs = 44100 Hz if no signal file is provided
+            return (imp_tot.tolist(), fs)  # fs = 44100 Hz if no signal file is provided
 
     except Exception as e:
         logger.error(f'Error during auralization calculation: {e}')
