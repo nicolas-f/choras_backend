@@ -425,7 +425,7 @@ class DxfConversion(GeometryConversionStrategy):
                 if point_array.size == 2:
                     return np.append(point_array, 0)  # Add z=0 for 2D points
                 return point_array
-            except:
+            except:  # noqa: E722
                 # Last resort fallback
                 self.logger.warning(f"Could not parse point format: {type(point)}")
                 return np.array([0, 0, 0])  # Return origin as fallback
@@ -511,7 +511,7 @@ class DxfConversion(GeometryConversionStrategy):
                 point_array = np.array(point)
                 if point_array.size == 2:
                     point_array = np.append(point_array, 0)  # Add z=0 for 2D points
-            except:
+            except:  # noqa: E722
                 # Last resort fallback
                 self.logger.warning(f"Could not parse point format: {type(point)}")
                 return np.array([0, 0, 0])  # Return origin as fallback
@@ -699,7 +699,7 @@ class DxfConversion(GeometryConversionStrategy):
             else:
                 # Convert bulge to arc parameters
                 # Bulge is the tangent of 1/4 of the included angle
-                angle = 4 * np.arctan(bulge)
+                # angle = 4 * np.arctan(bulge)
 
                 # Calculate center and radius
                 dx, dy = x2 - x1, y2 - y1
@@ -719,7 +719,7 @@ class DxfConversion(GeometryConversionStrategy):
                 radius = np.sqrt((dist / 2) ** 2 + h**2)
 
                 # Convert to 3D points and center
-                center = self._rotate_point((cx, cy), rotation_matrix)
+                # center = self._rotate_point((cx, cy), rotation_matrix)
 
                 # Calculate start and end angles
                 start_angle = np.arctan2(y1 - cy, x1 - cx)
