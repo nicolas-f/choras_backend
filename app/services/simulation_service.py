@@ -351,7 +351,7 @@ def run_solver(simulation_run_id: int, json_path: str):
                     )
                     # auralization: save the impulse response to xlsx
                     if not ExportHelper.write_data_to_xlsx_file(
-                        json_path.replace(".json", ".xlsx"), "impulse response", {f"{fs}Hz": imp_tot}
+                        json_path.replace(".json", ".xlsx"), "Impulse response", {f"{fs}Hz": imp_tot}
                     ):
                         logger.error("Error saving the impulse response to xlsx")
                         raise "Error saving the impulse response to xlsx"
