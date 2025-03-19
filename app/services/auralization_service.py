@@ -8,6 +8,7 @@ from pathlib import Path
 import numpy as np
 import soundfile as sf
 from datetime import datetime
+from uuid import uuid4
 import logging
 import json
 import gc
@@ -124,7 +125,8 @@ def upload_audio_file(
         abort(400, message="Error parsing simulation_id")
 
     try:
-        audio_file_name = audio_data["name"]
+        audio_name = audio_data["name"]
+        audio_file_name = audio_name + '_' + uuid4().hex
         audio_file_description = audio_data["description"]
         audio_file_extension = audio_data["extension"]
         audio_file_data = audio_file["file"]
@@ -154,7 +156,7 @@ def upload_audio_file(
             audio_file_data.save(save_file)
 
         audio_file = __update_audio_file__(
-            audio_file_path.name, audio_file_description, audio_file_path, audio_file_extension, project_id, True
+            audio_name, audio_file_description, audio_file_path, audio_file_extension, project_id, True
         )
 
     except Exception as e:
@@ -173,7 +175,8 @@ def __update_audio_file__(
     ).first()
     if audio_file is None:
         audio_file = AudioFile(
-            name=path.name,
+            name=name,
+            filename=path.name,
             description=description,
             path=DefaultConfig.USER_AUDIO_FILE_FOLDER_NAME,
             fileExtension=fileExtension,
@@ -182,8 +185,17 @@ def __update_audio_file__(
         )
         db.session.add(audio_file)
     else:
+        # delete the old file
+        old_file_path = Path(DefaultConfig.USER_AUDIO_FILE_FOLDER_NAME, audio_file.filename)
+        if old_file_path.exists():
+            old_file_path.unlink()
+        logger.debug(f"Old audio file deleted: {old_file_path}")
+
+        # update the filename, description, and updatedAt
+        audio_file.filename = path.name  # the latest uploaded filename
         audio_file.description = description
         audio_file.updatedAt = datetime.now()
+        logger.debug(f"Audio file updated: {audio_file.filename}")
 
     db.session.commit()
     return audio_file
@@ -231,7 +243,7 @@ def run_auralization(auralizationId: int) -> None:
 
     try:
         input_audio_file: AudioFile = auralization.audioFile
-        signal_file_name = os.path.join(input_audio_file.path, input_audio_file.name)
+        signal_file_name = os.path.join(input_audio_file.path, input_audio_file.filename)
 
         simulation: Simulation = auralization.simulation
         export: Export = simulation.export
@@ -447,6 +459,7 @@ def insert_initial_audios_examples():
                 new_audio_files.append(
                     AudioFile(
                         name=audio_file["name"],
+                        filename=audio_file["filename"],
                         description=audio_file["description"],
                         fileExtension=audio_file["fileExtension"],
                     )
