@@ -109,6 +109,7 @@ class ObjConversion(GeometryConversionStrategy):
         model.Write(rhino_path)
         return rhino_path
 
+
 def _parse_obj_materials(obj_path):
     material_map = {}
     face_index = 0

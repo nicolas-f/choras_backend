@@ -38,9 +38,7 @@ class DxfConversion(GeometryConversionStrategy):
             reference_structure = self._analyze_reference_structure()
 
             # Pass the reference structure to guide the conversion process
-            return self._convert_dxf_to_3dm(
-                dxf_file_path, rhino_path, reference_structure
-            )
+            return self._convert_dxf_to_3dm(dxf_file_path, rhino_path, reference_structure)
         except Exception as ex:
             self.logger.error(f"Error processing DXF to 3DM: {ex}")
             return None
@@ -115,9 +113,7 @@ class DxfConversion(GeometryConversionStrategy):
 
                     # Store entities for this block
                     block_entities[block.name] = list(block)
-                    self.logger.info(
-                        f"Stored block '{block.name}' with {len(block_entities[block.name])} entities"
-                    )
+                    self.logger.info(f"Stored block '{block.name}' with {len(block_entities[block.name])} entities")
 
             # Get the modelspace
             msp = dxf.modelspace()
@@ -138,16 +134,12 @@ class DxfConversion(GeometryConversionStrategy):
 
                 # Process in batches
                 if len(entity_batch) >= batch_size:
-                    self._process_entity_batch(
-                        entity_batch, model, rotation_matrix, block_entities
-                    )
+                    self._process_entity_batch(entity_batch, model, rotation_matrix, block_entities)
                     entity_batch = []  # Clear batch after processing
 
             # Process any remaining entities
             if entity_batch:
-                self._process_entity_batch(
-                    entity_batch, model, rotation_matrix, block_entities
-                )
+                self._process_entity_batch(entity_batch, model, rotation_matrix, block_entities)
 
             # Log processing statistics
             self.logger.info(f"Processed DXF entities: {entity_counts}")
@@ -161,9 +153,7 @@ class DxfConversion(GeometryConversionStrategy):
             if dxf is not None:
                 dxf = None  # Help garbage collection
 
-    def _process_entity_batch(
-        self, entities, model, rotation_matrix, block_entities=None
-    ):
+    def _process_entity_batch(self, entities, model, rotation_matrix, block_entities=None):
         """
         Process a batch of DXF entities to improve memory efficiency.
 
@@ -195,9 +185,7 @@ class DxfConversion(GeometryConversionStrategy):
                 elif entity_type == "POINT":
                     # Add point handling
                     point = self._rotate_point(entity.dxf.location, rotation_matrix)
-                    model.Objects.AddPoint(
-                        rhino3dm.Point3d(point[0], point[1], point[2])
-                    )
+                    model.Objects.AddPoint(rhino3dm.Point3d(point[0], point[1], point[2]))
                 elif entity_type == "ELLIPSE":
                     # Basic ellipse support
                     self._handle_ellipse(entity, model, rotation_matrix)
@@ -206,9 +194,7 @@ class DxfConversion(GeometryConversionStrategy):
                     self._handle_spline(entity, model, rotation_matrix)
                 elif entity_type == "INSERT":
                     # Handle block insertions
-                    self._add_insert_to_model(
-                        entity, model, rotation_matrix, block_entities
-                    )
+                    self._add_insert_to_model(entity, model, rotation_matrix, block_entities)
                 # Additional entity types can be added as needed
 
             except Exception as e:
@@ -230,9 +216,7 @@ class DxfConversion(GeometryConversionStrategy):
 
             # Check if we have this block
             if block_name not in block_entities:
-                self.logger.warning(
-                    f"Block '{block_name}' referenced by INSERT not found"
-                )
+                self.logger.warning(f"Block '{block_name}' referenced by INSERT not found")
                 return
 
             # Get transformation parameters
@@ -281,16 +265,12 @@ class DxfConversion(GeometryConversionStrategy):
                     # Add more entity types as needed
 
                 except Exception as e:
-                    self.logger.warning(
-                        f"Error processing block entity {block_entity.dxftype()}: {e}"
-                    )
+                    self.logger.warning(f"Error processing block entity {block_entity.dxftype()}: {e}")
 
         except Exception as e:
             self.logger.warning(f"Error processing INSERT entity: {e}")
 
-    def _add_transformed_3dface(
-        self, entity, model, rotation_matrix, position, scale, rotation_z
-    ):
+    def _add_transformed_3dface(self, entity, model, rotation_matrix, position, scale, rotation_z):
         """
         Add a transformed 3DFACE entity from a block to the model.
 
@@ -305,18 +285,10 @@ class DxfConversion(GeometryConversionStrategy):
         mesh = rhino3dm.Mesh()
 
         # Get the four vertices of the 3DFACE
-        p1 = self._transform_point(
-            entity.dxf.vtx0, rotation_matrix, position, scale, rotation_z
-        )
-        p2 = self._transform_point(
-            entity.dxf.vtx1, rotation_matrix, position, scale, rotation_z
-        )
-        p3 = self._transform_point(
-            entity.dxf.vtx2, rotation_matrix, position, scale, rotation_z
-        )
-        p4 = self._transform_point(
-            entity.dxf.vtx3, rotation_matrix, position, scale, rotation_z
-        )
+        p1 = self._transform_point(entity.dxf.vtx0, rotation_matrix, position, scale, rotation_z)
+        p2 = self._transform_point(entity.dxf.vtx1, rotation_matrix, position, scale, rotation_z)
+        p3 = self._transform_point(entity.dxf.vtx2, rotation_matrix, position, scale, rotation_z)
+        p4 = self._transform_point(entity.dxf.vtx3, rotation_matrix, position, scale, rotation_z)
 
         # Add vertices to the mesh
         mesh.Vertices.Add(p1[0], p1[1], p1[2])
@@ -349,9 +321,7 @@ class DxfConversion(GeometryConversionStrategy):
             return entity.dxf.layer
         return None
 
-    def _add_transformed_line(
-        self, entity, model, rotation_matrix, position, scale, rotation_z
-    ):
+    def _add_transformed_line(self, entity, model, rotation_matrix, position, scale, rotation_z):
         """
         Add a transformed LINE entity from a block to the model.
 
@@ -363,12 +333,8 @@ class DxfConversion(GeometryConversionStrategy):
         :param rotation_z: Rotation angle around Z axis in degrees
         """
         # Get the start and end points of the line
-        start_point = self._transform_point(
-            entity.dxf.start, rotation_matrix, position, scale, rotation_z
-        )
-        end_point = self._transform_point(
-            entity.dxf.end, rotation_matrix, position, scale, rotation_z
-        )
+        start_point = self._transform_point(entity.dxf.start, rotation_matrix, position, scale, rotation_z)
+        end_point = self._transform_point(entity.dxf.end, rotation_matrix, position, scale, rotation_z)
 
         # Create a line object
         line = rhino3dm.Line(
@@ -412,16 +378,12 @@ class DxfConversion(GeometryConversionStrategy):
             sin_angle = np.sin(rad_angle)
 
             # Create rotation matrix for Z axis
-            z_rotation = np.array(
-                [[cos_angle, -sin_angle, 0], [sin_angle, cos_angle, 0], [0, 0, 1]]
-            )
+            z_rotation = np.array([[cos_angle, -sin_angle, 0], [sin_angle, cos_angle, 0], [0, 0, 1]])
 
             scaled_point = np.dot(z_rotation, scaled_point)
 
         # Apply translation (adding the INSERT position)
-        translated_point = scaled_point + np.array(
-            [position[0], position[1], position[2]]
-        )
+        translated_point = scaled_point + np.array([position[0], position[1], position[2]])
 
         # Apply global rotation matrix
         transformed = np.dot(rotation_matrix, translated_point)
@@ -509,11 +471,7 @@ class DxfConversion(GeometryConversionStrategy):
             control_points = []
             for point in entity.control_points:
                 rotated_point = self._rotate_point(point, rotation_matrix)
-                control_points.append(
-                    rhino3dm.Point3d(
-                        rotated_point[0], rotated_point[1], rotated_point[2]
-                    )
-                )
+                control_points.append(rhino3dm.Point3d(rotated_point[0], rotated_point[1], rotated_point[2]))
 
             # If we have at least 2 control points, create a polyline as a simple representation
             if len(control_points) >= 2:
@@ -661,9 +619,7 @@ class DxfConversion(GeometryConversionStrategy):
         :param rotation_matrix: Rotation matrix
         """
         # For LWPOLYLINE with bulges (curved segments), we need special handling
-        if entity.dxftype() == "LWPOLYLINE" and any(
-            bulge != 0 for _, _, _, bulge, _ in entity.lwpoints
-        ):
+        if entity.dxftype() == "LWPOLYLINE" and any(bulge != 0 for _, _, _, bulge, _ in entity.lwpoints):
             self._add_lwpolyline_with_bulges(entity, model, rotation_matrix)
             return
 
