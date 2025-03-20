@@ -234,10 +234,7 @@ def convert_3dm_to_geo(rhino_file_path, geo_file_path, volume_name="RoomVolume",
         for i, vertex in enumerate(vertices):
 
             def format_coord(value):
-                rounded_1 = round(value, 1)
-                if rounded_1 == round(value, 2):  # If 1 decimal place is sufficient
-                    return f"{rounded_1:.1f}"
-                return f"{round(value, 2):.2f}"  # Otherwise, use 2 decimal places
+                return f"{round(value, 6):.6f}"
 
             rounded_x = format_coord(vertex.X)
             rounded_y = format_coord(vertex.Y)

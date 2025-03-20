@@ -59,7 +59,7 @@ class DefaultConfig:
 
     UPLOAD_FOLDER_NAME = "uploads"
     UPLOAD_FOLDER = os.path.join(basedir, UPLOAD_FOLDER_NAME)
-    ALLOWED_EXTENSIONS = {"obj", "geo"}
+    ALLOWED_EXTENSIONS = {"obj", "geo", "dxf"}
     AUDIO_FILE_FOLDER = "example_audios"
     USER_AUDIO_FILE_FOLDER_NAME = os.path.join(UPLOAD_FOLDER_NAME, "audiofiles")
     USER_AUDIO_FILE_FOLDER = os.path.join(basedir, USER_AUDIO_FILE_FOLDER_NAME)
