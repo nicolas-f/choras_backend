@@ -10,7 +10,6 @@ from tests.unit import BaseTestCase
 
 
 class ModelServiceUnitTests(BaseTestCase):
-
     def setUp(self):
         """
         Set up test variables and initialize a new app context.

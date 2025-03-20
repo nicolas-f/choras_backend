@@ -14,7 +14,7 @@ import config
 from app.db import db
 from app.models import File, Simulation, SimulationRun, Task, Export
 from app.services import file_service, material_service, mesh_service, model_service
-from app.factory.export_factory.export_helper import ExportHelper
+from app.factory.export_factory.ExportHelper import ExportHelper
 from app.services.auralization_service import auralization_calculation
 from app.types import Status, TaskType
 
@@ -351,7 +351,7 @@ def run_solver(simulation_run_id: int, json_path: str):
                     )
                     # auralization: save the impulse response to xlsx
                     if not ExportHelper.write_data_to_xlsx_file(
-                        json_path.replace(".json", ".xlsx"), "impulse response", {f"{fs}Hz": imp_tot}
+                        json_path.replace(".json", ".xlsx"), "Impulse response", {f"{fs}Hz": imp_tot}
                     ):
                         logger.error("Error saving the impulse response to xlsx")
                         raise "Error saving the impulse response to xlsx"
@@ -416,7 +416,6 @@ def update_simulation_run_status(simulation_run, simulation):
     model = model_service.get_model(simulation.modelId)
     json_path = file_service.get_file_related_path(model.outputFileId, simulation.id, extension="json")
     with open(json_path, "r") as json_file:
-
         try:
             result_container = json.load(json_file)
             simulation_run.percentage = result_container["results"][0]["percentage"]
@@ -443,7 +442,6 @@ def get_simulation_run_status_by_id(simulation_run_id):
 
 
 def cancel_solver_task(simulation_id):
-
     simulation = get_simulation_by_id(simulation_id)
 
     if not simulation:

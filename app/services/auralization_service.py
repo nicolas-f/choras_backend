@@ -1,11 +1,14 @@
 from typing import Optional, List, Tuple, Dict, Any
+from werkzeug.datastructures import ImmutableDict, FileStorage
+
 from scipy.signal import butter, sosfilt, resample_poly, convolve
 from scipy.io import wavfile
-from sqlalchemy import asc
+from sqlalchemy import asc, desc, or_, and_
 from pathlib import Path
 import numpy as np
 import soundfile as sf
 from datetime import datetime
+from uuid import uuid4
 import logging
 import json
 import gc
@@ -23,7 +26,8 @@ from app.models.AudioFile import AudioFile
 from app.models.Auralization import Auralization
 from app.models.Export import Export
 from app.models.Simulation import Simulation
-from app.factory.export_factory.export_helper import ExportHelper
+from app.models.Model import Model
+from app.factory.export_factory.ExportHelper import ExportHelper
 from app.db import db
 
 # Create Logger for this module
@@ -98,6 +102,112 @@ def get_impulse_response_plot(simulation_id: int) -> Optional[dict]:
             return None
 
 
+def upload_audio_file(
+    audio_data: Optional[ImmutableDict[str, str]], audio_file: Optional[ImmutableDict[str, FileStorage]]
+) -> AudioFile:
+    try:
+        simulation_id = int(audio_data["simulation_id"])
+
+        simulation: Simulation = Simulation.query.filter_by(id=simulation_id).first()
+        if simulation is None:
+            logger.error(f"No simulation found with this id: {simulation_id}")
+            abort(404, message="No simulation found with this id")
+
+        model_id = simulation.modelId
+        model: Model = Model.query.filter_by(id=model_id).first()
+        if model is None:
+            logger.error(f"No model found with this id: {model_id}")
+            abort(404, message="No model found with this id")
+
+        project_id = model.projectId
+    except Exception as e:
+        logger.error(f"Error parsing simulation_id: {e}")
+        abort(400, message="Error parsing simulation_id")
+
+    try:
+        audio_name = audio_data["name"]
+        audio_file_name = audio_name + '_' + uuid4().hex
+        audio_file_description = audio_data["description"]
+        audio_file_extension = audio_data["extension"]
+        audio_file_data = audio_file["file"]
+
+        if audio_file_data is None:
+            logger.error("No audio file uploaded.")
+            abort(400, message="No audio file uploaded.")
+
+        if audio_file_extension not in AuralizationParameters.allowedextensions:
+            logger.error(f"Invalid audio file type: {audio_file_extension}")
+            abort(400, message=f"file not match in {AuralizationParameters.allowedextensions}")
+
+        # if audio_file_data.content_length > AuralizationParameters.maxSize:
+        if (file_size := __get_file_size__(audio_file_data)) > AuralizationParameters.maxSize:
+            logger.error(f"Audio file size is too large: {file_size}")
+            abort(400, message=f"Audio file size is larger than {AuralizationParameters.maxSize}")
+
+    except KeyError as e:
+        logger.error(f"Error parsing audio file data: {e}")
+        abort(400, message="Error parsing audio file data")
+
+    try:
+        audio_file_path = Path(
+            os.path.join(DefaultConfig.USER_AUDIO_FILE_FOLDER_NAME, audio_file_name + '.' + audio_file_extension)
+        )
+        with open(audio_file_path, "wb") as save_file:
+            audio_file_data.save(save_file)
+
+        audio_file = __update_audio_file__(
+            audio_name, audio_file_description, audio_file_path, audio_file_extension, project_id, True
+        )
+
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error uploading audio file: {e}")
+        abort(400, message="Error uploading audio file")
+
+    return audio_file
+
+
+def __update_audio_file__(
+    name: str, description: str, path: Path, fileExtension: str, projectId: int, isUserFile: bool
+) -> AudioFile:
+    audio_file: Optional[AudioFile] = AudioFile.query.filter(
+        and_(AudioFile.name == name, AudioFile.projectId == projectId)
+    ).first()
+    if audio_file is None:
+        audio_file = AudioFile(
+            name=name,
+            filename=path.name,
+            description=description,
+            path=DefaultConfig.USER_AUDIO_FILE_FOLDER_NAME,
+            fileExtension=fileExtension,
+            projectId=projectId,
+            isUserFile=isUserFile,
+        )
+        db.session.add(audio_file)
+    else:
+        # delete the old file
+        old_file_path = Path(DefaultConfig.USER_AUDIO_FILE_FOLDER_NAME, audio_file.filename)
+        if old_file_path.exists():
+            old_file_path.unlink()
+        logger.debug(f"Old audio file deleted: {old_file_path}")
+
+        # update the filename, description, and updatedAt
+        audio_file.filename = path.name  # the latest uploaded filename
+        audio_file.description = description
+        audio_file.updatedAt = datetime.now()
+        logger.debug(f"Audio file updated: {audio_file.filename}")
+
+    db.session.commit()
+    return audio_file
+
+
+def __get_file_size__(file_storage: FileStorage) -> int:
+    file_storage.seek(0, os.SEEK_END)
+    fie_size = file_storage.tell()
+    file_storage.seek(0)
+    return fie_size
+
+
 def create_new_auralization(simulation_id: int, audiofile_id: int) -> Optional[Auralization]:
     auralization: Optional[Auralization] = get_auralization_by_simulation_audiofile_ids(simulation_id, audiofile_id)
     if auralization.status == Status.Uncreated or auralization.status == Status.Error:
@@ -133,7 +243,7 @@ def run_auralization(auralizationId: int) -> None:
 
     try:
         input_audio_file: AudioFile = auralization.audioFile
-        signal_file_name = os.path.join(input_audio_file.path, input_audio_file.name)
+        signal_file_name = os.path.join(input_audio_file.path, input_audio_file.filename)
 
         simulation: Simulation = auralization.simulation
         export: Export = simulation.export
@@ -168,7 +278,6 @@ def auralization_calculation(
 ) -> Tuple[List[int], int]:
     # Load the signal and pressure data
     try:
-
         if signal_file_name is not None:
             # Extract data and sampling rate from file
             data_signal, fs = sf.read(signal_file_name)  # this returns "data_signal", which is the
@@ -307,7 +416,7 @@ def auralization_calculation(
             if wav_output_file_name is not None:
                 # Create a file wav for impulse response
                 wavfile.write(wav_output_file_name, fs, imp_tot_normalized)
-            return (imp_tot_normalized.tolist(), fs)  # fs = 44100 Hz if no signal file is provided
+            return (imp_tot.tolist(), fs)  # fs = 44100 Hz if no signal file is provided
 
     except Exception as e:
         logger.error(f'Error during auralization calculation: {e}')
@@ -318,8 +427,23 @@ def normalize_to_int16(sh_conv: np.ndarray) -> np.ndarray:
     return np.int16(sh_conv / np.max(np.abs(sh_conv), axis=0) * 32767)
 
 
-def get_all_audio_files():
+def get_all_audio_files() -> Optional[List[AudioFile]]:
     return AudioFile.query.order_by(asc(AudioFile.id)).all()
+
+
+def get_audio_files_by_simulation_id(simulation_id: int) -> Optional[List[AudioFile]]:
+    simulation = Simulation.query.filter_by(id=simulation_id).first()
+    if simulation is None:
+        abort(404, message="No simulation found with this id")
+    model = Model.query.filter_by(id=simulation.modelId).first()
+    if model is None:
+        abort(404, message="No model found with this id")
+    project_id = model.projectId
+    return (
+        AudioFile.query.filter(or_(AudioFile.projectId == project_id, AudioFile.projectId.is_(None)))
+        .order_by(desc(AudioFile.createdAt))
+        .all()
+    )
 
 
 def insert_initial_audios_examples():
@@ -332,7 +456,14 @@ def insert_initial_audios_examples():
         try:
             new_audio_files = []
             for audio_file in initial_audio_files:
-                new_audio_files.append(AudioFile(name=audio_file["name"], description=audio_file["description"]))
+                new_audio_files.append(
+                    AudioFile(
+                        name=audio_file["name"],
+                        filename=audio_file["filename"],
+                        description=audio_file["description"],
+                        fileExtension=audio_file["fileExtension"],
+                    )
+                )
 
             db.session.add_all(new_audio_files)
             db.session.commit()

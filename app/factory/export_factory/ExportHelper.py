@@ -13,7 +13,6 @@ logger = logging.getLogger(__name__)
 
 
 class ExportHelper:
-
     @staticmethod
     def parse_json_file_to_xlsx_file(json_path: str, xlsx_path: str) -> bool:
         """Convert simulation results to an Excel file"""
