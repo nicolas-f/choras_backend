@@ -1,5 +1,5 @@
 {
-    "type": "dgSettings",
+    "type": "simulationSettings",
     "options": [
         {
             "name": "Energy decay thresholdzzz",
