@@ -337,8 +337,6 @@ def run_solver(simulation_run_id: int, json_path: str):
                 with open(json_path, 'w', encoding="utf-8") as file:
                     json.dump(data, file, indent=4)
             except:
-                import traceback
-                traceback.print_exc()
                 logger.error("Error saving the simulation solver settings")    
                 raise Exception("Error saving the simulation solver settings")
             
