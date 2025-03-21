@@ -455,7 +455,6 @@ def get_simulation_run_status_by_id(simulation_run_id):
     return simulation_run
 
 def cancel_solver_task(simulation_id):
-
     simulation = get_simulation_by_id(simulation_id)
 
     if not simulation:
@@ -472,21 +471,30 @@ def cancel_solver_task(simulation_id):
     if json_path is not None:
         with open(json_path, 'r') as json_file:
             data = json.load(json_file)
+    else:
+        logger.error(f"JSON file not found for simulation {simulation_id}")
+        abort(400, message="Simulation data file doesn't exist!")
 
     taskID = data['task_id']
+    print(f"Canceling task: {taskID}")
 
-    from app import app, celery
-    from celery.worker.control import revoke
-    from celery.result import AsyncResult
-    print ("taskID = " + str(taskID))
-    res = AsyncResult (taskID)
-    res.revoke(connection=celery._acquire_connection(), terminate=True, signal="KILL")
-    # revoke(app, task_id=taskID, terminate=True, signal="KILL")
-    return
+    # Use current_app for better connection handling
+    from celery import current_app
+
+    try:
+        # This is more reliable for revoking tasks in Flask
+        current_app.control.revoke(taskID, terminate=True, signal='SIGKILL')
+        logger.info(f"Successfully sent revoke command for task {taskID}")
+    except Exception as e:
+        logger.error(f"Error revoking task {taskID}: {str(e)}")
+        # Continue execution to at least update the flag
 
     # Update the specified field value
     if 'should_cancel' in data:
         data['should_cancel'] = True
+    else:
+        data['should_cancel'] = True  # Create the field if it doesn't exist
+
     print('should_cancel = ' + str(data['should_cancel']))
     print("json path: " + json_path)
 
@@ -495,48 +503,4 @@ def cancel_solver_task(simulation_id):
             json.dumps(data)
         )
 
-
-## Experiments with celery revoke
-# Scoped session factory to ensure proper session management
-    # session_factory = sessionmaker(bind=db.engine)
-    # session = scoped_session(session_factory)()  # Create a new session for this thread
-    # simulation_run_id = simulation.simulationRunId
-
-    # simulation_run = get_simulation_run_by_id(simulation.simulationRunId)
-
-    # if not simulation_run:
-    #     logger.error(
-    #         "Simulation Run with id " + str(simulation_run_id) + "does not exist!"
-    #     )
-    #     abort(400, message="Simulation Run doesn't exist!")
-
-    # try: 
-    #     try:    
-            
-    #         revoke(_state, [simulation_run_id], True)
-    #         if simulation_run and simulation:
-    #             simulation_run.status = Status.Cancelled
-    #             simulation_run.completedAt = ""
-    #             simulation.status = Status.Cancelled
-    #             simulation.completedAt = ""
-    #             simulation_run.updatedAt = datetime.now()
-    #             simulation.updatedAt = datetime.now()
-
-    #             session.commit()
-    #             logger.info(f"SimulationRun status updated to {simulation_run.status}")
-
-    #     except Exception as ex:
-    #         if simulation_run and simulation:
-    #             simulation_run.status = Status.Error
-    #             simulation.status = Status.Error
-    #             session.commit()
-    #             logger.error(f"Cannot revoke because: {ex}")
-
-    # except Exception as ex:
-    #     session.rollback()
-    #     logger.error(f"Cannot cancel simulation run: {ex}")
-
-    # finally:
-    #     session.close()  # Ensure the session is closed after use
-    #     logger.info(f"Session closed for simulation_run_id: {simulation_run_id}")
-
+    return {"message": f"Cancellation request sent for task {taskID}"}
