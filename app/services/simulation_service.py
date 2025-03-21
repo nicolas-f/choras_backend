@@ -17,7 +17,6 @@ from app.services import file_service, material_service, mesh_service, model_ser
 from app.factory.export_factory.ExportHelper import ExportHelper
 from app.services.auralization_service import auralization_calculation
 from app.types import Status, TaskType
-from app.types.Setting import SettingType
 
 # Create logger for this module
 logger = logging.getLogger(__name__)
@@ -334,13 +333,13 @@ def run_solver(simulation_run_id: int, json_path: str):
                 solverSettings = simulation.solverSettings
                 with open(json_path, 'r', encoding="utf-8") as file:
                     data = json.load(file)
-                data[SettingType.SimulationSettings] = solverSettings[SettingType.SimulationSettings]
+                data['simulationSettings'] = solverSettings['simulationSettings']
                 with open(json_path, 'w', encoding="utf-8") as file:
                     json.dump(data, file, indent=4)
-            except:
-                logger.error("Error saving the simulation solver settings")    
+            except Exception:
+                logger.error("Error saving the simulation solver settings")
                 raise Exception("Error saving the simulation solver settings")
-            
+
             match taskType:
                 case TaskType.DE:
                     logger.info("DE method")
