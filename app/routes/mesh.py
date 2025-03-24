@@ -1,12 +1,8 @@
 from flask.views import MethodView
 from flask_smorest import Blueprint
 
-from app.schemas.mesh_schema import (
-    GeoQuerySchema,
-    MeshQuerySchema,
-    MeshSchema,
-    MeshWithTaskSchema,
-)
+from app.schemas.mesh_schema import (GeoQuerySchema, MeshQuerySchema,
+                                     MeshSchema, MeshWithTaskSchema)
 from app.services import mesh_service
 
 blp = Blueprint("Mesh", __name__, description="Mesh API")
