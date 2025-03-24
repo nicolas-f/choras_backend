@@ -1,5 +1,6 @@
 from app.factory.geometry_converter_factory.DxfConversion import DxfConversion
-from app.factory.geometry_converter_factory.GeometryConversionStrategy import GeometryConversionStrategy
+from app.factory.geometry_converter_factory.GeometryConversionStrategy import \
+    GeometryConversionStrategy
 from app.factory.geometry_converter_factory.ObjConversion import ObjConversion
 
 

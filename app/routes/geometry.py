@@ -1,12 +1,10 @@
 from flask.views import MethodView
 from flask_smorest import Blueprint
 
-from app.schemas.geometry_schema import (
-    GeometryGetQuerySchema,
-    GeometryResultQuerySchema,
-    GeometrySchema,
-    GeometryStartQuerySchema,
-)
+from app.schemas.geometry_schema import (GeometryGetQuerySchema,
+                                         GeometryResultQuerySchema,
+                                         GeometrySchema,
+                                         GeometryStartQuerySchema)
 from app.services import geometry_service
 
 blp = Blueprint("Geometry", __name__, description="Geometry API")

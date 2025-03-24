@@ -1,8 +1,8 @@
 from flask.views import MethodView
 from flask_smorest import Blueprint
 
-from app.services import setting_service
 from app.schemas.setting_schema import SettingSchema
+from app.services import setting_service
 
 blp = Blueprint("Setting", __name__, description="Simulation Settings API")
 

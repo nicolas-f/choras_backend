@@ -1,15 +1,14 @@
-from typing import Optional, Dict, List, Any
-from datetime import datetime
+import json
 import logging
 import os
-import json
+from datetime import datetime
+from typing import Any, Dict, List, Optional
 
 from flask_smorest import abort
 
 from app.db import db
 from app.models.SimulationSetting import SimulationSetting
-from config import app_dir, DefaultConfig
-
+from config import DefaultConfig, app_dir
 
 # Create logger for this module
 logger = logging.getLogger(__name__)

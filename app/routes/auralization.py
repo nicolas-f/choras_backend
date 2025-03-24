@@ -1,11 +1,13 @@
 from typing import Dict
 
+from flask import request, send_file, send_from_directory
 from flask.views import MethodView
 from flask_smorest import Blueprint
-from flask import send_from_directory, send_file, request
 
+from app.schemas.auralization_schema import (AudioFileSchema,
+                                             AuralizationResponsePlotSchema,
+                                             AuralizationSchema)
 from app.services import auralization_service
-from app.schemas.auralization_schema import AudioFileSchema, AuralizationSchema, AuralizationResponsePlotSchema
 
 blp = Blueprint("Auralization", __name__, description="Auralization API")
 
