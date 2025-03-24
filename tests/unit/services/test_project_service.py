@@ -8,7 +8,6 @@ from tests.unit import BaseTestCase
 
 
 class ProjectServiceTests(BaseTestCase):
-
     def setUp(self):
         """
         Set up test variables and initialize a new app context.
