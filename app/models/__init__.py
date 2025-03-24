@@ -1,3 +1,4 @@
+from app.models.Export import Export
 from app.models.File import File
 from app.models.Geometry import Geometry
 from app.models.Material import Material
@@ -7,4 +8,3 @@ from app.models.Project import Project
 from app.models.Simulation import Simulation
 from app.models.SimulationRun import SimulationRun
 from app.models.Task import Task
-from app.models.Export import Export

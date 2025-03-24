@@ -1,12 +1,13 @@
 import unittest
+from pathlib import Path
 
 import click
 import coverage
 from passlib.hash import pbkdf2_sha256
-from pathlib import Path
 
 from app.db import db
-from app.services import material_service, auralization_service, setting_service
+from app.services import (auralization_service, material_service,
+                          setting_service)
 from config import DefaultConfig
 
 
