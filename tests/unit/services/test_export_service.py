@@ -1,18 +1,17 @@
-import unittest
-
-from pathlib import Path
-import zipfile
 import shutil
+import unittest
+import zipfile
+from pathlib import Path
 
-from app.services import export_service
-from app.models.Simulation import Simulation
-from app.models.Export import Export
-from app.types import Status
-from config import DefaultConfig
-from config import CustomExportParametersConfig
-from app.models.Auralization import Auralization
-from tests.unit import BaseTestCase
 from werkzeug.exceptions import HTTPException
+
+from app.models.Auralization import Auralization
+from app.models.Export import Export
+from app.models.Simulation import Simulation
+from app.services import export_service
+from app.types import Status
+from config import CustomExportParametersConfig, DefaultConfig
+from tests.unit import BaseTestCase
 
 
 class UsersUnitTests(BaseTestCase):

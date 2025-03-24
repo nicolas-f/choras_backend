@@ -1,7 +1,7 @@
 from datetime import datetime
-from config import DefaultConfig
 
 from app.db import db
+from config import DefaultConfig
 
 
 class AudioFile(db.Model):

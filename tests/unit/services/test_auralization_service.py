@@ -1,21 +1,21 @@
+import shutil
 import unittest
+from io import BytesIO
+from pathlib import Path
 
+from werkzeug.datastructures import FileStorage, ImmutableDict
+from werkzeug.exceptions import HTTPException
+
+from app.models.AudioFile import AudioFile
 from app.models.Auralization import Auralization
-from app.models.Simulation import Simulation
 from app.models.Export import Export
 from app.models.Model import Model
 from app.models.Project import Project
-from app.models.AudioFile import AudioFile
-from werkzeug.datastructures import ImmutableDict, FileStorage
+from app.models.Simulation import Simulation
 from app.services import auralization_service
 from app.types import Status
+from config import AuralizationParametersConfig, DefaultConfig
 from tests.unit import BaseTestCase
-from werkzeug.exceptions import HTTPException
-
-from io import BytesIO
-from pathlib import Path
-from config import DefaultConfig, AuralizationParametersConfig
-import shutil
 
 
 class UsersUnitTests(BaseTestCase):
