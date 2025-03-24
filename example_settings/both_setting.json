@@ -1,5 +1,5 @@
 {
-    "type": "deSettings",
+    "type": "bothSettings",
     "options": [
         {
             "name": "Energy decay threshold",

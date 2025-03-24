@@ -328,6 +328,18 @@ def run_solver(simulation_run_id: int, json_path: str):
             taskType = TaskType(result_container["results"][0]['resultType'])
             logger.info(f"{taskType}")
 
+            # save the simulation solver settings
+            try:
+                solverSettings = simulation.solverSettings
+                with open(json_path, 'r', encoding="utf-8") as file:
+                    data = json.load(file)
+                data['solverSettings'] = solverSettings
+                with open(json_path, 'w', encoding="utf-8") as file:
+                    json.dump(data, file, indent=4)
+            except:
+                logger.error("Error saving the simulation solver settings")    
+                raise Exception("Error saving the simulation solver settings")
+            
             match taskType:
                 case TaskType.DE:
                     logger.info("DE method")
