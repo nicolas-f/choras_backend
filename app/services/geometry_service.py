@@ -7,8 +7,7 @@ from flask_smorest import abort
 
 import config
 from app.db import db
-from app.factory.geometry_converter_factory.GeometryConversionFactory import \
-    GeometryConversionFactory
+from app.factory.geometry_converter_factory.GeometryConversionFactory import GeometryConversionFactory
 from app.models import File, Geometry, Task
 from app.types import Status, TaskType
 

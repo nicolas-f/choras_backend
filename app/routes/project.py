@@ -1,12 +1,15 @@
 from flask.views import MethodView
 from flask_smorest import Blueprint
 
-from app.schemas.project_schema import (ProjectCreateSchema, ProjectSchema,
-                                        ProjectSimulationsSchema,
-                                        ProjectUpdateByGroupBodySchema,
-                                        ProjectUpdateByGroupQuerySchema,
-                                        ProjectUpdateSchema,
-                                        ProjectWithModelsSchema)
+from app.schemas.project_schema import (
+    ProjectCreateSchema,
+    ProjectSchema,
+    ProjectSimulationsSchema,
+    ProjectUpdateByGroupBodySchema,
+    ProjectUpdateByGroupQuerySchema,
+    ProjectUpdateSchema,
+    ProjectWithModelsSchema,
+)
 from app.services import project_service
 
 blp = Blueprint("Project", __name__, description="Project API")

@@ -13,8 +13,7 @@ import config
 from app.db import db
 from app.factory.export_factory.ExportHelper import ExportHelper
 from app.models import Export, File, Simulation, SimulationRun, Task
-from app.services import (file_service, material_service, mesh_service,
-                          model_service)
+from app.services import file_service, material_service, mesh_service, model_service
 from app.services.auralization_service import auralization_calculation
 from app.types import Status, TaskType
 

@@ -5,8 +5,7 @@ import numpy as np
 import rhino3dm
 import trimesh
 
-from app.factory.geometry_converter_factory.GeometryConversionStrategy import \
-    GeometryConversionStrategy
+from app.factory.geometry_converter_factory.GeometryConversionStrategy import GeometryConversionStrategy
 
 
 class ObjConversion(GeometryConversionStrategy):

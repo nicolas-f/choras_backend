@@ -4,9 +4,7 @@ from flask_smorest import Blueprint, abort
 
 import config
 from app.models import File
-from app.schemas.file_schema import (FileCreateBodySchema,
-                                     FileCreateQuerySchema, FileSchema,
-                                     GetSlotSchema)
+from app.schemas.file_schema import FileCreateBodySchema, FileCreateQuerySchema, FileSchema, GetSlotSchema
 from app.services import file_service
 
 blp = Blueprint("File", __name__, description="File API")

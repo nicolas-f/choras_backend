@@ -6,8 +6,7 @@ import coverage
 from passlib.hash import pbkdf2_sha256
 
 from app.db import db
-from app.services import (auralization_service, material_service,
-                          setting_service)
+from app.services import auralization_service, material_service, setting_service
 from config import DefaultConfig
 
 

@@ -4,9 +4,7 @@ from flask import request, send_file, send_from_directory
 from flask.views import MethodView
 from flask_smorest import Blueprint
 
-from app.schemas.auralization_schema import (AudioFileSchema,
-                                             AuralizationResponsePlotSchema,
-                                             AuralizationSchema)
+from app.schemas.auralization_schema import AudioFileSchema, AuralizationResponsePlotSchema, AuralizationSchema
 from app.services import auralization_service
 
 blp = Blueprint("Auralization", __name__, description="Auralization API")

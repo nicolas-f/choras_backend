@@ -1,14 +1,16 @@
 from flask.views import MethodView
 from flask_smorest import Blueprint
 
-from app.schemas.simulation_schema import (SimulationByModelQuerySchema,
-                                           SimulationCancelSchema,
-                                           SimulationCreateBodySchema,
-                                           SimulationRunCreateSchema,
-                                           SimulationRunSchema,
-                                           SimulationSchema,
-                                           SimulationUpdateBodySchema,
-                                           SimulationWithRunSchema)
+from app.schemas.simulation_schema import (
+    SimulationByModelQuerySchema,
+    SimulationCancelSchema,
+    SimulationCreateBodySchema,
+    SimulationRunCreateSchema,
+    SimulationRunSchema,
+    SimulationSchema,
+    SimulationUpdateBodySchema,
+    SimulationWithRunSchema,
+)
 from app.services import simulation_service
 
 blp = Blueprint("Simulation", __name__, description="Simulation API")
