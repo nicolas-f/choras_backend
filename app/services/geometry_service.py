@@ -274,6 +274,10 @@ def convert_3dm_to_geo(rhino_file_path, geo_file_path, volume_name="RoomVolume",
                 a = face_vertices[j]
                 b = face_vertices[(j + 1) % len(face_vertices)]
 
+                # Prevent self-referential edges
+                if a == b:
+                    continue
+
                 # Store the edge with direction for line loops
                 face_edges.append((a, b))
 
@@ -302,6 +306,9 @@ def convert_3dm_to_geo(rhino_file_path, geo_file_path, volume_name="RoomVolume",
     line_index = 1
     for edge in sorted(edges):  # Sort edges for consistent ordering
         a, b = edge
+        # Skip self-referential lines
+        if a == b:
+            continue
         lines[line_index] = f"Line({line_index}) = {{ {a}, {b} }};\n"
         edge_to_line_index[edge] = line_index
         physical_lines.append(line_index)
@@ -309,6 +316,10 @@ def convert_3dm_to_geo(rhino_file_path, geo_file_path, volume_name="RoomVolume",
 
     # Now create line loops using the line indices
     for face_idx, face_edges in face_to_edges.items():
+        # Skip faces with no edges or less than 3 edges
+        if not face_edges or len(face_edges) < 3:
+            continue
+
         # Extract ordered vertices from face edges
         edge_vertices = []
         for a, b in face_edges:
@@ -330,7 +341,7 @@ def convert_3dm_to_geo(rhino_file_path, geo_file_path, volume_name="RoomVolume",
                         print(f"Warning: Disconnected edge ({a},{b}) in face {face_idx}")
 
         # Ensure the loop is closed
-        if edge_vertices[0] != edge_vertices[-1]:
+        if len(edge_vertices) > 1 and edge_vertices[0] != edge_vertices[-1]:
             face_edges.append((edge_vertices[-1], edge_vertices[0]))
 
         # Create line loop with correct line directions
@@ -339,7 +350,14 @@ def convert_3dm_to_geo(rhino_file_path, geo_file_path, volume_name="RoomVolume",
             a = edge_vertices[i]
             b = edge_vertices[i + 1]
 
+            # Skip self-referential edges
+            if a == b:
+                continue
+
             sorted_edge = tuple(sorted([a, b]))
+            if sorted_edge not in edge_to_line_index:
+                continue
+
             line_idx = edge_to_line_index[sorted_edge]
 
             # Check if direction matches
@@ -347,6 +365,10 @@ def convert_3dm_to_geo(rhino_file_path, geo_file_path, volume_name="RoomVolume",
                 line_idx = -line_idx  # Negative for reverse direction
 
             line_loop_indices.append(line_idx)
+
+        # Skip if we don't have enough lines to form a loop
+        if len(line_loop_indices) < 3:
+            continue
 
         # Format line loop with correct spacing to match example
         line_loops[face_idx] = f"Line Loop({face_idx}) = {{ {', '.join(map(str, line_loop_indices))} }};\n"
@@ -407,6 +429,7 @@ def convert_3dm_to_geo(rhino_file_path, geo_file_path, volume_name="RoomVolume",
         geo_file.write("Mesh.Optimize = 1; // Gmsh smoother, works with boundary layers (netgen version does not).\n")
         geo_file.write("Mesh.CharacteristicLengthFromPoints = 1;\n")
         geo_file.write('// Recombine Surface "*";\n')
+        geo_file.write("Mesh.RemeshAlgorithm = 1; // automatic\n")
 
     print(f"Converted {rhino_file_path} to {geo_file_path}")
     return os.path.exists(geo_file_path)
