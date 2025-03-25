@@ -1,11 +1,10 @@
 import io
-
 from typing import List
 
+from app.factory.export_factory.ExportAuralization import ExportAuralization
+from app.factory.export_factory.ExportEdc import ExportEdc
 from app.factory.export_factory.ExportExcel import ExportExcel
 from app.factory.export_factory.ExportParameters import ExportParameters
-from app.factory.export_factory.ExportEdc import ExportEdc
-from app.factory.export_factory.ExportAuralization import ExportAuralization
 
 
 class Factory:

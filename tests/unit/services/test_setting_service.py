@@ -1,11 +1,11 @@
 import unittest
-
 from typing import Dict
+
+from werkzeug.exceptions import HTTPException
 
 from app.services import setting_service
 from app.types.Task import TaskType
 from tests.unit import BaseTestCase
-from werkzeug.exceptions import HTTPException
 
 
 class UsersUnitTests(BaseTestCase):

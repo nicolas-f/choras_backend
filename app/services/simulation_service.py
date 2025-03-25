@@ -1,20 +1,20 @@
 import json
 import logging
 import os
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
 import gmsh
 from celery import shared_task  # , current_task
 from flask_smorest import abort
 from sqlalchemy.orm import joinedload, scoped_session, sessionmaker
 
-
 import config
 from app.db import db
-from app.models import File, Simulation, SimulationRun, Task, Export
-from app.services import file_service, material_service, mesh_service, model_service
 from app.factory.export_factory.ExportHelper import ExportHelper
+from app.models import Export, File, Simulation, SimulationRun, Task
+from app.services import (file_service, material_service, mesh_service,
+                          model_service)
 from app.services.auralization_service import auralization_calculation
 from app.types import Status, TaskType
 
@@ -281,8 +281,8 @@ def start_solver_task(simulation_id):
 
 @shared_task
 def run_solver(simulation_run_id: int, json_path: str):
-    from simulation_backend.FVMinterface import de_method
     from simulation_backend.DGinterface import dg_method
+    from simulation_backend.FVMinterface import de_method
 
     from app.db import db
     from app.models import SimulationRun
@@ -469,9 +469,10 @@ def cancel_solver_task(simulation_id):
 
     taskID = data['task_id']
 
-    from app import app, celery
-    from celery.worker.control import revoke
     from celery.result import AsyncResult
+    from celery.worker.control import revoke
+
+    from app import app, celery
 
     print("taskID = " + str(taskID))
     res = AsyncResult(taskID)
