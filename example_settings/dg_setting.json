@@ -1,8 +1,8 @@
 {
-    "type": "dgSettings",
+    "type": "simulationSettings",
     "options": [
         {
-            "name": "Energy decay thresholdzzz",
+            "name": "Energy decay threshold",
             "type": "integer",
             "display": "text",
             "min": 10,

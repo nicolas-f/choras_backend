@@ -333,7 +333,7 @@ def run_solver(simulation_run_id: int, json_path: str):
                 solverSettings = simulation.solverSettings
                 with open(json_path, 'r', encoding="utf-8") as file:
                     data = json.load(file)
-                data['solverSettings'] = solverSettings
+                data['simulationSettings'] = solverSettings['simulationSettings']
                 with open(json_path, 'w', encoding="utf-8") as file:
                     json.dump(data, file, indent=4)
             except Exception:
