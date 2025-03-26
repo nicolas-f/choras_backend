@@ -25,7 +25,7 @@ from app.models.Model import Model
 from app.models.Simulation import Simulation
 from app.types import Status
 from config import AuralizationParametersConfig as AuralizationParameters
-from config import DefaultConfig, app_dir
+from config import CustomExportParametersConfig, DefaultConfig, app_dir
 
 # Create Logger for this module
 logger = logging.getLogger(__name__)
@@ -87,10 +87,13 @@ def get_impulse_response_plot(simulation_id: int) -> Optional[dict]:
         try:
             xlsx_file_path = os.path.join(DefaultConfig.UPLOAD_FOLDER_NAME, simulation.export.name)
             plot_data = ExportHelper.extract_from_xlsx_to_dict(
-                xlsx_file_path, {"impulse response": [f"{AuralizationParameters.visualization_fs}Hz"]}
+                xlsx_file_path,
+                {CustomExportParametersConfig.impulse_response: [f"{AuralizationParameters.visualization_fs}Hz"]},
             )
             return {
-                "impulseResponse": plot_data["impulse response"][f"{AuralizationParameters.visualization_fs}Hz"],
+                "impulseResponse": plot_data[CustomExportParametersConfig.impulse_response][
+                    f"{AuralizationParameters.visualization_fs}Hz"
+                ],
                 "fs": AuralizationParameters.visualization_fs,
                 "simulationId": simulation.id,
             }

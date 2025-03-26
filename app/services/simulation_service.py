@@ -9,13 +9,13 @@ from celery import shared_task  # , current_task
 from flask_smorest import abort
 from sqlalchemy.orm import joinedload, scoped_session, sessionmaker
 
-import config
 from app.db import db
 from app.factory.export_factory.ExportHelper import ExportHelper
 from app.models import Export, File, Simulation, SimulationRun, Task
 from app.services import file_service, material_service, mesh_service, model_service
 from app.services.auralization_service import auralization_calculation
 from app.types import Status, TaskType
+from config import CustomExportParametersConfig
 
 # Create logger for this module
 logger = logging.getLogger(__name__)
@@ -362,7 +362,9 @@ def run_solver(simulation_run_id: int, json_path: str):
                     )
                     # auralization: save the impulse response to xlsx
                     if not ExportHelper.write_data_to_xlsx_file(
-                        json_path.replace(".json", ".xlsx"), "Impulse response", {f"{fs}Hz": imp_tot}
+                        json_path.replace(".json", ".xlsx"),
+                        CustomExportParametersConfig.impulse_response,
+                        {f"{fs}Hz": imp_tot},
                     ):
                         logger.error("Error saving the impulse response to xlsx")
                         raise "Error saving the impulse response to xlsx"
