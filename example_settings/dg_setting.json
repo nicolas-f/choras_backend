@@ -2,22 +2,6 @@
     "type": "simulationSettings",
     "options": [
         {
-            "name": "Energy decay threshold",
-            "type": "integer",
-            "display": "text",
-            "min": 10,
-            "max": 60,
-            "default": 35
-        },
-        {
-            "name": "Impulse response length",
-            "type": "float",
-            "display": "text",
-            "min": 0,
-            "max": 20,
-            "default": 0
-        },
-        {
             "name": "Text Box Integer With Min Max",
             "type": "integer",
             "display": "text",
@@ -68,7 +52,7 @@
                 "option 2": "value 2",
                 "option 3": "value 3"
             },
-            "default": "option 1"
+            "default": ["option 1", "option 2"]
         },
         {
             "name": "Radio",
@@ -80,7 +64,7 @@
                 "option 2": "value 2",
                 "option 3": "value 3"
             },
-            "default": ["option 1", "option 2"]
+            "default": "option 1"
         }
     ]
 }
