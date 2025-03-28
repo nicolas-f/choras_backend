@@ -45,9 +45,7 @@ def create_app(settings_module):
     local_celery.set_default()
 
     migrate.init_app(local_app, db)
-    cors.init_app(
-        local_app, supports_credentials="true", resources={r"*": {"origins": "*"}}
-    )
+    cors.init_app(local_app, supports_credentials="true", resources={r"*": {"origins": "*"}})
     manage.init_app(local_app)
 
     # Logging configuration

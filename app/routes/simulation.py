@@ -3,13 +3,13 @@ from flask_smorest import Blueprint
 
 from app.schemas.simulation_schema import (
     SimulationByModelQuerySchema,
+    SimulationCancelSchema,
     SimulationCreateBodySchema,
     SimulationRunCreateSchema,
     SimulationRunSchema,
     SimulationSchema,
     SimulationUpdateBodySchema,
     SimulationWithRunSchema,
-    SimulationCancelSchema,
 )
 from app.services import simulation_service
 
@@ -71,6 +71,7 @@ class SimulationRunList(MethodView):
         result = simulation_service.start_solver_task(body_data["simulationId"])
         return result
 
+
 @blp.route("/simulations/cancel")
 class SimulationCancelObject(MethodView):
     @blp.arguments(SimulationCancelSchema)
@@ -78,6 +79,7 @@ class SimulationCancelObject(MethodView):
     def post(self, body_data):
         result = simulation_service.cancel_solver_task(body_data["simulationId"])
         return result
+
 
 @blp.route("/simulations/run/<int:simulation_run_id>")
 class SimulationRunObject(MethodView):
