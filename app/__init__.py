@@ -17,28 +17,35 @@ from app.utils.logging import configure_logging
 load_dotenv()
 
 
-@event.listens_for(Engine, "connect")
-def set_sqlite_pragma(dbapi_connection, connection_record):
-    """
-    Return a list of random ingredients as strings.
+# @event.listens_for(Engine, "connect")
+# def set_sqlite_pragma(dbapi_connection, connection_record):
+#     """
+#     Return a list of random ingredients as strings.
 
-    :param kind: Optional "kind" of ingredients.
-    :type kind: list[str] or None
-    :raise lumache.InvalidKindError: If the kind is invalid.
-    :return: The ingredients list.
-    :rtype: list[str]
+#     :param kind: Optional "kind" of ingredients.
+#     :type kind: list[str] or None
+#     :raise lumache.InvalidKindError: If the kind is invalid.
+#     :return: The ingredients list.
+#     :rtype: list[str]
 
-    """
-    cursor = dbapi_connection.cursor()
-    cursor.execute("PRAGMA foreign_keys=ON")
-    cursor.close()
+#     """
+#     cursor = dbapi_connection.cursor()
+#     cursor.execute("PRAGMA foreign_keys=ON")
+#     cursor.close()
 
+db_host = os.getenv("BBDD_HOST", "localhost")  # Default to localhost if not set (for local dev)
+db_user = os.getenv("POSTGRES_USER", "db_user")
+db_password = os.getenv("POSTGRES_PASSWORD", "db_password")
+db_name = os.getenv("POSTGRES_DB", "db_dev")
 
-def create_app(settings_module):
+def create_app(settings_module=None):
     local_app = Flask(os.getenv("APP_NAME"))
-    local_app.config.from_object(settings_module)
+    if settings_module==None:
+        settings_module = config.LocalConfig
 
-    # Initialize the extensions
+    local_app.config.from_object(settings_module)
+    local_app.config["SQLALCHEMY_DATABASE_URI"] = f"postgresql://{db_user}:{db_password}@{db_host}:5432/{db_name}"
+
     db.init_app(local_app)
 
     local_celery = make_celery(local_app)
@@ -57,6 +64,6 @@ def create_app(settings_module):
     return local_app, local_celery
 
 
-app, celery = create_app(os.getenv("APP_SETTINGS_MODULE"))
+app, celery = create_app()
 
 app.app_context().push()

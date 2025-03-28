@@ -120,7 +120,7 @@ class LocalConfig(DefaultConfig):
     DEBUG = False
 
     # # Database configuration
-    # SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL")
+    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL")
 
 
 class ProductionConfig(DefaultConfig):

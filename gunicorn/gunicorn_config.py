@@ -2,7 +2,7 @@ import multiprocessing
 import os
 
 host = os.getenv("API_HOST", "0.0.0.0")
-port = os.getenv("API_PORT", "5000")
+port = os.getenv("API_PORT", "5001")
 bind_env = os.getenv("BIND", None)
 
 use_bind = bind_env if bind_env else f"{host}:{port}"
