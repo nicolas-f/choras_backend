@@ -40,12 +40,12 @@ db_name = os.getenv("POSTGRES_DB", "db_dev")
 
 def create_app(settings_module=None):
     local_app = Flask(os.getenv("APP_NAME"))
-    if settings_module==None:
-        settings_module = config.LocalConfig
-
+    
     local_app.config.from_object(settings_module)
-    local_app.config["SQLALCHEMY_DATABASE_URI"] = f"postgresql://{db_user}:{db_password}@{db_host}:5432/{db_name}"
-
+    if local_app.config["APP_ENV"] == "local":
+        print("Using PostgreSQL")
+        local_app.config["SQLALCHEMY_DATABASE_URI"] = f"postgresql://{db_user}:{db_password}@{db_host}:5432/{db_name}"
+        
     db.init_app(local_app)
 
     local_celery = make_celery(local_app)
@@ -64,6 +64,6 @@ def create_app(settings_module=None):
     return local_app, local_celery
 
 
-app, celery = create_app()
+app, celery = create_app(os.getenv("APP_SETTINGS_MODULE"))
 
 app.app_context().push()
