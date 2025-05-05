@@ -8,7 +8,9 @@
             "display": "text",
             "min": 20,
             "max": 4000,
-            "default": 200
+            "default": 200,
+            "step": 1,
+            "endAdornment": "Hz"
         },
         {
             "name": "CFL",
@@ -17,16 +19,19 @@
             "display": "text",
             "min": 0.001,
             "max": 1,
-            "default": 0.5
+            "default": 0.5,
+            "step": 0.001
         },
         {
             "name": "Impulse Response length",
-            "id": "ir_length",
+            "id": "dg_ir_length",
             "type": "float",
             "display": "text",
-            "min": 0.001,
+            "min": 0.01,
             "max": 5,
-            "default": 0.1
+            "default": 0.1,
+            "step": 0.01,
+            "endAdornment": "s"
         }
     ]
 }

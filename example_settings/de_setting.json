@@ -27,7 +27,7 @@
         },
         {
             "name": "Impulse response length",
-            "id": "ir_length",
+            "id": "de_ir_length",
             "type": "float",
             "display": "text",
             "min": 0,
