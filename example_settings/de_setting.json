@@ -11,7 +11,7 @@
                 "EDT": "edt", 
                 "IR length": "ir_length"
             },
-            "default": "EDT"
+            "default": "edt"
         },
         {
             "name": "Energy decay threshold",
