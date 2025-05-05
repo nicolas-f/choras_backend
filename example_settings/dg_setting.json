@@ -2,69 +2,31 @@
     "type": "simulationSettings",
     "options": [
         {
-            "name": "Text Box Integer With Min Max",
+            "name": "Source Freq. upper limit",
+            "id": "freq_upper_limit",
             "type": "integer",
             "display": "text",
-            "min": 0,
-            "max": 100,
-            "default": null
+            "min": 20,
+            "max": 4000,
+            "default": 200
         },
         {
-            "name": "Text Box Integer Without Min Max",
-            "type": "integer",
-            "display": "text",
-            "min": null,
-            "max": null,
-            "default": null
-        },
-        {
-            "name": "Text Box Float",
+            "name": "CFL",
+            "id": "cfl",
             "type": "float",
             "display": "text",
-            "min": 0,
-            "max": 100,
-            "default": null
+            "min": 0.001,
+            "max": 1,
+            "default": 0.5
         },
         {
-            "name": "Slider Float",
+            "name": "Impulse Response length",
+            "id": "ir_length",
             "type": "float",
-            "display": "slider",
-            "min": 0,
-            "max": 100,
-            "step": 0.1,
-            "default": null
-        },
-        {
-            "name": "Slider Integer",
-            "type": "integer",
-            "min": 0,
-            "max": 100,
-            "step": 1,
-            "default": null
-        },
-        {
-            "name": "Checkbox",
-            "type": "list",
-            "display": "checkbox",
-            "options": 
-            {
-                "option 1": "value 1", 
-                "option 2": "value 2",
-                "option 3": "value 3"
-            },
-            "default": ["option 1", "option 2"]
-        },
-        {
-            "name": "Radio",
-            "type": "string",
-            "display": "radio",
-            "options": 
-            {
-                "option 1": "value 1", 
-                "option 2": "value 2",
-                "option 3": "value 3"
-            },
-            "default": "option 1"
+            "display": "text",
+            "min": 0.001,
+            "max": 5,
+            "default": 0.1
         }
     ]
 }
