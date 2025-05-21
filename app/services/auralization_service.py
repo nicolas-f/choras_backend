@@ -27,6 +27,8 @@ from app.types import Status
 from config import AuralizationParametersConfig as AuralizationParameters
 from config import CustomExportParametersConfig, DefaultConfig, app_dir
 
+from math import ceil
+
 # Create Logger for this module
 logger = logging.getLogger(__name__)
 
@@ -309,7 +311,7 @@ def auralization_calculation(
     # Auralization Calculation
     try:
         # RESAMPLING PRESSURE ENVELOPE
-        num_samples = int(p_rec_off_deriv_band.shape[1] * fs / AuralizationParameters.original_fs)
+        num_samples = ceil(p_rec_off_deriv_band.shape[1] * fs / AuralizationParameters.original_fs)
         p_rec_off_deriv_band_resampled = np.zeros((p_rec_off_deriv_band.shape[0], num_samples))
         for i in range(p_rec_off_deriv_band.shape[0]):
             p_rec_off_deriv_band_resampled[i, :] = resample_poly(

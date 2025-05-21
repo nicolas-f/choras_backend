@@ -177,7 +177,7 @@ def start_solver_task(simulation_id):
     model = model_service.get_model(simulation.modelId)
     json_path = file_service.get_file_related_path(model.outputFileId, simulation_id, extension="json")
     msh_path = file_service.get_file_related_path(model.outputFileId, simulation_id, extension="msh")
-
+    geo_path = file_service.get_file_related_path(model.outputFileId, simulation_id, extension="geo")
     sources_tasks = []
     results_container = []
 
@@ -239,6 +239,7 @@ def start_solver_task(simulation_id):
                 {
                     "absorption_coefficients": absorption_coefficients,
                     "msh_path": msh_path,
+                    "geo_path": geo_path,
                     "results": results_container,
                     "should_cancel": False,
                     "task_id": -1,
@@ -247,33 +248,33 @@ def start_solver_task(simulation_id):
             )
         )
 
-    run_solver(new_simulation_run.id, json_path)
-    # task = run_solver.delay(new_simulation_run.id, json_path)
+    # run_solver(new_simulation_run.id, json_path)
+    task = run_solver.delay(new_simulation_run.id, json_path)
 
-    # result_container = {}
-    # if json_path is not None:
-    #     with open(json_path, 'r') as json_file:
-    #         result_container = json.load(json_file)
+    result_container = {}
+    if json_path is not None:
+        with open(json_path, 'r') as json_file:
+            result_container = json.load(json_file)
 
-    # result_container['task_id'] = task.id
+    result_container['task_id'] = task.id
 
-    # if json_path is not None:
-    #     with open(json_path, 'w') as json_task_id:
-    #         json_task_id.write(json.dumps(result_container, indent=4))
-    # if json_path is not None:
-    #     with open(json_path, 'r') as json_file:
-    #         test = json.load(json_file)
-    #     print("Task id from JSON")
-    #     print(test['task_id'])
+    if json_path is not None:
+        with open(json_path, 'w') as json_task_id:
+            json_task_id.write(json.dumps(result_container, indent=4))
+    if json_path is not None:
+        with open(json_path, 'r') as json_file:
+            test = json.load(json_file)
+        print("Task id from JSON")
+        print(test['task_id'])
 
-    # try:
-    #     simulation.status = Status.Queued
-    #     new_simulation_run.status = Status.Queued
-    #     db.session.commit()
-    # except Exception as ex:
-    #     db.session.rollback()
-    #     logger.error(f"Can not update the new simulation run status: {ex}")
-    #     abort(400, message=f"Can not update a new simulation run status: {ex}")
+    try:
+        simulation.status = Status.Queued
+        new_simulation_run.status = Status.Queued
+        db.session.commit()
+    except Exception as ex:
+        db.session.rollback()
+        logger.error(f"Can not update the new simulation run status: {ex}")
+        abort(400, message=f"Can not update a new simulation run status: {ex}")
 
     return new_simulation_run
 

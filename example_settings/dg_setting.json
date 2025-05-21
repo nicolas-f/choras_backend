@@ -2,7 +2,7 @@
     "type": "simulationSettings",
     "options": [
         {
-            "name": "Source Freq. upper limit",
+            "name": "Freq. upper limit",
             "id": "freq_upper_limit",
             "type": "integer",
             "display": "text",
