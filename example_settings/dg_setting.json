@@ -14,7 +14,7 @@
         },
         {
             "name": "Speed of sound",
-            "id": "c0",
+            "id": "dg_c0",
             "type": "float",
             "display": "text",
             "min": 100,
@@ -33,6 +33,28 @@
             "default": 0.1,
             "step": 0.01,
             "endAdornment": "s"
+        },
+        {
+            "name": "Absorption override",
+            "id": "dg_absorption_override",
+            "type": "string",
+            "display": "radio",
+            "options": 
+            {
+                "No": "no", 
+                "Yes": "yes"
+            },
+            "default": "no"
+        },
+        {
+            "name": "Reflection coefficient",
+            "id": "dg_R",
+            "type": "float",
+            "display": "text",
+            "min": 0,
+            "max": 1,
+            "default": 0.99,
+            "step": 0.001
         }
     ]
 }
