@@ -13,14 +13,15 @@
             "endAdornment": "Hz"
         },
         {
-            "name": "CFL",
-            "id": "cfl",
+            "name": "Speed of sound",
+            "id": "c0",
             "type": "float",
             "display": "text",
-            "min": 0.001,
-            "max": 1,
-            "default": 0.5,
-            "step": 0.001
+            "min": 100,
+            "max": 500,
+            "default": 343,
+            "step": 1,
+            "endAdornment": "m/s"
         },
         {
             "name": "Impulse Response length",
