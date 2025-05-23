@@ -65,8 +65,6 @@ Mako==1.2.4
 markdown-it-py==3.0.0
 MarkupSafe==2.1.2
 marshmallow==3.19.0
-matplotlib==3.9.1
-matplotlib-inline==0.1.6
 mccabe==0.7.0
 mdurl==0.1.2
 meshio==5.3.5

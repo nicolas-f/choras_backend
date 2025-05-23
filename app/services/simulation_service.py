@@ -334,11 +334,13 @@ def run_solver(simulation_run_id: int, json_path: str):
                 with open(json_path, 'r', encoding="utf-8") as file:
                     data = json.load(file)
                 data['simulationSettings'] = solverSettings['simulationSettings']
+                data['settingsPreset'] = simulation.settingsPreset.value
+                
                 with open(json_path, 'w', encoding="utf-8") as file:
                     json.dump(data, file, indent=4)
-            except Exception:
-                logger.error("Error saving the simulation solver settings")
-                raise Exception("Error saving the simulation solver settings")
+            except Exception as ex:
+                logger.error(f"Error saving the simulation solver settings: {ex}")
+                raise Exception(f"Error saving the simulation solver settings {ex}")
 
             match taskType:
                 case TaskType.DE:
