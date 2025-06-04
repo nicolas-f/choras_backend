@@ -1,7 +1,7 @@
 import multiprocessing
 import os
 
-host = os.getenv("API_HOST", "0.0.0.0")
+host = os.getenv("API_HOST", "localhost")
 port = os.getenv("API_PORT", "5001")
 bind_env = os.getenv("BIND", None)
 

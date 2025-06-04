@@ -89,7 +89,7 @@ def map_to_3dm_and_geo(geometry_id):
     conversion_strategy = conversion_factory.create_strategy(file_extension)
 
     if not conversion_strategy.generate_3dm(obj_path, rhino3dm_path):
-        return False
+        return False    
 
     if not os.path.exists(rhino3dm_path):
         logger.error("Can not find created a rhino file")
@@ -413,12 +413,13 @@ def convert_3dm_to_geo(rhino_file_path, geo_file_path, volume_name="RoomVolume",
         # Write Surface Loop and Volume with custom volume name
         surface_ids = sorted(plane_surfaces.keys())
         geo_file.write(f"Surface Loop(1) = {{ {', '.join(map(str, surface_ids))} }};\n")
-        geo_file.write("Volume( 1 ) = { 1 };\n")
-        geo_file.write(f'Physical Volume("{volume_name}") = {{ 1 }};\n')
 
         # Write Physical Surface definitions
         for ps in physical_surfaces.values():
             geo_file.write(ps)
+
+        geo_file.write("Volume( 1 ) = { 1 };\n")
+        geo_file.write(f'Physical Volume("{volume_name}") = {{ 1 }};\n')
 
         # Add Physical Line group
         geo_file.write(f'Physical Line ("default") = {{{", ".join(map(str, physical_lines))}}};\n')

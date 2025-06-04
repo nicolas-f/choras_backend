@@ -108,8 +108,7 @@ class ObjConversion(GeometryConversionStrategy):
         # Save the 3dm file
         model.Write(rhino_path)
         return rhino_path
-
-
+    
 def _parse_obj_materials(obj_path):
     material_map = {}
     face_index = 0
@@ -121,3 +120,4 @@ def _parse_obj_materials(obj_path):
                 material_map[face_index] = line.split()[1]
                 face_index += 1
     return material_map
+
