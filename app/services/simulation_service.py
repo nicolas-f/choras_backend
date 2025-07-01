@@ -20,6 +20,7 @@ from config import CustomExportParametersConfig
 # Create logger for this module
 logger = logging.getLogger(__name__)
 
+debug_celery = False
 
 def create_new_simulation(simulation_data):
     new_simulation = Simulation(**simulation_data)
@@ -190,6 +191,9 @@ def start_solver_task(simulation_id):
             task_statuses.append(create_source_task(TaskType.DG.value, source["id"]))
             # TODO: Create custom DG JSON results_container
             results_container.append(create_result_source_object(source, simulation.receivers, TaskType.DG.value))
+        if simulation.taskType.value == TaskType.MyNewMethod.value:
+            task_statuses.append(create_source_task(TaskType.MyNewMethod.value, source["id"]))
+            results_container.append(create_result_source_object(source, simulation.receivers, TaskType.MyNewMethod.value))
 
         sources_tasks.append(
             {
@@ -248,41 +252,44 @@ def start_solver_task(simulation_id):
             )
         )
 
-    # run_solver(new_simulation_run.id, json_path)
-    task = run_solver.delay(new_simulation_run.id, json_path)
+    if debug_celery:
+        run_solver(new_simulation_run.id, json_path)
+    else:
+        task = run_solver.delay(new_simulation_run.id, json_path)
 
-    result_container = {}
-    if json_path is not None:
-        with open(json_path, 'r') as json_file:
-            result_container = json.load(json_file)
+        result_container = {}
+        if json_path is not None:
+            with open(json_path, 'r') as json_file:
+                result_container = json.load(json_file)
 
-    result_container['task_id'] = task.id
+        result_container['task_id'] = task.id
 
-    if json_path is not None:
-        with open(json_path, 'w') as json_task_id:
-            json_task_id.write(json.dumps(result_container, indent=4))
-    if json_path is not None:
-        with open(json_path, 'r') as json_file:
-            test = json.load(json_file)
-        print("Task id from JSON")
-        print(test['task_id'])
+        if json_path is not None:
+            with open(json_path, 'w') as json_task_id:
+                json_task_id.write(json.dumps(result_container, indent=4))
+        if json_path is not None:
+            with open(json_path, 'r') as json_file:
+                test = json.load(json_file)
+            print("Task id from JSON")
+            print(test['task_id'])
 
-    try:
-        simulation.status = Status.Queued
-        new_simulation_run.status = Status.Queued
-        db.session.commit()
-    except Exception as ex:
-        db.session.rollback()
-        logger.error(f"Can not update the new simulation run status: {ex}")
-        abort(400, message=f"Can not update a new simulation run status: {ex}")
+        try:
+            simulation.status = Status.Queued
+            new_simulation_run.status = Status.Queued
+            db.session.commit()
+        except Exception as ex:
+            db.session.rollback()
+            logger.error(f"Can not update the new simulation run status: {ex}")
+            abort(400, message=f"Can not update a new simulation run status: {ex}")
 
-    return new_simulation_run
+        return new_simulation_run
 
 
 @shared_task
 def run_solver(simulation_run_id: int, json_path: str):
     from simulation_backend.DGinterface import dg_method
     from simulation_backend.FVMinterface import de_method
+    from simulation_backend.MyNewMethodInterface import mynewmethod_method
 
     from app.db import db
     from app.models import SimulationRun
@@ -387,6 +394,12 @@ def run_solver(simulation_run_id: int, json_path: str):
                     # DG METHOD
                     dg_method(json_file_path=json_path)
                     logger.info("DG method")
+
+                case TaskType.MyNewMethod:
+                    # MyNewMethod METHOD
+                    mynewmethod_method(json_file_path=json_path)
+                    logger.info("MyNewMethod")
+
                 case _:
                     raise Exception("The selected tasktype is not valid!")
 
