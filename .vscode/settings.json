@@ -1,0 +1,7 @@
+{
+  "python.analysis.extraPaths": [
+    "./simulation-backend", 
+    "./Diffusion", 
+    "./edg-acoustics", 
+    "./MyNewMethod"]
+}

@@ -143,3 +143,8 @@ pytest
 locust
 ezdxf
 modepy
+
+-e ./simulation-backend
+-e ./Diffusion
+-e ./edg-acoustics
+-e ./MyNewMethod

@@ -16,5 +16,11 @@
         "label": "Both methods (DE & DG)",
         "name": "both_setting.json",
         "simulationType": "BOTH"
+    },
+    {
+        "description": "MyNewMethod description",
+        "label": "MyNewMethod",
+        "name": "MyNewMethod.json",
+        "simulationType": "MyNewMethod"
     }
 ]
