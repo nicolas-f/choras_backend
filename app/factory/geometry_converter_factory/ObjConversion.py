@@ -5,7 +5,9 @@ import numpy as np
 import rhino3dm
 import trimesh
 
-from app.factory.geometry_converter_factory.GeometryConversionStrategy import GeometryConversionStrategy
+from app.factory.geometry_converter_factory.GeometryConversionStrategy import (
+    GeometryConversionStrategy,
+)
 
 
 class ObjConversion(GeometryConversionStrategy):
@@ -94,7 +96,9 @@ class ObjConversion(GeometryConversionStrategy):
 
             for vertex in vertices:
                 rotated_vertex = np.dot(rotation_matrix, vertex)
-                rhino_mesh.Vertices.Add(rotated_vertex[0], rotated_vertex[1], rotated_vertex[2])
+                rhino_mesh.Vertices.Add(
+                    rotated_vertex[0], rotated_vertex[1], rotated_vertex[2]
+                )
 
             for face_index, face in enumerate(faces):
                 if len(face) == 3:  # Triangular face
@@ -108,7 +112,8 @@ class ObjConversion(GeometryConversionStrategy):
         # Save the 3dm file
         model.Write(rhino_path)
         return rhino_path
-    
+
+
 def _parse_obj_materials(obj_path):
     material_map = {}
     face_index = 0
@@ -120,4 +125,3 @@ def _parse_obj_materials(obj_path):
                 material_map[face_index] = line.split()[1]
                 face_index += 1
     return material_map
-

@@ -44,7 +44,7 @@ def attach_geo_file(model_id, file_input_id):
     model = file3dm.Read(os.path.join(directory, model_file.fileName))
 
     rhino_file_name = os.path.join(directory, model_file.fileName)
-    geo_file_name = os.path.join(directory, file_name)+".geo"
+    geo_file_name = os.path.join(directory, file_name) + ".geo"
     try:
         if not convert_3dm_to_geo(rhino_file_name, geo_file_name):
             logger.error("Can not generate a geo file")
@@ -100,7 +100,7 @@ def attach_geo_file(model_id, file_input_id):
 
     # # Replace physical surface keys in the geo file content
     # new_geo_content = []
-    # try: 
+    # try:
     #     for line in geo_content:
     #         if line.strip().startswith("Physical Surface"):
     #             parts = line.split('"')
@@ -127,7 +127,6 @@ def attach_geo_file(model_id, file_input_id):
     #         "status": False,
     #         "message": f"Geo import error: {ex}",
     #     }
-
 
     # with open(os.path.join(directory, f"{file_name}.geo"), "w") as file:
     #     file.writelines(new_geo_content)

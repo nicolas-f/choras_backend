@@ -7,7 +7,9 @@ from flask_smorest import abort
 
 import config
 from app.db import db
-from app.factory.geometry_converter_factory.GeometryConversionFactory import GeometryConversionFactory
+from app.factory.geometry_converter_factory.GeometryConversionFactory import (
+    GeometryConversionFactory,
+)
 from app.models import File, Geometry, Task
 from app.types import Status, TaskType
 
@@ -89,7 +91,7 @@ def map_to_3dm_and_geo(geometry_id):
     conversion_strategy = conversion_factory.create_strategy(file_extension)
 
     if not conversion_strategy.generate_3dm(obj_path, rhino3dm_path):
-        return False    
+        return False
 
     if not os.path.exists(rhino3dm_path):
         logger.error("Can not find created a rhino file")
@@ -130,7 +132,9 @@ def map_to_3dm_and_geo(geometry_id):
     return True
 
 
-def convert_3dm_to_geo(rhino_file_path, geo_file_path, volume_name="RoomVolume", map_materials=True):  # noqa: C901
+def convert_3dm_to_geo(
+    rhino_file_path, geo_file_path, volume_name="RoomVolume", map_materials=True
+):  # noqa: C901
     """
     Converts a Rhino 3DM file to a Gmsh GEO file with proper material mapping.
 
@@ -240,7 +244,9 @@ def convert_3dm_to_geo(rhino_file_path, geo_file_path, volume_name="RoomVolume",
 
             coord = (rounded_x, rounded_y, rounded_z)
             if coord not in coord_to_point_index:
-                points[point_index] = f"Point({point_index}) = {{ {rounded_x}, {rounded_y}, {rounded_z}, 1.0 }};\n"
+                points[
+                    point_index
+                ] = f"Point({point_index}) = {{ {rounded_x}, {rounded_y}, {rounded_z}, 1.0 }};\n"
                 coord_to_point_index[coord] = point_index
                 point_index += 1
             vertex_map[i] = coord_to_point_index[coord]
@@ -255,7 +261,9 @@ def convert_3dm_to_geo(rhino_file_path, geo_file_path, volume_name="RoomVolume",
             face_indices = (
                 [face[0], face[1], face[2], face[3]]
                 if len(face) == 4
-                else [face[0], face[1], face[2]] if len(face) == 3 else None
+                else [face[0], face[1], face[2]]
+                if len(face) == 3
+                else None
             )
             if not face_indices:
                 continue  # Skip non-triangle/quad faces
@@ -338,7 +346,9 @@ def convert_3dm_to_geo(rhino_file_path, geo_file_path, volume_name="RoomVolume",
                     elif edge_vertices[0] == b:
                         edge_vertices.insert(0, a)
                     else:
-                        print(f"Warning: Disconnected edge ({a},{b}) in face {face_idx}")
+                        print(
+                            f"Warning: Disconnected edge ({a},{b}) in face {face_idx}"
+                        )
 
         # Ensure the loop is closed
         if len(edge_vertices) > 1 and edge_vertices[0] != edge_vertices[-1]:
@@ -371,7 +381,9 @@ def convert_3dm_to_geo(rhino_file_path, geo_file_path, volume_name="RoomVolume",
             continue
 
         # Format line loop with correct spacing to match example
-        line_loops[face_idx] = f"Line Loop({face_idx}) = {{ {', '.join(map(str, line_loop_indices))} }};\n"
+        line_loops[
+            face_idx
+        ] = f"Line Loop({face_idx}) = {{ {', '.join(map(str, line_loop_indices))} }};\n"
         plane_surfaces[face_idx] = f"Plane Surface({face_idx}) = {{ {face_idx} }};\n"
 
     # Create physical surfaces groups
@@ -379,14 +391,16 @@ def convert_3dm_to_geo(rhino_file_path, geo_file_path, volume_name="RoomVolume",
         # If mapping materials, create physical surfaces based on material names
         for obj_id, surfaces in obj_id_to_surfaces.items():
             if surfaces:
-                physical_surfaces[obj_id] = f"Physical Surface(\"{obj_id}\") = {{ {', '.join(map(str, surfaces))} }};\n"
+                physical_surfaces[
+                    obj_id
+                ] = f"Physical Surface(\"{obj_id}\") = {{ {', '.join(map(str, surfaces))} }};\n"
     else:
         # Otherwise use the material/layer based groups
         for material_id, surface_list in material_to_surfaces.items():
             if surface_list:
-                physical_surfaces[material_id] = (
-                    f"Physical Surface(\"{material_id}\") = {{ {', '.join(map(str, surface_list))} }};\n"
-                )
+                physical_surfaces[
+                    material_id
+                ] = f"Physical Surface(\"{material_id}\") = {{ {', '.join(map(str, surface_list))} }};\n"
 
     # Write to .geo file
     with open(geo_file_path, "w") as geo_file:
@@ -422,12 +436,18 @@ def convert_3dm_to_geo(rhino_file_path, geo_file_path, volume_name="RoomVolume",
         geo_file.write(f'Physical Volume("{volume_name}") = {{ 1 }};\n')
 
         # Add Physical Line group
-        geo_file.write(f'Physical Line ("default") = {{{", ".join(map(str, physical_lines))}}};\n')
+        geo_file.write(
+            f'Physical Line ("default") = {{{", ".join(map(str, physical_lines))}}};\n'
+        )
 
         # Write mesh parameters at the end
         geo_file.write("Mesh.Algorithm = 6;\n")
-        geo_file.write("Mesh.Algorithm3D = 1; // Delaunay3D, works for boundary layer insertion.\n")
-        geo_file.write("Mesh.Optimize = 1; // Gmsh smoother, works with boundary layers (netgen version does not).\n")
+        geo_file.write(
+            "Mesh.Algorithm3D = 1; // Delaunay3D, works for boundary layer insertion.\n"
+        )
+        geo_file.write(
+            "Mesh.Optimize = 1; // Gmsh smoother, works with boundary layers (netgen version does not).\n"
+        )
         geo_file.write("Mesh.CharacteristicLengthFromPoints = 1;\n")
         geo_file.write('// Recombine Surface "*";\n')
         geo_file.write("Mesh.RemeshAlgorithm = 1; // automatic\n")
