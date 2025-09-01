@@ -3,5 +3,6 @@
     "./simulation-backend", 
     "./Diffusion", 
     "./edg-acoustics", 
-    "./MyNewMethod"]
+    "./MyNewMethod"],
+    "editor.defaultFormatter": "ms-python.black-formatter"
 }

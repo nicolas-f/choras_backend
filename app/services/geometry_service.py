@@ -244,9 +244,9 @@ def convert_3dm_to_geo(
 
             coord = (rounded_x, rounded_y, rounded_z)
             if coord not in coord_to_point_index:
-                points[
-                    point_index
-                ] = f"Point({point_index}) = {{ {rounded_x}, {rounded_y}, {rounded_z}, 1.0 }};\n"
+                points[point_index] = (
+                    f"Point({point_index}) = {{ {rounded_x}, {rounded_y}, {rounded_z}, 1.0 }};\n"
+                )
                 coord_to_point_index[coord] = point_index
                 point_index += 1
             vertex_map[i] = coord_to_point_index[coord]
@@ -261,9 +261,7 @@ def convert_3dm_to_geo(
             face_indices = (
                 [face[0], face[1], face[2], face[3]]
                 if len(face) == 4
-                else [face[0], face[1], face[2]]
-                if len(face) == 3
-                else None
+                else [face[0], face[1], face[2]] if len(face) == 3 else None
             )
             if not face_indices:
                 continue  # Skip non-triangle/quad faces
@@ -381,9 +379,9 @@ def convert_3dm_to_geo(
             continue
 
         # Format line loop with correct spacing to match example
-        line_loops[
-            face_idx
-        ] = f"Line Loop({face_idx}) = {{ {', '.join(map(str, line_loop_indices))} }};\n"
+        line_loops[face_idx] = (
+            f"Line Loop({face_idx}) = {{ {', '.join(map(str, line_loop_indices))} }};\n"
+        )
         plane_surfaces[face_idx] = f"Plane Surface({face_idx}) = {{ {face_idx} }};\n"
 
     # Create physical surfaces groups
@@ -391,16 +389,16 @@ def convert_3dm_to_geo(
         # If mapping materials, create physical surfaces based on material names
         for obj_id, surfaces in obj_id_to_surfaces.items():
             if surfaces:
-                physical_surfaces[
-                    obj_id
-                ] = f"Physical Surface(\"{obj_id}\") = {{ {', '.join(map(str, surfaces))} }};\n"
+                physical_surfaces[obj_id] = (
+                    f"Physical Surface(\"{obj_id}\") = {{ {', '.join(map(str, surfaces))} }};\n"
+                )
     else:
         # Otherwise use the material/layer based groups
         for material_id, surface_list in material_to_surfaces.items():
             if surface_list:
-                physical_surfaces[
-                    material_id
-                ] = f"Physical Surface(\"{material_id}\") = {{ {', '.join(map(str, surface_list))} }};\n"
+                physical_surfaces[material_id] = (
+                    f"Physical Surface(\"{material_id}\") = {{ {', '.join(map(str, surface_list))} }};\n"
+                )
 
     # Write to .geo file
     with open(geo_file_path, "w") as geo_file:
