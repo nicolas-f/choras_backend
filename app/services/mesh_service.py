@@ -9,7 +9,7 @@ from flask_smorest import abort
 
 import config
 from app.db import db
-from app.models import Mesh, Simulation, Task
+from app.models import File, Mesh, Simulation, Task
 from app.services import file_service, model_service
 from app.types import Status, TaskType
 
