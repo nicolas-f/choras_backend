@@ -113,13 +113,13 @@ scipy==1.14.0
 six==1.16.0
 snowballstemmer==2.2.0
 soundfile==0.13.1
-Sphinx==7.3.7
-sphinxcontrib-applehelp==1.0.8
-sphinxcontrib-devhelp==1.0.6
-sphinxcontrib-htmlhelp==2.0.5
-sphinxcontrib-jsmath==1.0.1
-sphinxcontrib-qthelp==1.0.7
-sphinxcontrib-serializinghtml==1.1.10
+Sphinx==7.3.7 # Docs
+sphinxcontrib-applehelp==1.0.8 # docs, potentially secondary requirement
+sphinxcontrib-devhelp==1.0.6 # docs, potentially secondary requirement
+sphinxcontrib-htmlhelp==2.0.5 # docs, potentially secondary requirement
+sphinxcontrib-jsmath==1.0.1 # docs, potentially secondary requirement
+sphinxcontrib-qthelp==1.0.7 # docs, potentially secondary requirement
+sphinxcontrib-serializinghtml==1.1.10 # docs, potentially secondary requirement
 SQLAlchemy==2.0.7
 sqlparse==0.4.4
 stack-data==0.6.2
@@ -143,6 +143,8 @@ pytest
 locust
 ezdxf
 modepy
+pydata-sphinx-theme # Docs theme
+myst_parser # Docs, required for markdown support
 
 -e ./simulation-backend
 -e ./Diffusion
