@@ -6,7 +6,7 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = "Room Acoustics UI"
+project = "CHORAS backend"
 copyright = "2024, Hassan Teymoori"
 author = "Hassan Teymoori"
 release = "1.7"
@@ -20,7 +20,6 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
     "myst_parser",
-    "sphinx_design",
 ]
 source_suffix = [".rst", ".md"]
 
@@ -30,5 +29,5 @@ exclude_patterns = []
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = "furo"
+html_theme = "pydata_sphinx_theme"
 html_static_path = ["_static"]
