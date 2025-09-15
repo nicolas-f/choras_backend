@@ -143,7 +143,7 @@ pytest
 locust
 ezdxf
 modepy
-sphinx-pydata-theme # Docs theme
+pydata-sphinx-theme # Docs theme
 myst_parser # Docs, required for markdown support
 
 -e ./simulation-backend
