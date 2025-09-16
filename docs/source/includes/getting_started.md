@@ -4,8 +4,8 @@ Here you will see what you need to do to run the backend application
 
 ## Pre-requisites
 
-1. The latest version of git: https://git-scm.com/downloads
-2. Conda: https://www.anaconda.com/download
+1. The latest version of git: <https://git-scm.com/downloads>
+2. Conda: <https://www.anaconda.com/download>
 
 ## Initialising this repository
 
