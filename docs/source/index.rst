@@ -10,14 +10,13 @@ The software has been implemented in Python using the Flask framework. Currently
 
 
 .. toctree::
-   :maxdepth: 3
-   :caption: 🚀 Overview
+   :maxdepth: 1
+   :caption: Setup Instructions
 
-   includes/overview.md
-   includes/getting_started.md
+   includes/setup.rst
 
 .. toctree::
-   :maxdepth: 3
-   :caption: 📚 Guide
+   :maxdepth: 1
+   :caption: API Reference
 
    includes/development.md
