@@ -1,5 +1,5 @@
-DG-FEM Interface
-================
+Discontinuous Galerkin (DG) Interface
+=====================================
 
 .. automodule:: simulation_backend.DGinterface
     :members:
