@@ -220,3 +220,4 @@ celerydb.sqlite
 # Results
 result.mat
 results_on_the_run.mat
+MeasurementRoomTmp.json
