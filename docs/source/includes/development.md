@@ -1,32 +1,35 @@
 # Developer Guidelines: Adding a new simulation method
 
-If you have an open-source room acoustic simulation method you would like to add to the CHORAS back-end, you have come to the right place! Also, if you are reading this in preparation for the *CHORAS Developer Workshop*, you have found the right document :)
+If you have an open-source room acoustic simulation method you would like to add to the CHORAS back-end, you have come to the right place! _(Also, if you are reading this in preparation for the CHORAS Developer Workshop, you have found the right document :))_
 
 ## Before changing code!!
-1. Please create a branch of this repository (sim/<your_method_acronym>) so that you can work on this freely. 
+1. Please create a branch of this repository (`sim/<your_method_acronym>`) so that you can work on this freely. 
 
-2. If you want to authenticate via ssh (instead of the default https), run the following command (navigated to the root of this repository) to change the url:
+2. If you want to authenticate via ssh (instead of the default https), run the following command (navigated to the root of the `backend` repository) to change the url:
 ``` shell
 git remote set-url origin git@github.com:choras-org/backend.git
 ```
 
 ## Including your simulation method
 
-1. Add your repository as a submodule to the CHORAS repository (currently in the root of the `backend` submodule). Make sure that the repository is public so that others will be able to clone/use it too.
+1. Add your repository as a submodule to the root of the `backend` repository. Make sure that the repository is public so that others will be able to clone/use it too.
 
-2. Add your method to the requirements.txt list using `-e` ("editable"), meaning changes to the code will immediately reflect without reinstalling. 
+2. Add your method to the requirements.txt list using `-e` ("editable"), meaning changes to the code will immediately reflect without the need to reinstall. 
 
-3. Add a file to the `simulation-backend/simulation_backend` folder called `<your_method_acronym>interface.py`. 
+3. Add a file to the `simulation-backend/simulation_backend` folder called `<your_method_acronym>interface.py`. _(Please refer to `MyNewMethodInterface.py` in the same folder for an example.)_
 
-    This file will contain the interface between CHORAS and your simulation method.
-    It will contain two main parts:
+    This file will contain the interface between CHORAS and your simulation method and will contain two main parts:
 
-    - a function (`<your_method_acronym>_method()`) describing the interface between the contents of a .json file and your simulation method. The function *must* take as its argument the .json path with the user data. This will also be used to communicate information (% done, results, etc.) back to the user. Eventually, this function will be called by `app/services/simulation_service.py`, but for now, it will be called by...
-    - ...a main function that can call the aforementioned function.
+    - **a function** (`<your_method_acronym>_method()`) **describing the interface between the contents of a .json file and your simulation method**. The function *must* take as its argument the .json path with the user data. This will also be used to communicate information (% done, results, etc.) back to the user. Eventually, this function will be called by `app/services/simulation_service.py`, but for now, it will be called by...
+    - ...**a main function** that can call the aforementioned function.
 
-    Please refer to `simulation-backend/simulation_backend/MyNewMethodInterface.py` for an example. 
+    
 
-4. In the `simulation-backend/simulation_backend/__init__.py` file import everything from the interface file in the simulation-backend package \_\_init\_\_.py file: `from <your_method_acronym>interface import *`
+4. In the `simulation-backend/simulation_backend/__init__.py` file import everything from the interface file in the simulation-backend package \_\_init\_\_.py file: 
+
+    ```python
+    from <your_method_acronym>interface import *
+    ```
    
 5. Navigated to the `backend` folder run
 
@@ -111,3 +114,8 @@ Below is the `exampleInput_MyNewMethod.json` file (in `simulation-backend/simula
     ]
 }
 ```
+
+## Next steps
+That's it! You are now ready to create the interface between CHORAS and your simulation method. For those of you who are familiar with CHORAS, you will notice that you don't need any processes (`npm`, `flask`, `celery`) to run in order to test the interface. 
+
+If you want to run CHORAS and test whether 
