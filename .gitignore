@@ -218,6 +218,7 @@ uploads
 celerydb.sqlite
 
 # Results
-result.mat
+*result.mat
 results_on_the_run.mat
 MeasurementRoomTmp.json
+results*.json
