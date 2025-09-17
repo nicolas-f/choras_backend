@@ -25,7 +25,7 @@ git remote set-url origin git@github.com:choras-org/backend.git
 
     
 
-4. In the `simulation-backend/simulation_backend/__init__.py` file import everything from the interface file in the simulation-backend package \_\_init\_\_.py file: 
+4. In the `simulation-backend/simulation_backend/__init__.py` file import everything from the interface file in the simulation-backend package `__init__.py` file: 
 
     ```python
     from <your_method_acronym>interface import *
