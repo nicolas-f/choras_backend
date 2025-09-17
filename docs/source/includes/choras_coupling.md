@@ -1,19 +1,20 @@
 # Coupling your method to CHORAS
+
 To couple the interface you just created to CHORAS, please change the following files:
 
 #### app/models/data/simulation_settings.json
 
 - Add a new entry to the simulation_settings.json list.
 In a terminal window, navigate to the `backend` using `cd <your/path/to/CHORAS>/backend/`
-- Activate the conda environment: 
+- Activate the conda environment:
 
   ```shell
   conda activate choras
   ```
 
-- Run 
+- Run
 
-  ```shell    
+  ```shell
   flask reset-db
   ```
 
@@ -43,6 +44,7 @@ case TaskType.<your_new_tasktype>:
 ```
 
 ### Install
+
 Finally, in the `choras` environment, run
 
 ``` shell

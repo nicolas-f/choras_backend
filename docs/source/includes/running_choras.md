@@ -1,10 +1,12 @@
 # Running CHORAS
+
 To run CHORAS, three processes need to be active:
+
 - The frontend (`npm run dev`)
 - The backend (`flask run`)
 - Celery (`celery -A app.celery worker --loglevel=info -P eventlet`)
 
-Don't worry about the commands above (yet). These are for future reference. 
+Don't worry about the commands above (yet). These are for future reference.
 
 The following steps will guide you through the process of setting up and running these processes.
 Please refer to the [Getting Started](./getting_started.md) guide to for setting up the environment and required python packages if you have not done so already.
@@ -79,4 +81,5 @@ celery -A app.celery worker --loglevel=info -P eventlet
 ```
 
 ## Running the frontend
+
 Please refer to <https://github.com/choras-org/CHORAS/blob/dev/README.md#frontend-installation-open-a-new-command-window> for instructions on how to install and launch the frontend. <!-- TODO: link to the proper frontend documentation. -->
