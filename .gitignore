@@ -222,3 +222,4 @@ celerydb.sqlite
 results_on_the_run.mat
 MeasurementRoomTmp.json
 results*.json
+*MeasurementRoomTmp_pressure.csv

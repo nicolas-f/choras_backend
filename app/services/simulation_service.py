@@ -321,7 +321,7 @@ def start_solver_task(simulation_id):
 @shared_task
 def run_solver(simulation_run_id: int, json_path: str):
     from simulation_backend.DGinterface import dg_method
-    from simulation_backend.FVMinterface import de_method
+    from simulation_backend.DEinterface import de_method
     from simulation_backend.MyNewMethodInterface import mynewmethod_method
 
     from app.db import db
