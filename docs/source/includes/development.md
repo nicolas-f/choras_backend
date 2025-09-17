@@ -118,4 +118,4 @@ Below is the `exampleInput_MyNewMethod.json` file (in `simulation-backend/simula
 ## Next steps
 That's it! You are now ready to create the interface between CHORAS and your simulation method. For those of you who are familiar with CHORAS, you will notice that you don't need any processes (`npm`, `flask`, `celery`) to run in order to test the interface. 
 
-If you want to run CHORAS and test whether 
+If you want to run CHORAS and test whether you can control your simulation backend using the CHORAS frontend, please continue to the next page.
