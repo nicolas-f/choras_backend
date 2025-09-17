@@ -82,4 +82,4 @@ celery -A app.celery worker --loglevel=info -P eventlet
 
 ## Running the frontend
 
-Please refer to <https://github.com/choras-org/CHORAS/blob/dev/README.md#frontend-installation-open-a-new-command-window> for instructions on how to install and launch the frontend. <!-- TODO: link to the proper frontend documentation. -->
+Please refer to <https://github.com/choras-org/CHORAS/blob/dev/README.md#frontend-installation-open-a-new-command-window> for instructions on how to install and launch the frontend. 
