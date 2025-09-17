@@ -2,7 +2,7 @@
 
 If you have an open-source room acoustic simulation method you would like to add to the CHORAS back-end, you have come to the right place! _(Also, if you are reading this in preparation for the CHORAS Developer Workshop, you have found the right document :))_
 
-## Before changing code!!
+## Before changing code
 1. Please create a branch of this repository (`sim/<your_method_acronym>`) so that you can work on this freely. 
 
 2. If you want to authenticate via ssh (instead of the default https), run the following command (navigated to the root of the `backend` repository) to change the url:
