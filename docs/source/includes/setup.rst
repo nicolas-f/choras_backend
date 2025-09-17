@@ -6,4 +6,4 @@ Setup
    :caption: Setup Instructions
 
    getting_started.md
-   running_choras.md
+   installing_choras.md
