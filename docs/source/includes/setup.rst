@@ -6,5 +6,4 @@ Setup
    :caption: Setup Instructions
 
    getting_started.md
-   development.md
-   setup_frontend_interface.md
+   running_choras.md

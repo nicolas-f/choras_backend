@@ -8,9 +8,10 @@ Here you will see what you need to do to run the backend application.
 2. Conda: <https://www.anaconda.com/download>
 
 ## Initialising this repository
+
 Gentle reminder: you are currently in the `backend` repository, not the `CHORAS` parent repository. The instructions below therefore refer to the `backend` repository and neither involve the `CHORAS` nor `frontend` repositories.
 
-1. Clone this repository to a location of your choice. <!--If you have issues with cloning this repository (and its submodules), you can download the zipped repository via the releases page of this repository: <https://github.com/choras-org/backend/releases> -->
+1. Clone this repository to a location of your choice.
 2. In the command window / terminal, navigate (`cd`) to the (`backend`) repository.
 3. Run the following line of code to check out the correct versions of the (nested) submodules:
 
@@ -39,16 +40,21 @@ pip install -r requirements.txt
 ```
 
 ## Running example code
-You are now ready to run some example code! 
+
+You are now ready to run some example code!
 
 1. Navigate (`cd`) to `backend/simulation-backend/simulation_backend`.
 2. Make sure you are in the correct environment by running
+
 ```shell
 conda activate choras
 ```
+
 3. Run
+
 ```shell
 python MyNewMethodInterface.py
 ```
-4. The command window should show a counter running from 0 to 100. 
+
+4. The command window should show a counter running from 0 to 100.
 5. Try some of the other interface files (e.g. `DGinterface.py`) and see what happens.

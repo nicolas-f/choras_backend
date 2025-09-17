@@ -7,9 +7,9 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = "CHORAS backend"
-copyright = "2024, Hassan Teymoori"
-author = "Hassan Teymoori"
-release = "1.7"
+copyright = "2025, Building Acoustics Group TU/e"
+author = "Building Acoustics Group TU/e"
+release = "1.8"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
