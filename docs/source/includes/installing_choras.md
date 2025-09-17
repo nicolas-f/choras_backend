@@ -1,4 +1,4 @@
-# Running CHORAS
+# Installing CHORAS
 
 To run CHORAS, three processes need to be active:
 

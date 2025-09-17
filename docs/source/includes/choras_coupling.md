@@ -1,5 +1,7 @@
 # Coupling your method to CHORAS
 
+Before following the steps below, make sure you followed the steps in [Installing CHORAS](./installing_choras.md).
+
 To couple the interface you just created to CHORAS, please change the following files:
 
 #### app/models/data/simulation_settings.json

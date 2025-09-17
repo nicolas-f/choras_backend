@@ -58,3 +58,8 @@ python MyNewMethodInterface.py
 
 4. The command window should show a counter running from 0 to 100.
 5. Try some of the other interface files (e.g. `DGinterface.py`) and see what happens.
+
+## Next steps
+If you are only interested in coupling your simulation method to the CHORAS backend, (i.e., avoiding the CHORAS frontend) please proceed to [Developer Guidelines: Adding a new simulation method](./development.md). 
+
+Otherwise please proceed to the next page.
