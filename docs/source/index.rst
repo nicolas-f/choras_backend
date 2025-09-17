@@ -18,6 +18,12 @@ Please follow the steps provided here to setup the CHORAS backend.
 
 .. toctree::
    :maxdepth: 1
+   :caption: Contribution Guidelines
+
+   includes/contributing.rst
+
+.. toctree::
+   :maxdepth: 1
    :caption: API Reference
 
    includes/api_documentation.rst
