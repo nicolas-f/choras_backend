@@ -6,4 +6,6 @@ Setup
    :caption: Setup Instructions
 
    getting_started.md
-   setup_frontend_interface.md
+   development.md
+   running_choras.md
+   choras_coupling.md
