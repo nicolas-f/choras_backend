@@ -27,3 +27,9 @@ Please follow the steps provided here to setup the CHORAS backend.
    :caption: API Reference
 
    includes/api_documentation.rst
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Example Gallery
+
+   auto_examples/index
