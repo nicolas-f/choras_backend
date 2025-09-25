@@ -20,6 +20,11 @@ jobs:
         activate-environment: choras
         auto-update-conda: true
         python-version: ${{ matrix.python-version }}
+    - run: |
+          conda info
+          conda list
+          conda config --show-sources
+          conda config --show
     - name: Setting up the environment
       shell: bash
       run:  pip install -r requirements.txt
