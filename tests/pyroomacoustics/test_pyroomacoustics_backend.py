@@ -11,7 +11,7 @@ from pathlib import Path
 
 
 def default_input_data():
-    """Fixture to load the example input data."""
+    """Load the example input data."""
     with open("tests/pyroomacoustics/exampleInput_pyroomacoustics.json", 'r') as f:
         data = json.load(f)
 
