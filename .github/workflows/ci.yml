@@ -17,15 +17,19 @@ jobs:
     - name: Setup conda
       uses: conda-incubator/setup-miniconda@v3
       with:
-        activate-environment: choras
-        auto-update-conda: true
-        python-version: ${{ matrix.python-version }}
-    - run: |
-          conda info
-          conda list
-          conda config --show-sources
-          conda config --show
-    - name: Setting up the environment
-      shell: bash
-      run:  pip install -r requirements.txt
+          miniconda-version: "latest"
+          python-version: ${{ matrix.python-version }}
+          channels: bioconda, conda-forge, defaults
+          use-only-tar-bz2: true  # IMPORTANT: This needs to be set for caching to work properly!
+          auto-update-conda: true
+          auto-activate-base: true
+    - name: Install choras
+      run: |
+          echo "begin: PATH=$PATH;"
+
+          conda create -n choras python=3.10
+
+          conda activate choras || true
+          pip install -r requirements.txt
+        
         
