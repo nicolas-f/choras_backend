@@ -1,8 +1,16 @@
 [build-system]
-requires = ["setuptools", "wheel"]
+requires = [
+  "setuptools>=42",
+  "wheel",
+  "scikit-build",
+  "cmake",
+  "swig",
+  "ninja; platform_system!='Windows'"
+]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "My_New_Method"
+name = "spps"
 version = "0.1.0"
-description = "Dummy Method"
+description = "Spps computation core"
+

@@ -152,3 +152,5 @@ sphinx-copybutton # Docs, required for copy buttons in code blocks
 -e ./Diffusion
 -e ./edg-acoustics
 -e ./MyNewMethod
+-e ./spps
+
