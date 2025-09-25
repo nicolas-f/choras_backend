@@ -10,7 +10,8 @@ build:
   tools:
     python: "3.10"
   apt_packages:
-    - libsndfile1 # on linux required for soundfile package
+    - libsndfile1
+    - libglu1-mesa
 
 # Include all git submodules, recursively
 submodules:
