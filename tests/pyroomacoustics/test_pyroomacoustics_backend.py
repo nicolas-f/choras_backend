@@ -41,8 +41,7 @@ def create_temporary_input_file():
 def test_create_tmp_file(create_temporary_input_file):
     """Test the creation of a temporary input file.
     """
-    tempfile_path = create_temporary_input_file
-    assert os.path.exists(tempfile_path)
+    assert os.path.exists(create_temporary_input_file)
 
 
 def test_get_receiver(input_data):
@@ -63,11 +62,10 @@ def test_get_source_positions(input_data):
 
 def test_export_rir_to_input(create_temporary_input_file):
     """Test the export_rir_to_input function."""
-    tmpfile = create_temporary_input_file
     rir = np.array([0.0, 0.1, 0.2, 0.3, 0.4, 0.5], dtype=float)
-    pra_interface.export_rir_to_input(tmpfile, rir)
+    pra_interface.export_rir_to_input(create_temporary_input_file, rir)
 
-    with open(tmpfile, 'r') as f:
+    with open(create_temporary_input_file, 'r') as f:
         data = json.load(f)
 
     npt.assert_array_equal(
