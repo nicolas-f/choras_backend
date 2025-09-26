@@ -38,12 +38,14 @@ def create_temporary_input_file():
     """Fixture to create a temporary input JSON file which can be reused to
     write results to."""
     input_tmp = load_default_input_data()
-    geo_file = os.path.join(default_data_path(), "MeasurementRoom.geo")
+    geo_file = os.path.join(
+        default_data_path(), "test_room_pyroomacoustics.geo")
 
     with tempfile.TemporaryDirectory() as tmpdirname:
         tmp_path = Path(tmpdirname) / "temp_input.json"
         shutil.copy(geo_file, Path(tmpdirname))
-        input_tmp['geo_path'] = os.path.join(tmpdirname, "MeasurementRoom.geo")
+        input_tmp['geo_path'] = os.path.join(
+            tmpdirname, "test_room_pyroomacoustics.geo")
         with open(tmp_path, 'w') as f:
             json.dump(input_tmp, f)
 
@@ -58,7 +60,8 @@ def test_create_tmp_file(create_temporary_input_file):
     directory = os.path.dirname(create_temporary_input_file)
 
     assert os.path.exists(create_temporary_input_file)
-    assert os.path.exists(os.path.join(directory, "MeasurementRoom.geo"))
+    assert os.path.exists(
+        os.path.join(directory, "test_room_pyroomacoustics.geo"))
 
 
 def test_get_receiver(default_input_data):
