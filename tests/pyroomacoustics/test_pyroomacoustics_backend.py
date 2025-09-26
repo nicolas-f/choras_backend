@@ -87,3 +87,16 @@ def test_export_rir_to_input(create_temporary_input_file):
 
     npt.assert_array_equal(
         data['results'][0]['responses'][0]['receiverResults'], rir)
+
+
+def test_run_simulation(create_temporary_input_file):
+    """Run the full simulation pipeline."""
+    pra_interface.pyroomacoustics_method(create_temporary_input_file)
+
+    with open(create_temporary_input_file, 'r') as f:
+        data = json.load(f)
+
+    rir = np.array(data['results'][0]['responses'][0]['receiverResults'])
+
+    assert rir is not None
+    assert len(rir) > 0
