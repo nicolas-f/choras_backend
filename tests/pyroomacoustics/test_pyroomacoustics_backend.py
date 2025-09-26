@@ -8,11 +8,20 @@ import json
 import simulation_backend.pyroomacoustics_interface as pra_interface
 import tempfile
 from pathlib import Path
+import shutil
+
+
+def default_data_path():
+    """Get the path to the default data folder."""
+    return os.path.join(
+        os.path.dirname(os.path.abspath(__file__)))
 
 
 def default_input_data():
     """Load the example input data."""
-    with open("tests/pyroomacoustics/test_input_pyroomacoustics.json", 'r') as f:
+    with open(os.path.join(
+            default_data_path(),
+            "test_input_pyroomacoustics.json"), 'r') as f:
         data = json.load(f)
 
     return data
@@ -29,10 +38,15 @@ def create_temporary_input_file():
     """Fixture to create a temporary input JSON file which can be reused to
     write results to."""
     input_tmp = default_input_data()
+    geo_file = os.path.join(default_data_path(), "MeasurementRoom.geo")
+
     with tempfile.TemporaryDirectory() as tmpdirname:
         tmp_path = Path(tmpdirname) / "temp_input.json"
+        shutil.copy(geo_file, Path(tmpdirname))
+        input_tmp['geo_path'] = os.path.join(tmpdirname, "MeasurementRoom.geo")
         with open(tmp_path, 'w') as f:
             json.dump(input_tmp, f)
+
         yield str(tmp_path)
 
     return str(tmp_path)
@@ -41,7 +55,10 @@ def create_temporary_input_file():
 def test_create_tmp_file(create_temporary_input_file):
     """Test the creation of a temporary input file.
     """
+    directory = os.path.dirname(create_temporary_input_file)
+
     assert os.path.exists(create_temporary_input_file)
+    assert os.path.exists(os.path.join(directory, "MeasurementRoom.geo"))
 
 
 def test_get_receiver(input_data):
