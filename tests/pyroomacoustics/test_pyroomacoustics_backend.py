@@ -12,7 +12,7 @@ from pathlib import Path
 
 def default_input_data():
     """Load the example input data."""
-    with open("tests/pyroomacoustics/exampleInput_pyroomacoustics.json", 'r') as f:
+    with open("tests/pyroomacoustics/test_input_pyroomacoustics.json", 'r') as f:
         data = json.load(f)
 
     return data
