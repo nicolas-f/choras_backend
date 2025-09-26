@@ -17,7 +17,7 @@ def default_data_path():
         os.path.dirname(os.path.abspath(__file__)))
 
 
-def default_input_data():
+def load_default_input_data():
     """Load the example input data."""
     with open(os.path.join(
             default_data_path(),
@@ -28,16 +28,16 @@ def default_input_data():
 
 
 @pytest.fixture
-def input_data():
+def default_input_data():
     """Fixture to load the example input data."""
-    return default_input_data()
+    return load_default_input_data()
 
 
 @pytest.fixture
 def create_temporary_input_file():
     """Fixture to create a temporary input JSON file which can be reused to
     write results to."""
-    input_tmp = default_input_data()
+    input_tmp = load_default_input_data()
     geo_file = os.path.join(default_data_path(), "MeasurementRoom.geo")
 
     with tempfile.TemporaryDirectory() as tmpdirname:
@@ -61,17 +61,17 @@ def test_create_tmp_file(create_temporary_input_file):
     assert os.path.exists(os.path.join(directory, "MeasurementRoom.geo"))
 
 
-def test_get_receiver(input_data):
+def test_get_receiver(default_input_data):
     """Test the get_receiver function."""
-    receiver = pra_interface.get_receiver_positions(input_data)
+    receiver = pra_interface.get_receiver_positions(default_input_data)
 
     assert receiver is not None
     npt.assert_array_equal(receiver, np.array([[1.0, 1.0, 1.5]]))
 
 
-def test_get_source_positions(input_data):
+def test_get_source_positions(default_input_data):
     """Test the get_source_positions function."""
-    sources = pra_interface.get_source_positions(input_data)
+    sources = pra_interface.get_source_positions(default_input_data)
 
     assert sources is not None
     npt.assert_array_equal(sources, np.array([2.0, 2.0, 1.5]))
