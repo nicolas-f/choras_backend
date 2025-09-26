@@ -103,3 +103,5 @@ def test_run_simulation(create_temporary_input_file):
 
     assert rir is not None
     assert len(rir) > 0
+    assert isinstance(rir, np.ndarray)
+    assert np.any(np.abs(rir) >= 1e-6)
