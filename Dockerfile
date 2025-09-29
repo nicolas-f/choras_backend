@@ -26,7 +26,6 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 COPY requirements.txt /app
 COPY simulation-backend/ /app/simulation-backend
 COPY Diffusion/ /app/Diffusion
-COPY edg-acoustics/ /app/edg-acoustics
 COPY MyNewMethod/ /app/MyNewMethod
 
 RUN pip install --upgrade pip
