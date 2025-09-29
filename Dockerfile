@@ -32,7 +32,6 @@ COPY MyNewMethod/ /app/MyNewMethod
 RUN pip install --upgrade pip
 RUN pip install simulation-backend/.
 RUN pip install Diffusion/.
-RUN pip install edg-acoustics/.
 RUN pip install MyNewMethod/.
 RUN pip install --no-cache-dir -r requirements.txt
 
