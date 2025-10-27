@@ -8,5 +8,5 @@
 	path = MyNewMethod
 	url = https://github.com/SilvinWillemsen/MyNewMethod.git
 [submodule "spps/I-Simpa"]
-	path = spps/I-Simpa
+	path = libsimpa/I-Simpa
 	url = https://github.com/Universite-Gustave-Eiffel/I-Simpa.git
