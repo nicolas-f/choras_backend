@@ -1,4 +1,6 @@
 # This is the example interface file for connecting CHORAS to your simulation method
+from collections import defaultdict
+from itertools import combinations
 from time import sleep
 
 # Import the relevant functions from your package (/submodule)
@@ -37,14 +39,14 @@ def convertGeoFileToCBINModel(geo_file_path, cbin_file_path, cmbin_file_path):
             faces = np.reshape(face_nodes, (len(face_nodes) // mesh_kind, mesh_kind))
             for face in faces:
                 # ioFace(indiceV _a, indiceV _b, indiceV _c, indiceMat _idMat, indiceRS _idRs, indiceEN _idEn)
-                newface = libsimpa.ioFace()
-                newface.a = int(face[0])
-                newface.b = int(face[1])
-                newface.c = int(face[2])
-                newface.idEn = 0
-                newface.idMat = 0
-                newface.idRs = 0
-                outputModel.faces.append(newface)
+                new_face = libsimpa.ioFace()
+                new_face.a = int(face[0])
+                new_face.b = int(face[1])
+                new_face.c = int(face[2])
+                new_face.idEn = 0
+                new_face.idMat = 0
+                new_face.idRs = 0
+                outputModel.faces.append(new_face)
             print("surface_group_name: ", surface_group_name)
         driver = libsimpa.CformatBIN()
         driver.ExportBIN(cbin_file_path, outputModel)
@@ -60,22 +62,29 @@ def convertGeoFileToCBINModel(geo_file_path, cbin_file_path, cmbin_file_path):
         tetramesh = libsimpa.trimeshmodel()
         for vertex in coords:
             tetramesh.nodes.append(libsimpa.t_binNode(vertex[0], vertex[1], vertex[2]))
-        for tetrahedron in tetramesh.tetrahedrons:
-            new_tetra = libsimpa.bintetrahedre()
-            new_tetra.sommets[0] = tetrahedron[0]
-            new_tetra.sommets[1] = tetrahedron[1]
-            new_tetra.sommets[2] = tetrahedron[2]
-            new_tetra.sommets[3] = tetrahedron[3]
-            new_tetra.idVolume = 0
-            # for idface in range(0, 4):
-            #     newface = newtetra.tetrafaces[idface]
-            #     newface.marker = face[0]
-            #     newface.neighboor = face[1]
-            #     newface.sommets[0] = face[2][0]
-            #     newface.sommets[1] = face[2][1]
-            #     newface.sommets[2] = face[2][2]
-            tetramesh.tetrahedres.append(new_tetra)
+        # First loop to index the relation between faces and tetrahedrons index# Create a dictionary mapping each face to a list of tetrahedron indices
+        face_index = defaultdict(list)
+        for i, tet in enumerate(tetrahedrons):
+            for face in combinations(tet, 3):
+                face_index[tuple(sorted(face))].append(i)
+        tetrahedron_faces_index = list(reversed(list(combinations(range(4), 3))))
+        for id_tetra, tetrahedron in enumerate(tetrahedrons):
+            id_volume = 0
+            tetra_faces = []
+            for id_face in range(0, 4):
+                face_vertices = [tetrahedron[tetrahedron_faces_index[id_face][i]] for i in range(3)]
+                marker = 0
+                neighbor = next((x for x in face_index[tuple(sorted(face_vertices))] if x != id_tetra), -1)
+                new_face = libsimpa.bintetraface(int(face_vertices[0]), int(face_vertices[1]), int(face_vertices[2]), marker, neighbor)
+                tetra_faces.append(new_face)
+            # bintetrahedre(const Intb& _a, const Intb& _b, const Intb& _c, const Intb& _d, const Intb& _idVolume,
+            # 			const bintetraface& faceA, const bintetraface& faceB, const bintetraface& faceC, const bintetraface& faceD)
+            tetramesh.tetrahedres.append(libsimpa.bintetrahedre(int(tetrahedron[0]), int(tetrahedron[1]),
+                                                                int(tetrahedron[2]), int(tetrahedron[3]), id_volume,
+                                                                tetra_faces[0], tetra_faces[1], tetra_faces[2],
+                                                                tetra_faces[3]))
         libsimpa.CMBIN().SaveMesh(cmbin_file_path, tetramesh)
+        print("3D mesh exported to: ", cmbin_file_path)
 # This function will be called from app/services/simulation_service.py 
 # and the main function below
 def mynewmethod_method(json_file_path=None):
