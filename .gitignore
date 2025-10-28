@@ -229,6 +229,8 @@ results*.json
 
 # Build directory
 spps/_skbuild/
-/simulation-backend/simulation_backend/model.cbin
+/simulation-backend/simulation_backend/*.cbin
+/simulation-backend/simulation_backend/*.mbin
+/simulation-backend/simulation_backend/*.ply
 /spps/libsimpa/
 /libsimpa/_skbuild/

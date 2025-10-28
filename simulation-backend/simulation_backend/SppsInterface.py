@@ -3,6 +3,8 @@ from collections import defaultdict
 from itertools import combinations
 from time import sleep
 
+from numpy.ma.core import shape
+from plyfile import PlyData, PlyElement
 # Import the relevant functions from your package (/submodule)
 import libsimpa
 import gmsh
@@ -10,10 +12,18 @@ import json
 from headless_backend.HelperFunctions import *
 import numpy as np
 
-def convertGeoFileToCBINModel(geo_file_path, cbin_file_path, cmbin_file_path):
+def convert_geo_file(geo_file_path, cbin_file_path, cmbin_file_path, ply_file_path):
     outputModel = libsimpa.ioModel()
     gmsh.initialize()
+
+    # Disable mesh refinement
+    gmsh.option.setNumber("Mesh.CharacteristicLengthExtendFromBoundary", 0)
+    gmsh.option.setNumber("Mesh.CharacteristicLengthFromPoints", 0)
+    gmsh.option.setNumber("Mesh.CharacteristicLengthFromCurvature", 0)
+
+
     gmsh.open(geo_file_path)
+
     for modelName in gmsh.model.list():
         gmsh.model.setCurrent(modelName)
         print("Model name: ", modelName)
@@ -23,20 +33,25 @@ def convertGeoFileToCBINModel(geo_file_path, cbin_file_path, cmbin_file_path):
             gmsh.model.getPhysicalName(element_type, tag)
             for (element_type, tag) in surface_group_tags
         ]
+
         gmsh.model.mesh.generate()
         node_tags_all, coords_all, _ = gmsh.model.mesh.getNodes()
         coords = coords_all.reshape((len(node_tags_all), 3))
         mesh_kind = 3
+        ply_vertices = np.array([(float(x), float(y), float(z)) for x, y, z in coords],
+                                dtype=[('x', 'f4'), ('y', 'f4'), ('z', 'f4')])
         # Push vertices and faces to the cbin model
         for vertex in coords:
             outputModel.vertices.append(libsimpa.t_pos(vertex[0], vertex[1], vertex[2]))
-        for surface_group_name in surface_group_names:
+        face_lst = []
+        for id_group, surface_group_name in enumerate(surface_group_names):
             dim_tags = gmsh.model.getEntitiesForPhysicalName(surface_group_name)
             _, node_tags_group = dim_tags[0]
 
             face_nodes = gmsh.model.mesh.getElementFaceNodes(
                 dim, mesh_kind, tag=node_tags_group)
             faces = np.reshape(face_nodes, (len(face_nodes) // mesh_kind, mesh_kind))
+            face_lst += [[a-1, b-1, c-1, id_group] for a, b, c in faces]
             for face in faces:
                 # ioFace(indiceV _a, indiceV _b, indiceV _c, indiceMat _idMat, indiceRS _idRs, indiceEN _idEn)
                 new_face = libsimpa.ioFace()
@@ -48,6 +63,29 @@ def convertGeoFileToCBINModel(geo_file_path, cbin_file_path, cmbin_file_path):
                 new_face.idRs = 0
                 outputModel.faces.append(new_face)
             print("surface_group_name: ", surface_group_name)
+        ply_faces = np.array([([int(a), int(b), int(c)], id_group) for a, b, c, id_group in face_lst],
+                             dtype=[('vertex_indices', 'i4', (3,)), ('layer_id', 'u1')])
+        el_v = PlyElement.describe(ply_vertices, 'vertex')
+        el_f = PlyElement.describe(ply_faces, 'face', val_types = {'vertex_indices': 'u2'}, len_types = {'vertex_indices': 'u4'})
+        #el_s = PlyElement.describe(np.array(surface_group_names, dtype=[('layer_name', '<U7')]), 'layer', val_types = {'layer_name': 'uchar'})
+
+        # Fix for the layer element
+        # Convert strings to lists of ASCII character codes
+        layer_data = []
+        for name in surface_group_names:
+            # Convert string to list of ASCII values (as uint8)
+            ascii_codes = [ord(c) for c in name]
+            layer_data.append((ascii_codes,))
+
+        # Create numpy array with object dtype for variable-length lists
+        layer_array = np.array(layer_data, dtype=[('layer_name', 'O')])
+
+        # Create the element with proper list types
+        el_s = PlyElement.describe(layer_array, 'layer',
+                                   val_types={'layer_name': 'u1'},  # uchar for each character
+                                   len_types={'layer_name': 'u1'})  # uchar for the count
+
+        PlyData([el_v, el_f, el_s], text=True).write(ply_file_path)
         driver = libsimpa.CformatBIN()
         driver.ExportBIN(cbin_file_path, outputModel)
         print("3d model exported to: ", cbin_file_path)
@@ -94,7 +132,8 @@ def mynewmethod_method(json_file_path=None):
     dirname = os.path.dirname(__file__)
     cbin_output_path = os.path.join(dirname, "model.cbin")
     cmbin_output_path = os.path.join(dirname, "model.cmbin")
-    convertGeoFileToCBINModel(data["geo_path"], cbin_output_path, cmbin_output_path)
+    ply_output_path = os.path.join(dirname, "model.ply")
+    convert_geo_file(data["geo_path"], cbin_output_path, cmbin_output_path, ply_output_path)
     print("mynewmethod_method: starting simulation")
     print("mynewmethod_method: simulation done!")
 
