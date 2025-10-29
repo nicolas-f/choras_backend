@@ -151,6 +151,7 @@ sphinx-gallery # Docs, required for example gallery
 matplotlib<3.7.0 # Docs, required for plot directive
 pyroomacoustics
 
+-e ./libsimpa
 -e ./simulation-backend
 -e ./Diffusion
 git+https://github.com/Building-acoustics-TU-Eindhoven/edg-acoustics.git@bf97d0355366540940adee3043e0bcca447254e8#egg=edg-acoustics
